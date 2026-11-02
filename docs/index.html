@@ -31,7 +31,7 @@ svg text{fill:var(--mut);font:11px Georgia,serif}.bar{cursor:pointer}.bar:hover{
 .wrap{overflow-x:auto;padding:12px 16px 40px}table{border-collapse:collapse;width:100%;min-width:1100px}
 th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:13.5px}
 th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;background:var(--bg)}tr.r:hover{background:var(--surface);cursor:pointer}
-.n{text-align:right;white-space:nowrap}.flag{color:var(--acc);font-size:12px}.old{display:block;color:var(--mut);font-size:12px}.dim{white-space:nowrap}td:first-child{white-space:nowrap}
+.n{text-align:right;white-space:nowrap}.flag{color:var(--acc);font-size:12px}.old{display:block;color:var(--mut);font-size:12px}.dim{white-space:nowrap}.ext{white-space:nowrap;font-size:13px}.ext small{color:var(--mut)}td:first-child{white-space:nowrap}
 #m{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:2000;overflow:auto}#m .c{background:var(--surface);max-width:1300px;margin:12px auto 20px;padding:16px;border-radius:6px}
 #m .bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.2)}#m .in{max-width:1300px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:10px}#m .hint{color:var(--mut);font-size:12px;margin-left:auto}#m .close{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}#pos{color:var(--mut);font-size:13px;min-width:70px;text-align:center}@media(max-width:600px){#m .hint{display:none}#m .close{margin-left:auto}}#pg{position:relative;display:inline-block;max-width:100%}#pg img{max-width:100%;display:block}
 .hl{position:absolute;background:rgba(255,214,0,.30);mix-blend-mode:multiply;border-radius:3px;pointer-events:none}
@@ -47,7 +47,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 <div class="f"><input id="q" placeholder="Search anything: owner, street, architect, mason, building type…">
 <select id="iss"><option value="">All issues</option></select>
 <select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select>
-<select id="ca"><option value="">All community areas</option></select>
+<select id="ca"><option value="">All community areas</option></select><select id="ext" title="Based on the Assessor's year built, which is often wrong"><option value="">Building today: any</option><option value="likely">Likely still standing</option><option value="gone">Older or newer building there</option><option value="unknown">Unknown</option></select>
 <input id="ar" placeholder="Architect / builder" size="18"><input id="min" type="number" placeholder="Min $" style="width:90px"><input id="max" type="number" placeholder="Max $" style="width:90px">
 <span><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span></div>
 <div class="chips" id="chips"></div><div id="summary"></div>
@@ -57,7 +57,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
   <div class="card"><h2>By week <span id="wknote"></span></h2><div id="wk"></div></div>
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
  </div></div>
-<div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn">Size (ft)</th><th data-k="cost" class="n">Cost</th><th>Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn">Size (ft)</th><th data-k="ext" title="Based on the Assessor's year built">Standing today?</th><th data-k="cost" class="n">Cost</th><th>Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
 <div id="m"><div class="bar"><div class="in"><button class="btn" id="prv" title="Previous permit (←)">‹ Prev</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (→)">Next ›</button><span class="hint">← → to move · Esc to close</span><button class="btn close" id="cls">Close ✕</button></div></div><div class="c"><div class="mg"><div class="ml"><div id="mt"></div><p id="pb"></p></div><div id="pg"></div></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
@@ -71,6 +71,7 @@ const arch=r=>(r.roles.find(x=>x[0]=='architect')||[])[1]||'';
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const num=r=>{const m=(r.sz||'').match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);return m?m[1]*m[2]:0};
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
+const extLabel=r=>({likely:'● likely'+(r.yb?' <small>('+r.yb+')</small>':''),older:'○ older bldg'+(r.yb?' <small>('+r.yb+')</small>':''),newer:'○ replaced? <small>('+r.yb+')</small>',unknown:'<span style="color:var(--mut)">–</span>'})[r.ext]||'';
 const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 const AS=new Set(),AN={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
@@ -91,10 +92,10 @@ function drawCA(){
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
- $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (size grows with cost)`}
+ $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit — filled: likely still standing; faint: unknown; hollow: a different building is there now (size grows with cost)`}
 function drawPts(){ptLayer.clearLayers();let k=0;
  cur.forEach(r=>{if(!r.lat)return;k++;const rad=Math.max(3,Math.min(11,2+Math.sqrt((r.cost||20000)/12000)));
-  const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,color:css('--ring'),fillColor:css('--s2'),fillOpacity:.9});
+  const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,color:css('--ring'),fillColor:css('--s2'),fillOpacity:r.ext=='likely'?.9:(r.ext=='unknown'?.45:.12),color:r.ext=='likely'||r.ext=='unknown'?css('--ring'):css('--s2')});
   c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
   c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
  $('mapnote').textContent=`${k.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>k?` (${cur.length-k} lack a usable address)`:'')}
@@ -103,21 +104,21 @@ fetch('permits.json').then(r=>r.json()).then(async d=>{D=d;CA=await (await fetch
  [...new Set(d.map(r=>r.d))].forEach(x=>$('iss').add(new Option(x,x)));
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const dl=document.createElement('datalist');dl.id='archlist';const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'&&!seen[nk(a)]){seen[nk(a)]=1;AN[nk(a)]=a;dl.append(new Option(a))}});document.body.append(dl);$('ar').setAttribute('list','archlist');fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
 function flt(skip){const q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,mx=+$('max').value||1e12,a=$('ca').value;
- return r=>(skip=='iss'||!i||r.d==i)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn&&(r.cost||0)<=mx}
+ return r=>(skip=='iss'||!i||r.d==i)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!$('ext').value||($('ext').value=='gone'?(r.ext=='older'||r.ext=='newer'):r.ext==$('ext').value))&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn&&(r.cost||0)<=mx}
 function go(){
  F.area=$('ca').value?+$('ca').value:null;
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0});   // the map keeps showing every area while one is selected
  const t=cur.reduce((s,r)=>s+(r.cost||0),0);
- $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
+ $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
  chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
-const KEYS0=0;const KEYS={q:'q',iss:'issue',reg:'region',ca:'ca',ar:'ar',min:'min',max:'max'};
+const KEYS0=0;const KEYS={q:'q',iss:'issue',reg:'region',ca:'ca',ext:'ext',ar:'ar',min:'min',max:'max'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
 function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
  if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('iss').value)c.push(['Issue '+$('iss').value,()=>$('iss').value='']);if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
- if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
+ if($('ext').value)c.push([$('ext').selectedOptions[0].text,()=>$('ext').value='']);if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)})}
 /* ---- weekly bars: one series, one axis, honoring every filter except the issue itself ---- */
@@ -141,7 +142,7 @@ function archs(){const by={},nm={};D.filter(flt('arch')).forEach(r=>{let a=arch(
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
  $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
 /* ---- table + detail ---- */
-function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.pin?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=9>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
+function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.pin?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="ext" title="${esc(r.extn||'')}">${extLabel(r)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>show(cur[+e.dataset.k]));$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();setArch(a.dataset.a)})}
 let CURR=null,phT=null;
 function photo(pin,rr){const el=$('ph'),ps=(rr||CURR||{}).pins||[],chips=ps.length>1?`<div class=pins>Lots in this range: ${ps.map(([n,p])=>`<button class="btn${p==pin?' on':''}" onclick="photo('${p}')">${n}</button>`).join(' ')}</div>`:'';el.innerHTML=chips+`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>Cook County Assessor photo of the property <b>today</b>, PIN ${pin} — not the 1926 building. <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`}
@@ -150,6 +151,7 @@ function show(r,withPhoto){CURR=r;const ix=cur.indexOf(r);$('pos').textContent=i
  <dt>Owner</dt><dd>${esc(r.own)}${r.oa?', '+esc(r.oa):''}</dd>
  <dt>Site</dt><dd>${esc(r.mod||r.site||'—')}${r.chg?` <span class="old" style="display:inline">(printed “${esc(r.site)}”; street since renamed)</span>`:''}</dd>
  <dt>Address today</dt><dd>${r.now?esc(r.now):'<span style="color:var(--mut)">no matching address in the county data</span>'}</dd>
+ <dt>Standing today?</dt><dd>${{likely:'Probably yes',older:'Probably a different, older building',newer:'Probably replaced',unknown:'Unknown'}[r.ext]}${r.extn?` <span style="color:var(--mut);font-size:13px">— ${esc(r.extn)}</span>`:''}</dd>
  <dt>Community area</dt><dd>${esc(r.can||'not placed')}${r.geo&&r.geo!='exact'&&r.can?` <span class=flag>(${r.geo})</span>`:''}</dd>
  <dt>Building</dt><dd>${(r.st?r.st+'-story ':'')+esc(r.bld||'—')}${r.sz?' · <b>'+dims(r.sz)+' ft</b>':''}</dd>
  <dt>Cost</dt><dd>${money(r.cost)}${r.tot?' (total for all buildings)':''}${r.inc?' <span class=flag>(may be cut off)</span>':''}</dd>
@@ -162,7 +164,7 @@ m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.styl
 addEventListener('keydown',e=>{if(m.style.display!='block'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key=='ArrowRight')(e.preventDefault(),step(1));else if(e.key=='ArrowLeft')(e.preventDefault(),step(-1));else if(e.key=='Escape')m.style.display='none'});
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','iss','reg','ca','ar','min','max'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','iss','reg','ca','ext','ar','min','max'].forEach(x=>$(x).addEventListener('input',()=>go()));
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
 document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sd=sk==k?-sd:1;sk=k;go()});
