@@ -12,7 +12,7 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
 .f{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px;align-items:center}
-.f input,.f select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
+.nav{display:inline-flex;gap:4px;align-items:center}.f input,.f select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
 #q{flex:1 1 240px}.btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
 .chips{padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px;min-height:6px}
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer}.chip b{color:var(--acc);margin-left:6px}
@@ -53,7 +53,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 <p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (Apr–Jun 1926 so far). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed in 1926 beneath when it has changed. Click a community area, a bar, an architect, or a row.</p></header>
 <div class="f"><input id="q" placeholder="Search anything: owner, street, architect, mason, building type…">
 <select id="p5" title="Five-year span"><option value="">All years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select>
-<select id="iss"><option value="">All issues</option></select>
+<span class="nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></span>
 <select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select>
 <select id="ca"><option value="">All community areas</option></select>
 <input id="ar" placeholder="Architect / builder" size="18"><input id="min" type="number" placeholder="Min $" style="width:90px">
@@ -70,7 +70,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id),m=$('m');
-let D=[],CA=null,cur=[],sk='d',sd=1,metric='n',F={area:null};
+let ISS=[],D=[],CA=null,cur=[],sk='d',sd=1,metric='n',F={area:null};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
 const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+n;
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -111,13 +111,14 @@ function drawPts(){ptLayer.clearLayers();let k=0;
 /* ---- filtering ---- */
 fetch('permits.json').then(r=>r.json()).then(async d=>{D=d;CA=await (await fetch('ca.json')).json();
  [...new Set(d.map(P5))].sort().forEach(x=>$('p5').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));
- [...new Set(d.map(r=>r.d))].forEach(x=>$('iss').add(new Option(x,x)));
+ ISS=[...new Set(d.map(r=>r.d))].sort();ISS.forEach(x=>$('iss').add(new Option(x,x)));
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const dl=document.createElement('datalist');dl.id='archlist';const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'&&!seen[nk(a)]){seen[nk(a)]=1;AN[nk(a)]=a;dl.append(new Option(a))}});document.body.append(dl);$('ar').setAttribute('list','archlist');fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
 const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),P5=r=>{const y=Math.floor(+r.d.slice(0,4)/5)*5;return y+'-'+(y+4)};
 function inPeriod(r){return(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
 function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
-function flt(skip){const q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,a=$('ca').value;
- return r=>inPeriod(r)&&(skip=='iss'||!i||r.d==i)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn}
+function issWin(){const i=$('iss').value;if(!i)return null;const k=ISS.indexOf(i);return new Set(ISS.slice(k,k+(+$('span').value||1)))}
+function flt(skip){const W=issWin(),q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,a=$('ca').value;
+ return r=>((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn}
 function go(){
  fillIss();
  F.area=$('ca').value?+$('ca').value:null;
@@ -127,21 +128,21 @@ function go(){
  $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
  chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
-const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',iss:'issue',reg:'region',ca:'ca',ar:'ar',min:'min'};
+const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
 function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('iss').value)c.push(['Issue '+$('iss').value,()=>$('iss').value='']);if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)})}
 /* ---- weekly bars: one series, one axis, honoring every filter except the issue itself ---- */
-function weeks(){const f=flt('iss'),by={};[...new Set(D.map(r=>r.d))].forEach(d=>by[d]={n:0,c:0});D.filter(f).forEach(r=>{by[r.d].n++;by[r.d].c+=r.cost||0});
- const ks=Object.keys(by),vals=ks.map(k=>by[k][metric]),mx=Math.max(1,...vals),W=420,H=170,L0=40,B=22,bw=(W-L0)/ks.length,sel=$('iss').value;
+function weeks(){const f=flt('iss'),by={};[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(d=>by[d]={n:0,c:0});D.filter(f).filter(r=>by[r.d]).forEach(r=>{by[r.d].n++;by[r.d].c+=r.cost||0});
+ const ks=Object.keys(by),vals=ks.map(k=>by[k][metric]),mx=Math.max(1,...vals),W=420,H=170,L0=40,B=22,bw=(W-L0)/ks.length,sel=$('iss').value,win=issWin()||new Set();
  const tick=metric=='n'?(v=>Math.round(v)):short;let g='';
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  ks.forEach((k,i)=>{const h=(H-B-8)*vals[i]/mx,x=L0+i*bw+bw*.12;
-  g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${sel==k?css('--s2'):css('--s1')}"><title>${k}: ${by[k].n} permits, ${money(by[k].c)}</title></rect>`;
+  g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${win.has(k)?css('--s2'):css('--s1')}"><title>${k}: ${by[k].n} permits, ${money(by[k].c)}</title></rect>`;
   if(i%2==0||ks.length<8)g+=`<text x="${x+bw*.38}" y="${H-6}" text-anchor="middle">${k.slice(5).replace('-','/')}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per issue">${g}</svg>`;
  $('wknote').textContent=metric=='n'?'permits per issue — click to filter':'listed cost per issue — click to filter';
@@ -208,9 +209,11 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
 const step=d=>{const ix=cur.indexOf(CURR),n=cur[ix+d];if(ix>=0&&n)show(n)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 addEventListener('keydown',e=>{if(m.style.display!='block'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key=='ArrowRight')(e.preventDefault(),step(1));else if(e.key=='ArrowLeft')(e.preventDefault(),step(-1));else if(e.key=='Escape')m.style.display='none'});
+function stepIss(dir){const cur=$('iss').value,i=cur?ISS.indexOf(cur)+dir:(dir>0?0:ISS.length-1);if(i<0||i>=ISS.length)return;const d=ISS[i];if(!inPeriod(D.find(r=>r.d==d)))['p5','yr','qt'].forEach(x=>$(x).value='');fillIss();$('iss').value=d;go()}
+$('ip').onclick=()=>stepIss(-1);$('in').onclick=()=>stepIss(1);
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','p5','yr','qt','iss','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','p5','yr','qt','iss','span','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
 document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sd=sk==k?-sd:1;sk=k;go()});
