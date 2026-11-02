@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chicago Building Permits</title>
+<script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
 :root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;
@@ -24,7 +25,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 #map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
 .side{display:flex;flex-direction:column;gap:12px}
 .legend{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut);margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:22px;height:10px;border-radius:2px}
-.leaflet-container{font:inherit}.leaflet-tile-pane{filter:grayscale(.9) brightness(1.06) contrast(.85)}.dk{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.tip b{display:block}
+.leaflet-container{font:inherit}.leaflet-tile-pane{filter:grayscale(.9) brightness(1.06) contrast(.85)}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}.tip b{display:block}
 svg text{fill:var(--mut);font:11px Georgia,serif}.bar{cursor:pointer}.bar:hover{opacity:.8}
 .arch{display:grid;grid-template-columns:minmax(0,1fr) 90px 54px;gap:6px;align-items:center;font-size:13px;padding:2px 0;cursor:pointer}.arch:hover{background:var(--bg)}
 .arch.sel .an{font-weight:600}.arch.sel .t i{background:var(--s2)}.arch .an{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.arch .t{height:8px;background:var(--none);border-radius:2px}.arch .t i{display:block;height:8px;background:var(--s1);border-radius:2px}.arch .v{text-align:right;color:var(--mut);font-size:12px}
@@ -49,10 +50,10 @@ details.raw{margin-top:10px;font-size:13px}details.raw summary{cursor:pointer;co
 dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
 dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-size:14px}dt{color:var(--mut);text-transform:capitalize}dd{margin:0}
 </style></head><body>
-<header><h1>Chicago building permits, from The Economist</h1>
+<header><button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button><h1>Chicago building permits, from The Economist</h1>
 <p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (Apr–Jun 1926 so far). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed in 1926 beneath when it has changed. Click a community area, a bar, an architect, or a row.</p></header>
 <div class="f"><input id="q" placeholder="Search anything: owner, street, architect, mason, building type…">
-<select id="p5" title="Five-year span"><option value="">All years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select>
+<select id="p5" title="Five-year span"><option value="">Any 5 years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select>
 <span class="nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></span>
 <select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select>
 <select id="ca"><option value="">All community areas</option></select>
@@ -70,6 +71,17 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id),m=$('m');
+/* ---- theme: Auto (follows the device, live) / Light / Dark; the choice is remembered ---- */
+let pref='auto';try{pref=localStorage.getItem('permits-theme')||'auto'}catch(e){}
+if(!['auto','light','dark'].includes(pref))pref='auto';
+function applyTheme(redraw){const de=document.documentElement,sysDark=matchMedia('(prefers-color-scheme: dark)').matches;
+ if(pref=='auto')de.removeAttribute('data-theme');else de.dataset.theme=pref;
+ de.dataset.eff=pref=='auto'?(sysDark?'dark':'light'):pref;
+ $('th').textContent={auto:'◐ Auto',light:'☀ Light',dark:'☾ Dark'}[pref];$('th').title='Colour theme: '+({auto:'following your device',light:'light',dark:'dark'}[pref])+' (click to change)';
+ if(redraw&&typeof D!='undefined'&&D.length&&typeof go=='function')go()}
+$('th').onclick=()=>{pref={auto:'light',light:'dark',dark:'auto'}[pref];try{localStorage.setItem('permits-theme',pref)}catch(e){}applyTheme(true)};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pref=='auto')applyTheme(true)});
+applyTheme(false);
 let ISS=[],D=[],CA=null,cur=[],sk='d',sd=1,metric='n',F={area:null};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
 const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+n;
@@ -88,7 +100,7 @@ const hay=r=>(r.text+' '+(r.mod||'')).toLowerCase();
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
 const map=L.map('map',{preferCanvas:true}).setView([41.84,-87.68],10);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18,className:dark?'dk':''}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
 function style(l){const n=l.feature.properties.n,sel=F.area==n,sh=$('shade').checked;l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
@@ -164,7 +176,7 @@ const ovUrl=r=>`https://maps.cookcountyil.gov/nearmapOpenlayers/?map=19.00/${r.l
 let MM=null;
 function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
  MM=L.map('mm',{attributionControl:true}).setView([r.lat,r.lon],18);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:dark?'dk':''}).addTo(MM);
+ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'tiles'}).addTo(MM);
  if(r.geo=='exact')L.circleMarker([r.lat,r.lon],{radius:8,weight:2,color:css('--ring'),fillColor:css('--s2'),fillOpacity:.95}).addTo(MM);
  else L.circle([r.lat,r.lon],{radius:60,color:css('--s2'),weight:2,dashArray:'5 5',fillOpacity:.1}).addTo(MM);
  setTimeout(()=>MM&&MM.invalidateSize(),50)}
