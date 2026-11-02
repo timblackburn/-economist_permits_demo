@@ -52,10 +52,11 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 <header><h1>Chicago building permits, from The Economist</h1>
 <p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (Apr–Jun 1926 so far). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed in 1926 beneath when it has changed. Click a community area, a bar, an architect, or a row.</p></header>
 <div class="f"><input id="q" placeholder="Search anything: owner, street, architect, mason, building type…">
+<select id="p5" title="Five-year span"><option value="">All years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select>
 <select id="iss"><option value="">All issues</option></select>
 <select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select>
-<select id="ca"><option value="">All community areas</option></select><select id="ext" title="Based on the Assessor's year built, which is often wrong"><option value="">Building today: any</option><option value="likely">Likely still standing</option><option value="gone">Older or newer building there</option><option value="unknown">Unknown</option></select>
-<input id="ar" placeholder="Architect / builder" size="18"><input id="min" type="number" placeholder="Min $" style="width:90px"><input id="max" type="number" placeholder="Max $" style="width:90px">
+<select id="ca"><option value="">All community areas</option></select>
+<input id="ar" placeholder="Architect / builder" size="18"><input id="min" type="number" placeholder="Min $" style="width:90px">
 <span><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span></div>
 <div class="chips" id="chips"></div><div id="summary"></div>
 <div class="grid">
@@ -109,11 +110,16 @@ function drawPts(){ptLayer.clearLayers();let k=0;
  $('mapnote').textContent=`${k.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>k?` (${cur.length-k} lack a usable address)`:'')}
 /* ---- filtering ---- */
 fetch('permits.json').then(r=>r.json()).then(async d=>{D=d;CA=await (await fetch('ca.json')).json();
+ [...new Set(d.map(P5))].sort().forEach(x=>$('p5').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));
  [...new Set(d.map(r=>r.d))].forEach(x=>$('iss').add(new Option(x,x)));
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const dl=document.createElement('datalist');dl.id='archlist';const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'&&!seen[nk(a)]){seen[nk(a)]=1;AN[nk(a)]=a;dl.append(new Option(a))}});document.body.append(dl);$('ar').setAttribute('list','archlist');fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
-function flt(skip){const q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,mx=+$('max').value||1e12,a=$('ca').value;
- return r=>(skip=='iss'||!i||r.d==i)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!$('ext').value||($('ext').value=='gone'?(r.ext=='older'||r.ext=='newer'):r.ext==$('ext').value))&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn&&(r.cost||0)<=mx}
+const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),P5=r=>{const y=Math.floor(+r.d.slice(0,4)/5)*5;return y+'-'+(y+4)};
+function inPeriod(r){return(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
+function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
+function flt(skip){const q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,a=$('ca').value;
+ return r=>inPeriod(r)&&(skip=='iss'||!i||r.d==i)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn}
 function go(){
+ fillIss();
  F.area=$('ca').value?+$('ca').value:null;
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0});   // the map keeps showing every area while one is selected
@@ -121,12 +127,12 @@ function go(){
  $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
  chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
-const KEYS0=0;const KEYS={q:'q',iss:'issue',reg:'region',ca:'ca',ext:'ext',ar:'ar',min:'min',max:'max'};
+const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',iss:'issue',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
 function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('iss').value)c.push(['Issue '+$('iss').value,()=>$('iss').value='']);if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
- if($('ext').value)c.push([$('ext').selectedOptions[0].text,()=>$('ext').value='']);if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('iss').value)c.push(['Issue '+$('iss').value,()=>$('iss').value='']);if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
+ if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)})}
 /* ---- weekly bars: one series, one axis, honoring every filter except the issue itself ---- */
@@ -204,7 +210,7 @@ m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.styl
 addEventListener('keydown',e=>{if(m.style.display!='block'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key=='ArrowRight')(e.preventDefault(),step(1));else if(e.key=='ArrowLeft')(e.preventDefault(),step(-1));else if(e.key=='Escape')m.style.display='none'});
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','iss','reg','ca','ext','ar','min','max'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','p5','yr','qt','iss','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
 document.querySelectorAll('th[data-k]').forEach(th=>th.onclick=()=>{const k=th.dataset.k;sd=sk==k?-sd:1;sk=k;go()});
