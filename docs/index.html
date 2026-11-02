@@ -40,6 +40,11 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph{margin:8px 0}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:min(520px,100%);border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
 
 .mg{display:grid;grid-template-columns:minmax(320px,2fr) 3fr;gap:16px;align-items:start}.ml{position:sticky;top:64px;max-height:calc(100vh - 72px);overflow:auto;padding-right:4px}#mm{height:230px;border-radius:4px;margin:10px 0 4px;background:var(--none)}.ov{font-size:13px;margin:6px 0}@media(max-width:850px){.mg{grid-template-columns:1fr}.ml{position:static}}
+.mut{color:var(--mut)}.sep{color:var(--mut)}.hd .addr{font-size:21px;font-weight:700;line-height:1.2}.hd .owner{font-size:15px;margin-top:3px}.hd .facts{margin-top:8px;font-size:14.5px}
+.bds{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.bd{border:1px solid var(--line);border-radius:12px;padding:1px 10px;font-size:13px;background:var(--bg)}.bd.ok{border-color:var(--s1);color:var(--s1)}.bd.mut{color:var(--mut)}
+#mt h3{margin:18px 0 6px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:3px}
+dl.c2{display:grid;grid-template-columns:104px 1fr;gap:3px 12px;margin:4px 0;font-size:14px}dl.c2 dt{color:var(--mut);text-transform:none}dl.c2 dt::first-letter{text-transform:uppercase}dl.c2 dd{margin:0}dl.src{font-size:13px}
+details.raw{margin-top:10px;font-size:13px}details.raw summary{cursor:pointer;color:var(--mut)}details.raw p{margin:6px 0 0;color:var(--mut)}
 dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
 dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-size:14px}dt{color:var(--mut);text-transform:capitalize}dd{margin:0}
 </style></head><body>
@@ -163,18 +168,25 @@ function phView(r,pin,label){
  $('ph').innerHTML=lots+nb+img}
 m.addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 function show(r,withPhoto){CURR=r;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${ix+1} of ${cur.length}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;m.scrollTop=0;const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];
- $('mt').innerHTML=`<dl class="pub"><dt>Publication</dt><dd>The Economist (Chicago), weekly</dd>
- <dt>Issue date</dt><dd>${fmtDate(r.d)}</dd>
- <dt>Page</dt><dd>${r.pg||'?'} <span style="color:var(--mut);font-size:13px;font-weight:400">(scan page ${(r.boxes[0]||{}).pdf||'?'}${(r.boxes[0]||{}).col?', column '+r.boxes[0].col:''})</span></dd>
- <dt>Listed under</dt><dd>Building Permits${r.reg?' — '+esc(r.reg):''}</dd></dl><dl>
- <dt>Owner</dt><dd>${esc(r.own)}${r.oa?', '+esc(r.oa):''}</dd>
- <dt>Site</dt><dd>${esc(r.mod||r.site||'—')}${r.chg?` <span class="old" style="display:inline">(printed “${esc(r.site)}”; street since renamed)</span>`:''}</dd>
- <dt>Address today</dt><dd>${r.now?esc(r.now):'<span style="color:var(--mut)">no matching address in the county data</span>'}</dd>
- <dt>Standing today?</dt><dd>${{likely:'Probably yes',older:'Probably a different, older building',newer:'Probably replaced',unknown:'Unknown'}[r.ext]}${r.extn?` <span style="color:var(--mut);font-size:13px">— ${esc(r.extn)}</span>`:''}</dd>
- <dt>Community area</dt><dd>${esc(r.can||'not placed')}${r.geo&&r.geo!='exact'&&r.can?` <span class=flag>(${r.geo})</span>`:''}</dd>
- <dt>Building</dt><dd>${(r.st?r.st+'-story ':'')+esc(r.bld||'—')}${r.sz?' · <b>'+dims(r.sz)+' ft</b>':''}</dd>
- <dt>Cost</dt><dd>${money(r.cost)}${r.tot?' (total for all buildings)':''}${r.inc?' <span class=flag>(may be cut off)</span>':''}</dd>
- ${r.roles.map(x=>`<dt>${esc(x[0])}</dt><dd>${x[1]&&x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1]||'')}${x[2]?', '+esc(x[2]):''}</dd>`).join('')}</dl><p style="color:var(--mut);font-size:13px">${esc(r.text)}</p><div id=ph></div>${r.lat?`<div id=mm></div><div class=ov><span style="color:var(--mut)">${r.geo=='exact'?'Today\'s address point':'Approximate location (no exact address match)'}</span> · <a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a></div>`:''}`+(r.unc?'<p class=flag>Marked uncertain: some letters were hard to read.</p>':'');
+ const ex={likely:['●','Probably still standing','ok'],older:['○','Older building there today',''],newer:['○','Probably replaced',''],unknown:['–','Standing today: unknown','mut']}[r.ext]||['–','','mut'];
+ const facts=[(r.st?r.st+'-story ':'')+(r.bld||''),r.sz?'<b>'+dims(r.sz)+' ft</b>':'',r.cost!=null?'<b>'+money(r.cost)+'</b>'+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
+ const people=r.roles.filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<dt>${esc(x[0])}</dt><dd>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</dd>`).join('');
+ const b0=r.boxes[0]||{};
+ $('mt').innerHTML=`<div class=hd>
+  <div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
+  <div class=owner>${esc(r.own||'Owner not given')}${r.oa?` <span class=mut>— ${esc(r.oa)}</span>`:''}</div>
+  <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div>
+  <div class=bds><span class="bd">${esc(r.can||'Not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' ~':''}</span><span class="bd ${ex[2]}" title="${esc(r.extn||'')}">${ex[0]} ${ex[1]}${r.yb&&r.ext!='unknown'?' ('+r.yb+')':''}</span></div>
+  ${r.unc?'<div class=flag style="margin-top:6px">Some letters were hard to read in the scan.</div>':''}</div>
+ ${people?`<h3>People &amp; firms</h3><dl class=c2>${people}</dl>`:''}
+ <h3>Today</h3><dl class=c2>
+  <dt>Address</dt><dd>${r.now?esc(r.now):'<span class=mut>no matching address in the county data</span>'}</dd>
+  ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
+  ${r.extn?`<dt>Still there?</dt><dd class=mut>${esc(r.extn)}</dd>`:''}</dl>
+ <h3>The property</h3><div id=ph></div>${r.lat?`<div id=mm></div><div class=ov><span class=mut>${r.geo=='exact'?'Today\'s address point':'Approximate location (no exact address match)'}</span> · <a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a></div>`:''}
+ <h3>Where it was printed</h3><dl class="c2 src"><dt>Publication</dt><dd>The Economist (Chicago), weekly</dd><dt>Issue date</dt><dd>${fmtDate(r.d)}</dd>
+  <dt>Page</dt><dd>${r.pg||'?'} <span class=mut>(scan page ${b0.pdf||'?'}${b0.col?', column '+b0.col:''})</span></dd><dt>Listed under</dt><dd>Building Permits${r.reg?' — '+esc(r.reg):''}</dd></dl>
+ <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`;
  clearTimeout(phT);phView(r,null);if(MM){MM.remove();MM=null}if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'');drawMini(r)},450);window._b=b;$('pb').innerHTML='<span class=zh>Scan: click the page to zoom in or out; drag to move.</span> '+pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${p}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
