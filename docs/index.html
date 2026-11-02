@@ -40,6 +40,7 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph{margin:8px 0}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph img{max-width:min(520px,100%);border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
 
 .mg{display:grid;grid-template-columns:minmax(320px,2fr) 3fr;gap:16px;align-items:start}.ml{position:sticky;top:64px}@media(max-width:850px){.mg{grid-template-columns:1fr}.ml{position:static}}
+dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
 dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-size:14px}dt{color:var(--mut);text-transform:capitalize}dd{margin:0}
 </style></head><body>
 <header><h1>Chicago building permits, from The Economist</h1>
@@ -72,6 +73,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 const num=r=>{const m=(r.sz||'').match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);return m?m[1]*m[2]:0};
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
 const extLabel=r=>({likely:'● likely'+(r.yb?' <small>('+r.yb+')</small>':''),older:'○ older bldg'+(r.yb?' <small>('+r.yb+')</small>':''),newer:'○ replaced? <small>('+r.yb+')</small>',unknown:'<span style="color:var(--mut)">–</span>'})[r.ext]||'';
+const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 const AS=new Set(),AN={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
@@ -147,7 +149,10 @@ function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" da
 let CURR=null,phT=null;
 function photo(pin,rr){const el=$('ph'),ps=(rr||CURR||{}).pins||[],chips=ps.length>1?`<div class=pins>Lots in this range: ${ps.map(([n,p])=>`<button class="btn${p==pin?' on':''}" onclick="photo('${p}')">${n}</button>`).join(' ')}</div>`:'';el.innerHTML=chips+`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>Cook County Assessor photo of the property <b>today</b>, PIN ${pin} — not the 1926 building. <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`}
 function show(r,withPhoto){CURR=r;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${ix+1} of ${cur.length}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;m.scrollTop=0;const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];
- $('mt').innerHTML=`<b>${r.d}</b> · printed page ${r.pg||'?'} · ${esc(r.reg||'')}<dl>
+ $('mt').innerHTML=`<dl class="pub"><dt>Publication</dt><dd>The Economist (Chicago), weekly</dd>
+ <dt>Issue date</dt><dd>${fmtDate(r.d)}</dd>
+ <dt>Page</dt><dd>${r.pg||'?'} <span style="color:var(--mut);font-size:13px;font-weight:400">(scan page ${(r.boxes[0]||{}).pdf||'?'}${(r.boxes[0]||{}).col?', column '+r.boxes[0].col:''})</span></dd>
+ <dt>Listed under</dt><dd>Building Permits${r.reg?' — '+esc(r.reg):''}</dd></dl><dl>
  <dt>Owner</dt><dd>${esc(r.own)}${r.oa?', '+esc(r.oa):''}</dd>
  <dt>Site</dt><dd>${esc(r.mod||r.site||'—')}${r.chg?` <span class="old" style="display:inline">(printed “${esc(r.site)}”; street since renamed)</span>`:''}</dd>
  <dt>Address today</dt><dd>${r.now?esc(r.now):'<span style="color:var(--mut)">no matching address in the county data</span>'}</dd>
