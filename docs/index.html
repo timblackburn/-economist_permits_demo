@@ -61,7 +61,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 #detail{padding:0;overflow:auto}@media(min-width:900px){#detail{position:sticky;top:8px;max-height:calc(100vh - 16px)}}
 #detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
 .crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
-.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
+.phbox{display:flex;align-items:center;justify-content:center;width:100%;max-width:360px;height:270px;background:var(--none);border-radius:4px;overflow:hidden;font-size:13px}#ph .phbox img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:0}.phcap{display:block;min-height:3.2em;margin-top:3px}#ph .pins{min-height:2.2em}.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -78,14 +78,14 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 </div>
 <div class="chips" id="chips"></div><div id="summary"></div>
 <div class="grid">
- <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
+ <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
  <div class="side">
   <div id="overview">
   <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wk"></div></div>
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous goes to a nearby property, or follows the order of the table below">Next: nearby</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous walks along a street in house-number order, then on to the nearest street; or follows the order of the table below">Next: along the street</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
@@ -159,7 +159,7 @@ function drawPts0(){ptLayer.clearLayers();
   c.addTo(ptLayer);
   L.marker(ll,{interactive:false,icon:L.divIcon({className:'cl',html:`<span>${metric=='n'?e.n.toLocaleString():short(e.c)}</span>`,iconSize:[0,0]})}).addTo(ptLayer)}
  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+` · ${vis.length.toLocaleString()} in view, grouped into ${cells.size} blobs: click one or zoom in to see each permit`};
-let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if(cur.length)drawPts()},120)});
+let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('inview').checked&&$('detail').hidden)go();else if(cur.length)drawPts()},$('inview').checked?250:120)});
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
  for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
@@ -177,8 +177,8 @@ const MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','D
 function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
 function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
 function issWin(){const i=$('iss').value;if(!i)return null;const k=ISS.indexOf(i);return new Set(ISS.slice(k,k+(+$('span').value||1)))}
-function flt(skip){const W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',i=$('iss').value,rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
- return r=>((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
+function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',i=$('iss').value,rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
 function go(){
  if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(go);
  fillIss();
@@ -188,12 +188,12 @@ function go(){
  const t=cur.reduce((s,r)=>s+(r.cost||0),0);
  $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
  buildWalk();chips();drawCA();drawPts();weeks();archs();table();
- const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
+ const pts=cur.filter(r=>r.lat);if(!$('inview').checked&&($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
 const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('avg')=='1'){perIssue=true;$('mv').classList.add('on')}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
 function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden)p.set('open',CURR.id);history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
@@ -250,13 +250,27 @@ function phView(r,pin,label){
  const ps=r.pins||[],lots=ps.length>1?`<div class=pins>Lots in this range: ${ps.map(([n,p])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${n}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const nb=r.nb&&((r.nb.lo||[])[0]||(r.nb.hi||[])[0])?`<div class=pins>Next door: ${one((r.nb.lo||[])[0],true)} ${r.pin?`<button class="btn${(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin))?' on':''}" data-pin="${r.pin}" data-label="" title="Back to the permit's own building">This building</button>`:''} ${one((r.nb.hi||[])[0],false)}</div>`:'';
- const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''}</small>`:'';
+ const real=pin&&pin!=='__loading';
+ const img=`<div class=phbox>${real?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}">`:`<span class=mut>${pin==='__loading'?'Loading photo…':'No photo for this address'}</span>`}</div><small class=phcap>${real?`${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''}`:''}</small>`;
  $('ph').innerHTML=lots+nb+img}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 let WALK=[],walkNear=true;
 function hilbert(x,y){const n=65536;let d=0;for(let s=n/2;s>=1;s/=2){const rx=(x&s)>0?1:0,ry=(y&s)>0?1:0;d+=s*s*((3*rx)^ry);if(ry==0){if(rx==1){x=n-1-x;y=n-1-y}const t=x;x=y;y=t}}return d}
-function buildWalk(){const pl=cur.filter(r=>r.lat);for(const r of pl)if(r.h==null)r.h=hilbert(Math.max(0,Math.min(65535,Math.floor((r.lon+87.95)/0.45*65535))),Math.max(0,Math.min(65535,Math.floor((r.lat-41.6)/0.5*65535))));
- pl.sort((a,b)=>a.h-b.h||(a.d>b.d?1:a.d<b.d?-1:a.id-b.id));WALK=pl.concat(cur.filter(r=>!r.lat))}
+const streetKey=r=>{const m=(r.mod||'').match(/\b([NSEW])\s+([A-Za-z0-9].*)$/);return m?m[1]+' '+m[2].toLowerCase():null};
+const houseNo=r=>{const m=(r.mod||'').match(/^\s*(\d+)/);return m?+m[1]:0};
+function buildWalk(){const pl=cur.filter(r=>r.lat);
+ for(const r of pl)if(r.h==null)r.h=hilbert(Math.max(0,Math.min(65535,Math.floor((r.lon+87.95)/0.45*65535))),Math.max(0,Math.min(65535,Math.floor((r.lat-41.6)/0.5*65535))));
+ // one stretch per street, in house-number order; then each next stretch is the nearest one, entered from whichever end is closer
+ const by=new Map();for(const r of pl){const k=streetKey(r)||('~'+Math.round(r.lat*300)+':'+Math.round(r.lon*300));let g=by.get(k);if(!g)by.set(k,g=[]);g.push(r)}
+ const G=[...by.values()].map(g=>{g.sort((a,b)=>houseNo(a)-houseNo(b)||(a.d>b.d?1:a.d<b.d?-1:a.id-b.id));return {g,h:Math.min(...g.map(r=>r.h))}}).sort((a,b)=>a.h-b.h);
+ let out=[];
+ if(G.length>1500){for(const x of G)out.push(...x.g)}                                    // very many streets: keep them in curve order
+ else if(G.length){const dist=(p,q)=>{const dy=p.lat-q.lat,dx=(p.lon-q.lon)*.74;return dy*dy+dx*dx};
+  const left=G.slice(),first=left.shift();out.push(...first.g);let end=first.g[first.g.length-1];
+  while(left.length){let best=0,bd=1e9,rev=false;
+   for(let i=0;i<left.length;i++){const g=left[i].g,d1=dist(end,g[0]),d2=dist(end,g[g.length-1]);if(d1<bd){bd=d1;best=i;rev=false}if(d2<bd){bd=d2;best=i;rev=true}}
+   const g=left.splice(best,1)[0].g;if(rev)g.reverse();out.push(...g);end=g[g.length-1]}}
+ WALK=out.concat(cur.filter(r=>!r.lat))}
 const order=()=>walkNear?WALK:cur;
 function flyTo(r){const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
  if(map.getZoom()>=16&&!far)map.panTo([r.lat,r.lon],{animate:true,duration:.5,easeLinearity:.4});else map.flyTo([r.lat,r.lon],z,{duration:.9})}
@@ -290,7 +304,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  <h3>From the scan</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
  <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`;
  $('scanbtn').onclick=()=>openScan(r);entryCrops(r);
- clearTimeout(phT);phView(r,null);if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
+ clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;
  if(r.lat)flyTo(r);drawPts();toHash();
  const t=$('detail').getBoundingClientRect().top;if(Math.abs(t-8)>30)window.scrollTo({top:Math.max(0,t+scrollY-8),behavior:'smooth'})}
@@ -307,7 +321,7 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
  addEventListener('mouseup',e=>{if(!down)return;down=false;if(moved<6&&e.target.closest&&e.target.closest('#pg')){const p=pg(),r=p.getBoundingClientRect(),pi=p.querySelector('.pgi'),fx=(e.clientX-r.left+p.scrollLeft)/pi.offsetWidth,fy=(e.clientY-r.top+p.scrollTop)/pi.offsetHeight;
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
-$('wmode').onclick=()=>{walkNear=!walkNear;$('wmode').textContent=walkNear?'Next: nearby':'Next: list order';if(CURR)show(CURR)};
+$('wmode').onclick=()=>{walkNear=!walkNear;$('wmode').textContent=walkNear?'Next: along the street':'Next: list order';if(CURR)show(CURR)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
@@ -318,6 +332,7 @@ $('ip').onclick=()=>stepIss(-1);$('in').onclick=()=>stepIss(1);
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
 ['q','p5','yr','qt','mo','iss','span','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
+$('inview').addEventListener('change',()=>go());
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onclick=()=>{perIssue=!perIssue;$('mv').classList.toggle('on',perIssue);go()};
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
