@@ -25,7 +25,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 #map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
 .side{display:flex;flex-direction:column;gap:12px}
 .legend{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut);margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:22px;height:10px;border-radius:2px}
-.leaflet-container{font:inherit}.leaflet-tile-pane{filter:grayscale(.9) brightness(1.06) contrast(.85)}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
+.leaflet-container{font:inherit}.leaflet-tile-pane{filter:grayscale(.9) brightness(1.06) contrast(.85)}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}.cl span{display:block;width:60px;margin:-7px 0 0 -30px;text-align:center;font:700 12px/14px system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
 svg text{fill:var(--mut);font:11px Georgia,serif}.bar{cursor:pointer}.bar:hover{opacity:.8}
 .arch{display:grid;grid-template-columns:minmax(0,1fr) 90px 54px;gap:6px;align-items:center;font-size:13px;padding:2px 0;cursor:pointer}.arch:hover{background:var(--bg)}
 .arch.sel .an{font-weight:600}.arch.sel .t i{background:var(--s2)}.arch .an{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.arch .t{height:8px;background:var(--none);border-radius:2px}.arch .t i{display:block;height:8px;background:var(--s1);border-radius:2px}.arch .v{text-align:right;color:var(--mut);font-size:12px}
@@ -87,7 +87,7 @@ const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
 const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+n;
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dims=s=>s?s.replace(/x/g,' × '):'';
-const arch=r=>(r.roles.find(x=>x[0]=='architect')||[])[1]||'';
+const arch=r=>r.ar||'';
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const num=r=>{const m=(r.sz||'').match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);return m?m[1]*m[2]:0};
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
@@ -96,7 +96,7 @@ const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'lo
 const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 const AS=new Set(),AN={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
-const hay=r=>(r.text+' '+(r.mod||'')).toLowerCase();
+const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
 const map=L.map('map',{preferCanvas:true}).setView([41.84,-87.68],10);
@@ -114,14 +114,36 @@ function drawCA(){
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
  $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit — filled: likely still standing; faint: unknown; hollow: a different building is there now (size grows with cost)`}
-function drawPts(){ptLayer.clearLayers();let k=0;
- cur.forEach(r=>{if(!r.lat)return;k++;const rad=Math.max(3,Math.min(11,2+Math.sqrt((r.cost||20000)/12000)));
-  const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,color:css('--ring'),fillColor:css('--s2'),fillOpacity:r.ext=='likely'?.9:(r.ext=='unknown'?.45:.12),color:r.ext=='likely'||r.ext=='unknown'?css('--ring'):css('--s2')});
-  c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
-  c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
- $('mapnote').textContent=`${k.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>k?` (${cur.length-k} lack a usable address)`:'')}
+/* ---- map: individual permits when few are in view, otherwise count blobs on a pixel grid (click a blob to zoom into it) ---- */
+const SHOW_MAX=1000,CELL=60;
+function drawPts(){ptLayer.clearLayers();
+ const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
+ if(vis.length<=SHOW_MAX){
+  vis.forEach(r=>{const rad=Math.max(3,Math.min(11,2+Math.sqrt((r.cost||20000)/12000)));
+   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:r.ext=='likely'?.9:(r.ext=='unknown'?.45:.12),color:r.ext=='likely'||r.ext=='unknown'?css('--ring'):css('--s2')});
+   c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
+   c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
+  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'');return}
+ const cells=new Map();
+ for(const r of vis){const q=map.project([r.lat,r.lon],z),k=Math.floor(q.x/CELL)+':'+Math.floor(q.y/CELL);let e=cells.get(k);if(!e)cells.set(k,e={n:0,c:0,la:0,lo:0,pts:[]});e.n++;e.c+=r.cost||0;e.la+=r.lat;e.lo+=r.lon;e.pts.push([r.lat,r.lon])}
+ let mx=1;for(const e of cells.values())mx=Math.max(mx,metric=='n'?e.n:e.c);
+ for(const e of cells.values()){const v=metric=='n'?e.n:e.c,rad=9+25*Math.sqrt(v/mx),ll=[e.la/e.n,e.lo/e.n];
+  const c=L.circleMarker(ll,{radius:rad,weight:2,color:css('--ring'),fillColor:css('--s2'),fillOpacity:.62});
+  c.bindTooltip(`<b>${e.n.toLocaleString()} permits</b>${money(e.c)} listed<br><i>click to zoom in</i>`,{className:'tip'});
+  c.on('click',ev=>{L.DomEvent.stop(ev);const b=L.latLngBounds(e.pts);if(b.getSouthWest().equals(b.getNorthEast())||map.getBoundsZoom(b.pad(.1))<=z)map.setView(ll,Math.min(z+2,19));else map.fitBounds(b.pad(.15),{maxZoom:19})});
+  c.addTo(ptLayer);
+  L.marker(ll,{interactive:false,icon:L.divIcon({className:'cl',html:`<span>${metric=='n'?e.n.toLocaleString():short(e.c)}</span>`,iconSize:[0,0]})}).addTo(ptLayer)}
+ $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+` · ${vis.length.toLocaleString()} in view, grouped into ${cells.size} blobs: click one or zoom in to see each permit`};
+let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if(cur.length)drawPts()},120)});
+/* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
+function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
+ for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
+const DETC={};
+async function loadDetail(r){if(r._det)return;const sh=DETC[r.d]??=fetch('data/d/'+r.d+'.json').then(x=>x.json());const dt=(await sh)[r.id];if(dt)Object.assign(r,dt);r._det=1}
+let SEARCH=null,SEARCHP=null;
+function ensureSearch(){return SEARCHP??=fetch('data/search.json').then(x=>x.json()).then(j=>{const t=new Map(),rl=new Map();j.ids.forEach((id,i)=>{t.set(id,j.t[i]);rl.set(id,j.r[i])});SEARCH={t,r:rl}})}
 /* ---- filtering ---- */
-fetch('permits.json').then(r=>r.json()).then(async d=>{D=d;CA=await (await fetch('ca.json')).json();
+fetch('data/index.json').then(r=>r.json()).then(async ix=>{const d=D=unpack(ix);CA=await (await fetch('ca.json')).json();
  [...new Set(d.map(P5))].sort().forEach(x=>$('p5').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));[...new Set(d.map(r=>r.d.slice(0,7)))].sort().forEach(x=>$('mo').add(new Option(monthName(x),x)));
  ISS=[...new Set(d.map(r=>r.d))].sort();ISS.forEach(x=>$('iss').add(new Option(x,x)));
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const dl=document.createElement('datalist');dl.id='archlist';const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'&&!seen[nk(a)]){seen[nk(a)]=1;AN[nk(a)]=a;dl.append(new Option(a))}});document.body.append(dl);$('ar').setAttribute('list','archlist');fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
@@ -130,15 +152,16 @@ const MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','D
 function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
 function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
 function issWin(){const i=$('iss').value;if(!i)return null;const k=ISS.indexOf(i);return new Set(ISS.slice(k,k+(+$('span').value||1)))}
-function flt(skip){const W=issWin(),q=$('q').value.toLowerCase(),i=$('iss').value,rg=$('reg').value,ar=$('ar').value.toLowerCase(),mn=+$('min').value||0,a=$('ca').value;
- return r=>((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||r.roles.some(x=>(x[1]||'').toLowerCase().includes(ar)))&&(skip=='arch'||!AS.size||r.roles.some(x=>x[0]=='architect'&&AS.has(nk(x[1]))))&&(r.cost||0)>=mn}
+function flt(skip){const W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',i=$('iss').value,rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
+ return r=>((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
 function go(){
+ if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(go);
  fillIss();
  F.area=$('ca').value?+$('ca').value:null;
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0});   // the map keeps showing every area while one is selected
  const t=cur.reduce((s,r)=>s+(r.cost||0),0);
- $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
+ $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
  chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
 const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
@@ -186,7 +209,7 @@ function archs(){const by={},nm={};D.filter(flt('arch')).forEach(r=>{let a=arch(
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
  $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
 /* ---- table + detail ---- */
-function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.pin?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="ext" title="${esc(r.extn||'')}">${extLabel(r)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
+function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="ext" title="${esc(r.yb?'Assessor year built '+r.yb:'')}">${extLabel(r)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>show(cur[+e.dataset.k]));$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();setArch(a.dataset.a)})}
 let CURR=null,phT=null;
 const ovUrl=r=>`https://maps.cookcountyil.gov/nearmapOpenlayers/?map=19.00/${r.lon}/${r.lat}/0${r.pin?'&pin10='+r.pin.slice(0,10):''}`;
@@ -204,7 +227,7 @@ function phView(r,pin,label){
  const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo of the property <b>today</b>, PIN ${pin} — not the ${(r.d||"").slice(0,4)} building.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''} <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`:'';
  $('ph').innerHTML=lots+nb+img}
 m.addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
-function show(r,withPhoto){CURR=r;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${ix+1} of ${cur.length}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;m.scrollTop=0;const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];
+async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${ix+1} of ${cur.length}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;m.scrollTop=0;const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];
  const ex={likely:['●','Probably still standing','ok'],older:['○','Older building there today',''],newer:['○','Probably replaced',''],unknown:['–','Standing today: unknown','mut']}[r.ext]||['–','','mut'];
  const facts=[(r.st?r.st+'-story ':'')+(r.bld||''),r.sz?'<b>'+dims(r.sz)+' ft</b>':'',r.cost!=null?'<b>'+money(r.cost)+'</b>'+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const people=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<dt>${esc(x[0])}</dt><dd>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</dd>`).join('');
