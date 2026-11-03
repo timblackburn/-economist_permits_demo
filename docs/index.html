@@ -250,9 +250,9 @@ function phView(r,pin,label){
  const ps=r.pins||[],lots=ps.length>1?`<div class=pins>Lots in this range: ${ps.map(([n,p])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${n}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const nb=r.nb&&((r.nb.lo||[])[0]||(r.nb.hi||[])[0])?`<div class=pins>Next door: ${one((r.nb.lo||[])[0],true)} ${r.pin?`<button class="btn${(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin))?' on':''}" data-pin="${r.pin}" data-label="" title="Back to the permit's own building">This building</button>`:''} ${one((r.nb.hi||[])[0],false)}</div>`:'';
- const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo of the building as it is now (PIN ${pin}), not as it was in ${(r.d||"").slice(0,4)}.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''} <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`:'';
+ const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''}</small>`:'';
  $('ph').innerHTML=lots+nb+img}
-m.addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
+$('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
 function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
  (r.boxes||[]).slice(0,3).forEach(bx=>{const [y0,x0,y1,x1]=bx.box,pad=14,py=5,X0=Math.max(0,x0-pad),X1=Math.min(1000,x1+pad),Y0=Math.max(0,y0-py),Y1=Math.min(1000,y1+py);
@@ -272,7 +272,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   <div class=owner>${esc(r.own||'Owner not given')}${r.oa?` <span class=mut>— ${esc(r.oa)}</span>`:''}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${who?`<div class=who>${who}</div>`:''}
- <div id=ph></div>${r.lat?`<div class=ov><a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a> <span class=mut>${r.geo=='exact'?'location: today\'s address point':'location: approximate (no exact address match)'}</span></div>`:''}
+ <div id=ph></div>
  <dl class=c2>
   <dt>Listed</dt><dd>${fmtDate(r.d)} · page ${r.pg||'?'}${r.reg?' · '+esc(r.reg)+' list':''}</dd>
   <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
