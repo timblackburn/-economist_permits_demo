@@ -70,7 +70,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 </header>
 <div class="fbar">
  <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><span class="sgw"><input id="ar" placeholder="architect / builder" size="18" autocomplete="off"><div id="sg" hidden></div></span></div></div>
- <div class="fg"><span class="fl">When</span><div class="fr"><select id="p5" title="Five-year span"><option value="">Any 5 years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></div>
+ <div class="fg"><span class="fl">When</span><div class="fr"><select id="dec" title="Decade"><option value="">Any decade</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></div>
  <div class="fg"><span class="fl">Issue &amp; the ones after it</span><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></div>
  <div class="fg"><span class="fl">Where</span><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></div>
  <div class="fg"><span class="fl">Cost at least</span><div class="fr"><input id="min" type="number" placeholder="$" style="width:90px"></div></div>
@@ -168,12 +168,12 @@ let SEARCH=null,SEARCHP=null;
 function ensureSearch(){return SEARCHP??=fetch('data/search.json').then(x=>x.json()).then(j=>{const t=new Map(),rl=new Map();j.ids.forEach((id,i)=>{t.set(id,j.t[i]);rl.set(id,j.r[i])});SEARCH={t,r:rl}})}
 /* ---- filtering ---- */
 fetch('data/index.json').then(r=>r.json()).then(async ix=>{const d=D=unpack(ix);CA=await (await fetch('ca.json')).json();
- [...new Set(d.map(P5))].sort().forEach(x=>$('p5').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));[...new Set(d.map(r=>r.d.slice(0,7)))].sort().forEach(x=>$('mo').add(new Option(monthName(x),x)));
+ [...new Set(d.map(Dec))].sort().forEach(x=>$('dec').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));[...new Set(d.map(r=>r.d.slice(0,7)))].sort().forEach(x=>$('mo').add(new Option(monthName(x),x)));
  ISS=[...new Set(d.map(r=>r.d))].sort();ISS.forEach(x=>$('iss').add(new Option(x,x)));
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}suggestInit();fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
-const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),P5=r=>{const y=Math.floor(+r.d.slice(0,4)/5)*5;return y+'-'+(y+4)};
+const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),Dec=r=>Math.floor(+r.d.slice(0,4)/10)*10+'s';
 const MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],monthName=k=>MON3[+k.slice(5,7)-1]+' '+k.slice(0,4);
-function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
+function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('dec').value||Dec(r)==$('dec').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
 function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;[...new Set(D.filter(inPeriod).map(r=>r.d))].sort().forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
 function issWin(){const i=$('iss').value;if(!i)return null;const k=ISS.indexOf(i);return new Set(ISS.slice(k,k+(+$('span').value||1)))}
 function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',i=$('iss').value,rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
@@ -188,40 +188,41 @@ function go(){
  $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  buildWalk();chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(!$('inview').checked&&($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
-const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
+const KEYS0=0;const KEYS={q:'q',dec:'decade',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('avg')=='1'){perIssue=true;$('mv').classList.add('on')}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
 function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden)p.set('open',CURR.id);history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if($('dec').value)c.push([$('dec').value,()=>$('dec').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','p5','yr','qt','mo','iss','reg','ca','min'].forEach(x=>$(x).value='');$('span').value='1';AS.clear();go()};$('chips').append(e)}}
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','dec','yr','qt','mo','iss','reg','ca','min'].forEach(x=>$(x).value='');$('span').value='1';AS.clear();go()};$('chips').append(e)}}
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 function weeks(){
  const dom=[...new Set(D.filter(inPeriod).map(r=>r.d))].sort(),span=dom.length?(new Date(dom[dom.length-1])-new Date(dom[0]))/864e5:0;
- const gran=span<=120?'w':span<=400?'m':'y',key=d=>gran=='w'?d:gran=='m'?d.slice(0,7):d.slice(0,4),by={},nIss={};
+ const gran=span<=120?'w':span<=400?'m':span<=4000?'y':'d',key=d=>gran=='w'?d:gran=='m'?d.slice(0,7):gran=='y'?d.slice(0,4):Math.floor(+d.slice(0,4)/10)*10+'s',by={},nIss={};
  if(gran=='w')dom.forEach(d=>{by[d]={n:0,c:0};nIss[d]=1});
  else if(dom.length){let [y,m]=dom[0].split('-').map(Number);const [y2,m2]=dom[dom.length-1].split('-').map(Number);   // every month/year in range, so gaps in the loaded issues show
-  if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};
+  if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  D.filter(flt('iss')).forEach(r=>{const k=key(r.d);if(by[k]){by[k].n++;by[k].c+=r.cost||0}});
- const ks=Object.keys(by),val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'?182:170,L0=40,B=gran=='y'?34:22,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by),val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set([...(issWin()||[])].map(key)),tick=metric=='n'?(v=>Math.round(v)):short;let g='';
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
- const unit={w:'issue',m:'month',y:'year'}[gran];
+ const unit={w:'issue',m:'month',y:'year',d:'decade'}[gran];
  ks.forEach((k,i)=>{const h=(H-B-8)*vals[i]/mx,x=L0+i*bw+bw*.12,n=nIss[k]||0,tip=gran=='w'?`${k}: ${by[k].n} permits, ${money(by[k].c)}`:n?`${gran=='m'?monthName(k):k}: ${by[k].n} permits, ${money(by[k].c)} · ${n} issue${n>1?'s':''} loaded${perIssue?' (bar shows the average per issue)':''}`:`${gran=='m'?monthName(k):k}: no issues loaded`;
   if(!n)g+=`<rect x="${x}" y="${H-B-6}" width="${bw*.76}" height="6" rx="2" fill="none" stroke="var(--line)" stroke-dasharray="3 2"><title>${tip}</title></rect>`;
   else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
-  if(gran=='w'?(i%2==0||ks.length<8):(gran=='y'||ks.length<=14||i%2==0))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
-  if(gran=='y')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
+  if(gran=='w'?(i%2==0||ks.length<8):(gran=='d'||(gran=='y'&&(ks.length<=14||k.endsWith('0')||k.endsWith('5')))||(gran=='m'&&(ks.length<=14||i%2==0))))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'||gran=='d'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
+  if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
- $('wkt').textContent={w:'By week',m:'By month',y:'By year'}[gran];
- $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded; the small figure under each bar is how many)')+' — click '+(gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
+ $('wkt').textContent={w:'By week',m:'By month',y:'By year',d:'By decade'}[gran];
+ $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded; the small figure under each bar is how many)')+' — click '+(gran=='d'?'a decade':gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
  $('wk').querySelectorAll('rect.bar').forEach(e=>e.onclick=()=>{const k=e.dataset.k;
   if(gran=='w')$('iss').value=$('iss').value==k?'':k;
   else if(gran=='m'){$('mo').value=$('mo').value==k?'':k;$('iss').value=''}
+  else if(gran=='d'){$('dec').value=$('dec').value==k?'':k;$('yr').value='';$('qt').value='';$('mo').value='';$('iss').value=''}
   else{$('yr').value=$('yr').value==k?'':k;$('qt').value='';$('mo').value='';$('iss').value=''}
   go()})}
 /* ---- architect suggestions: type 2+ letters, pick one to add it to the selection ---- */
@@ -339,11 +340,11 @@ addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeEl
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
  if($('detail').hidden||m.style.display=='block')return;if(e.key=='ArrowRight'){e.preventDefault();step(1)}else if(e.key=='ArrowLeft'){e.preventDefault();step(-1)}});
 $('dback').onclick=closeDetail;
-function stepIss(dir){const cur=$('iss').value,i=cur?ISS.indexOf(cur)+dir:(dir>0?0:ISS.length-1);if(i<0||i>=ISS.length)return;const d=ISS[i];if(!inPeriod(D.find(r=>r.d==d)))['p5','yr','qt','mo'].forEach(x=>$(x).value='');fillIss();$('iss').value=d;go()}
+function stepIss(dir){const cur=$('iss').value,i=cur?ISS.indexOf(cur)+dir:(dir>0?0:ISS.length-1);if(i<0||i>=ISS.length)return;const d=ISS[i];if(!inPeriod(D.find(r=>r.d==d)))['dec','yr','qt','mo'].forEach(x=>$(x).value='');fillIss();$('iss').value=d;go()}
 $('ip').onclick=()=>stepIss(-1);$('in').onclick=()=>stepIss(1);
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','p5','yr','qt','mo','iss','span','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','dec','yr','qt','mo','iss','span','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
 $('inview').addEventListener('change',()=>go());
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onclick=()=>{perIssue=!perIssue;$('mv').classList.toggle('on',perIssue);go()};
