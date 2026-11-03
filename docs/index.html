@@ -38,13 +38,13 @@ th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;backgro
 .hl{position:absolute;background:rgba(255,214,0,.30);mix-blend-mode:multiply;border-radius:3px;pointer-events:none}
 a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{text-decoration:underline}
 .all{max-height:300px;overflow:auto}.more{margin-top:6px;font-size:13px;color:var(--s1);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:13px}
-#ph{margin:8px 0}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:min(520px,100%);border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
+#ph{margin:8px 0}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:100%;max-height:250px;width:auto;border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
 
 .mg{display:grid;grid-template-columns:minmax(320px,2fr) 3fr;gap:16px;align-items:start}.ml{position:sticky;top:64px;max-height:calc(100vh - 72px);overflow:auto;padding-right:4px}#mm{height:230px;border-radius:4px;margin:10px 0 4px;background:var(--none)}.ov{font-size:13px;margin:6px 0}@media(max-width:850px){.mg{grid-template-columns:1fr}.ml{position:static}}
 .srcbox{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:14px;font-weight:600}.srcbox span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}.srcbox em{font-style:normal;font-weight:400;color:var(--mut);font-size:12.5px}
 .mut{color:var(--mut)}.sep{color:var(--mut)}.hd .addr{font-size:21px;font-weight:700;line-height:1.2}.hd .owner{font-size:15px;margin-top:3px}.hd .facts{margin-top:8px;font-size:14.5px}
 .bds{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.bd{border:1px solid var(--line);border-radius:12px;padding:1px 10px;font-size:13px;background:var(--bg)}.bd.ok{border-color:var(--s1);color:var(--s1)}.bd.mut{color:var(--mut)}
-#mt h3{margin:18px 0 6px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:3px}
+#mt h3{margin:16px 0 6px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:3px}
 dl.c2{display:grid;grid-template-columns:104px 1fr;gap:3px 12px;margin:4px 0;font-size:14px}dl.c2 dt{color:var(--mut);text-transform:none}dl.c2 dt::first-letter{text-transform:uppercase}dl.c2 dd{margin:0}dl.src{font-size:13px}
 details.raw{margin-top:10px;font-size:13px}details.raw summary{cursor:pointer;color:var(--mut)}details.raw p{margin:6px 0 0;color:var(--mut)}
 dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
@@ -61,7 +61,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 #detail{padding:0;overflow:auto}@media(min-width:900px){#detail{position:sticky;top:8px;max-height:calc(100vh - 16px)}}
 #detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
 .crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
-#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
+.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -250,7 +250,7 @@ function phView(r,pin,label){
  const ps=r.pins||[],lots=ps.length>1?`<div class=pins>Lots in this range: ${ps.map(([n,p])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${n}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const nb=r.nb&&((r.nb.lo||[])[0]||(r.nb.hi||[])[0])?`<div class=pins>Next door: ${one((r.nb.lo||[])[0],true)} ${r.pin?`<button class="btn${(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin))?' on':''}" data-pin="${r.pin}" data-label="" title="Back to the permit's own building">This building</button>`:''} ${one((r.nb.hi||[])[0],false)}</div>`:'';
- const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo of the property <b>today</b>, PIN ${pin} — not the ${(r.d||"").slice(0,4)} building.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''} <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`:'';
+ const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo of the building as it is now (PIN ${pin}), not as it was in ${(r.d||"").slice(0,4)}.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''} <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`:'';
  $('ph').innerHTML=lots+nb+img}
 m.addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
@@ -265,27 +265,28 @@ function closeDetail(){CURR=null;$('detail').hidden=true;$('overview').hidden=fa
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${cur.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;const b=r.boxes;
  const ex={likely:['●','Probably still standing','ok'],older:['○','Older building there today',''],newer:['○','Probably replaced',''],unknown:['–','Standing today: unknown','mut']}[r.ext]||['–','','mut'];
  const facts=[(r.st?r.st+'-story ':'')+(r.bld||''),r.sz?'<b>'+dims(r.sz)+' ft</b>':'',r.cost!=null?'<b>'+money(r.cost)+'</b>'+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
- const people=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<dt>${esc(x[0])}</dt><dd>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</dd>`).join('');
+ const who=r.roles.filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</div>`).join('');
  const b0=b[0]||{};
- $('mt').innerHTML=`<div class="srcbox"><div><span>Publication</span>The Economist (Chicago)</div><div><span>Issue date</span>${fmtDate(r.d)}</div><div><span>Page</span>${r.pg||'?'} <em>(scan page ${b0.pdf?sp(b0.pdf):'?'}${b0.col?', col. '+b0.col:''})</em></div><div><span>Listed under</span>Building Permits${r.reg?' — '+esc(r.reg):''}</div></div><div class=hd>
+ $('mt').innerHTML=`<div class=hd>
   <div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
   <div class=owner>${esc(r.own||'Owner not given')}${r.oa?` <span class=mut>— ${esc(r.oa)}</span>`:''}</div>
-  <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div>
-  <div class=bds><span class="bd">${esc(r.can||'Not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' ~':''}</span><span class="bd ${ex[2]}" title="${esc(r.extn||'')}">${ex[0]} ${ex[1]}${r.yb&&r.ext!='unknown'?' ('+r.yb+')':''}</span></div>
-  ${r.unc?'<div class=flag style="margin-top:6px">Some letters were hard to read in the scan.</div>':''}</div>
- ${people?`<h3>People &amp; firms</h3><dl class=c2>${people}</dl>`:''}
- <h3>Today</h3><dl class=c2>
-  <dt>Address</dt><dd>${r.now?esc(r.now):'<span class=mut>no matching address in the county data</span>'}</dd>
+  <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
+ ${who?`<div class=who>${who}</div>`:''}
+ <div id=ph></div>${r.lat?`<div class=ov><a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a> <span class=mut>${r.geo=='exact'?'location: today\'s address point':'location: approximate (no exact address match)'}</span></div>`:''}
+ <dl class=c2>
+  <dt>Listed</dt><dd>${fmtDate(r.d)} · page ${r.pg||'?'}${r.reg?' · '+esc(r.reg)+' list':''}</dd>
+  <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
+  <dt>Still there?</dt><dd><span class="${ex[2]=='ok'?'okt':''}">${ex[0]} ${ex[1]}</span>${r.extn?` <span class=mut>— ${esc(r.extn)}</span>`:''}</dd>
+  <dt>Address now</dt><dd>${r.now?esc(r.now):'<span class=mut>no matching address in the county data</span>'}</dd>
   ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
-  ${r.extn?`<dt>Still there?</dt><dd class=mut>${esc(r.extn)}</dd>`:''}</dl>
- <h3>The property</h3><div id=ph></div>${r.lat?`<div class=ov><span class=mut>${r.geo=='exact'?'Shown on the map at today\'s address point':'Approximate location on the map (no exact address match)'}</span> · <a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a></div>`:''}
- <h3>As printed</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
+  ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
+ <h3>From the scan</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
  <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`;
  $('scanbtn').onclick=()=>openScan(r);entryCrops(r);
  clearTimeout(phT);phView(r,null);if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;
  if(r.lat)map.setView([r.lat,r.lon],Math.max(map.getZoom(),17));drawPts();toHash();
- const t=$('detail').getBoundingClientRect().top;if(t<0||t>innerHeight*.6)$('detail').scrollIntoView({behavior:'smooth',block:'start'})}
+ const t=$('detail').getBoundingClientRect().top;if(Math.abs(t-8)>30)window.scrollTo({top:Math.max(0,t+scrollY-8),behavior:'smooth'})}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
 function applyZoom(center){const pg=$('pg'),pi=pg.querySelector('.pgi');if(!pi)return;const z=+pg.dataset.z||2.5;const im=pi.querySelector('img');im.style.width=ZOOM?Math.round(pg.clientWidth*z)+'px':'100%';im.style.maxWidth='none';pi.style.width='';pg.classList.toggle('zin',ZOOM);pg.classList.toggle('zout',!ZOOM);
