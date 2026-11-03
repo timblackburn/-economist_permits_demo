@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chicago Building Permits, 1920–1930</title>
+<title>Chicago Building Permits</title>
 <script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
@@ -52,7 +52,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 
 /* ---- masthead, filter bar, permit panel ---- */
 header{padding:16px 16px 12px;border-bottom:3px double var(--line);margin-bottom:4px}.kick{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:600}
-header h1{font-size:30px;line-height:1.15;margin:3px 0 2px;letter-spacing:-.01em}header .sub{font-size:15px;color:var(--fg);margin:2px 0 6px;max-width:760px}.about{margin-top:4px;font-size:13px;color:var(--mut);max-width:860px}.about summary{cursor:pointer}.about p{margin:6px 0 0}
+header h1{font-size:26px;line-height:1.15;margin:0 0 4px}header .sub{font-size:13.5px;color:var(--mut);margin:2px 0 4px;max-width:900px}.about{margin-top:4px;font-size:13px;color:var(--mut);max-width:860px}.about summary{cursor:pointer}.about p{margin:6px 0 0}
 .fbar{display:flex;flex-wrap:wrap;gap:10px 20px;padding:10px 16px 8px;align-items:flex-end}.fg{display:flex;flex-direction:column;gap:3px}.fg.grow{flex:1 1 340px}.fl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
 .fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
 #reset{padding:2px 10px;font-size:13px;margin-left:4px}#summary{font-size:14px;color:var(--fg)}
@@ -65,10 +65,8 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
-<div class="kick">The weekly Chicago <i>Economist</i> &middot; its &ldquo;Building Permits&rdquo; lists</div>
-<h1>Chicago Building Permits, 1920&ndash;1930</h1>
-<p class="sub">Every permit the paper printed, read from the scans and placed on today's map. Click a blob or a row to get down to a single property.</p>
-<details class="about"><summary>About this data</summary><p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1920 to 1930: not every issue is here yet). Text is machine-read and may contain errors; every permit shows the scan it came from. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Assessor photos come from Cook County and show the property <b>today</b>, not the building as it was then.</p></details>
+<h1>Chicago building permits, from The Economist</h1>
+<p class="sub">Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1920 to 1930: not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
 </header>
 <div class="fbar">
  <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><input id="ar" placeholder="architect / builder" size="18"></div></div>
