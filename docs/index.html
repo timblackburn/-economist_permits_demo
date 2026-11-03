@@ -89,7 +89,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
    <div id="mt"></div>
   </div>
  </div></div>
-<div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn">Size (ft)</th><th data-k="ext" title="Year built according to the County Assessor, compared with the permit year. ● within 15 years of the permit; ○ earlier or later">Year built (Assessor)</th><th data-k="cost" class="n">Cost</th><th>Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
+<div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn">Size (ft)</th><th data-k="cost" class="n">Cost</th><th>Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
 <footer>Sources: <i>The Economist</i> (Chicago), scanned by Google Books &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors.</footer>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -115,7 +115,6 @@ const arch=r=>r.ar||'';
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const num=r=>{const m=(r.sz||'').match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);return m?m[1]*m[2]:0};
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
-const extLabel=r=>({likely:'● '+r.yb,older:'○ '+r.yb+' <small>earlier</small>',newer:'○ '+r.yb+' <small>later</small>',unknown:'<span style="color:var(--mut)">–</span>'})[r.ext]||'';
 const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
 const AS=new Set(),AN={};
@@ -137,7 +136,7 @@ function drawCA(){
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
- $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit — filled: Assessor's year built matches the permit; faint: no year on record; hollow: year built is earlier or later than the permit (size grows with cost)`}
+ $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (the dot grows with cost)`}
 /* ---- map: individual permits when few are in view, otherwise count blobs on a pixel grid (click a blob to zoom into it) ---- */
 const SHOW_MAX=1000,CELL=60;
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
@@ -145,7 +144,7 @@ function drawPts0(){ptLayer.clearLayers();
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
  if(vis.length<=SHOW_MAX){
   vis.forEach(r=>{const rad=Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000)));
-   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:r.ext=='likely'?.9:(r.ext=='unknown'?.45:.12),color:r.ext=='likely'||r.ext=='unknown'?css('--ring'):css('--s2')});
+   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:.88,color:css('--ring')});
    c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
    c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
   $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'');return}
@@ -186,7 +185,7 @@ function go(){
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0});   // the map keeps showing every area while one is selected
  const t=cur.reduce((s,r)=>s+(r.cost||0),0);
- $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} with an Assessor year built that matches the permit`:'');
+ $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  buildWalk();chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(!$('inview').checked&&($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
 const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
@@ -235,7 +234,7 @@ function archs(){const by={},nm={};D.filter(flt('arch')).forEach(r=>{let a=arch(
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
  $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
 /* ---- table + detail ---- */
-function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="ext" title="${esc(r.yb?'Assessor year built '+r.yb:'')}">${extLabel(r)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
+function table(){$('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>show(cur[+e.dataset.k]));$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();setArch(a.dataset.a)})}
 let CURR=null,phT=null;
 const ovUrl=r=>`https://maps.cookcountyil.gov/nearmapOpenlayers/?map=19.00/${r.lon}/${r.lat}/0${r.pin?'&pin10='+r.pin.slice(0,10):''}`;
@@ -285,7 +284,7 @@ function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b
 function closeDetail(){CURR=null;$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
- const yb={likely:`<b>${r.yb}</b> (County Assessor) — matches this permit <span class=mut>(within 15 years of ${py})</span>`,older:`<b>${r.yb}</b> (County Assessor) — earlier than the permit <span class=mut>(an older building, or the permit was for alterations or an addition)</span>`,newer:`<b>${r.yb}</b> (County Assessor) — later than the permit <span class=mut>(the building may have been replaced, rebuilt or moved)</span>`}[r.ext]||'<span class=mut>no year built on record for this address</span>';
+ const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`,newer:`County Assessor records give ${r.yb} for the building at this address, later than this permit: the original may have been replaced, rebuilt or moved.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
  const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?money(r.cost)+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</div>`).join('');
@@ -298,9 +297,9 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  <dl class=c2>
   <dt>Listed</dt><dd>${fmtDate(r.d)} · page ${r.pg||'?'}${r.reg?' · '+esc(r.reg)+' list':''}</dd>
   <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
-  <dt>Year built</dt><dd>${yb}</dd>
-  <dt>Address now</dt><dd>${r.now?esc(r.now):'<span class=mut>no matching address in the county data</span>'}</dd>
+  ${r.now?`<dt>Address now</dt><dd>${esc(r.now)}</dd>`:`<dt>Address now</dt><dd><span class=mut>no matching address in the county data</span></dd>`}
   ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
+  ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
   ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
  <h3>From the scan</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
  <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`;
