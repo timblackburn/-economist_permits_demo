@@ -85,7 +85,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous goes to a nearby property, or follows the order of the table below">Next: nearby</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
@@ -123,7 +123,7 @@ const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
-const map=L.map('map',{preferCanvas:true}).setView([41.84,-87.68],10);
+const map=L.map('map',{renderer:L.canvas({tolerance:6})}).setView([41.84,-87.68],10);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
@@ -144,7 +144,7 @@ function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMar
 function drawPts0(){ptLayer.clearLayers();
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
  if(vis.length<=SHOW_MAX){
-  vis.forEach(r=>{const rad=Math.max(3,Math.min(11,2+Math.sqrt((r.cost||20000)/12000)));
+  vis.forEach(r=>{const rad=Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000)));
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:r.ext=='likely'?.9:(r.ext=='unknown'?.45:.12),color:r.ext=='likely'||r.ext=='unknown'?css('--ring'):css('--s2')});
    c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
    c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
@@ -187,7 +187,7 @@ function go(){
  stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0});   // the map keeps showing every area while one is selected
  const t=cur.reduce((s,r)=>s+(r.cost||0),0);
  $('summary').textContent=`${cur.length.toLocaleString()} permits · listed total ${money(t)}`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'')+(cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))} · ${cur.filter(r=>r.ext=='likely').length.toLocaleString()} likely still standing`:'');
- chips();drawCA();drawPts();weeks();archs();table();
+ buildWalk();chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
 const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('avg')=='1'){perIssue=true;$('mv').classList.add('on')}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
@@ -253,6 +253,13 @@ function phView(r,pin,label){
  const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''}</small>`:'';
  $('ph').innerHTML=lots+nb+img}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
+let WALK=[],walkNear=true;
+function hilbert(x,y){const n=65536;let d=0;for(let s=n/2;s>=1;s/=2){const rx=(x&s)>0?1:0,ry=(y&s)>0?1:0;d+=s*s*((3*rx)^ry);if(ry==0){if(rx==1){x=n-1-x;y=n-1-y}const t=x;x=y;y=t}}return d}
+function buildWalk(){const pl=cur.filter(r=>r.lat);for(const r of pl)if(r.h==null)r.h=hilbert(Math.max(0,Math.min(65535,Math.floor((r.lon+87.95)/0.45*65535))),Math.max(0,Math.min(65535,Math.floor((r.lat-41.6)/0.5*65535))));
+ pl.sort((a,b)=>a.h-b.h||(a.d>b.d?1:a.d<b.d?-1:a.id-b.id));WALK=pl.concat(cur.filter(r=>!r.lat))}
+const order=()=>walkNear?WALK:cur;
+function flyTo(r){const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
+ if(map.getZoom()>=16&&!far)map.panTo([r.lat,r.lon],{animate:true,duration:.5,easeLinearity:.4});else map.flyTo([r.lat,r.lon],z,{duration:.9})}
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
 function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
  (r.boxes||[]).slice(0,3).forEach(bx=>{const [y0,x0,y1,x1]=bx.box,pad=14,py=5,X0=Math.max(0,x0-pad),X1=Math.min(1000,x1+pad),Y0=Math.max(0,y0-py),Y1=Math.min(1000,y1+py);
@@ -262,7 +269,7 @@ function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
 function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
  $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
 function closeDetail(){CURR=null;$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
-async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${cur.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;const b=r.boxes;
+async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const ex={likely:['●','Probably still standing','ok'],older:['○','Older building there today',''],newer:['○','Probably replaced',''],unknown:['–','Standing today: unknown','mut']}[r.ext]||['–','','mut'];
  const facts=[(r.st?r.st+'-story ':'')+(r.bld||''),r.sz?'<b>'+dims(r.sz)+' ft</b>':'',r.cost!=null?'<b>'+money(r.cost)+'</b>'+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const who=r.roles.filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</div>`).join('');
@@ -285,7 +292,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  $('scanbtn').onclick=()=>openScan(r);entryCrops(r);
  clearTimeout(phT);phView(r,null);if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;
- if(r.lat)map.setView([r.lat,r.lon],Math.max(map.getZoom(),17));drawPts();toHash();
+ if(r.lat)flyTo(r);drawPts();toHash();
  const t=$('detail').getBoundingClientRect().top;if(Math.abs(t-8)>30)window.scrollTo({top:Math.max(0,t+scrollY-8),behavior:'smooth'})}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
@@ -299,7 +306,8 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
  addEventListener('mousemove',e=>{if(!down)return;const dx=e.clientX-sx,dy=e.clientY-sy;moved=Math.max(moved,Math.abs(dx)+Math.abs(dy));if(ZOOM){pg().scrollLeft=sl-dx;pg().scrollTop=st-dy}});
  addEventListener('mouseup',e=>{if(!down)return;down=false;if(moved<6&&e.target.closest&&e.target.closest('#pg')){const p=pg(),r=p.getBoundingClientRect(),pi=p.querySelector('.pgi'),fx=(e.clientX-r.left+p.scrollLeft)/pi.offsetWidth,fy=(e.clientY-r.top+p.scrollTop)/pi.offsetHeight;
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
-const step=d=>{const ix=cur.indexOf(CURR),n=cur[ix+d];if(ix>=0&&n)show(n)};
+const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
+$('wmode').onclick=()=>{walkNear=!walkNear;$('wmode').textContent=walkNear?'Next: nearby':'Next: list order';if(CURR)show(CURR)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
