@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Chicago Building Permits</title>
+<title>Chicago Building Permits, 1920–1930</title>
 <script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
@@ -13,8 +13,8 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
 .f{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px;align-items:center}
-.nav{display:inline-flex;gap:4px;align-items:center}.f input,.f select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
-#q{flex:1 1 240px}.btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
+.nav{display:inline-flex;gap:4px;align-items:center}.fbar input,.fbar select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
+.btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
 .chips{padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px;min-height:6px}
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer}.chip b{color:var(--acc);margin-left:6px}
 #summary{padding:2px 16px 8px;color:var(--mut);font-size:13px}
@@ -49,25 +49,51 @@ dl.c2{display:grid;grid-template-columns:104px 1fr;gap:3px 12px;margin:4px 0;fon
 details.raw{margin-top:10px;font-size:13px}details.raw summary{cursor:pointer;color:var(--mut)}details.raw p{margin:6px 0 0;color:var(--mut)}
 dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
 dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-size:14px}dt{color:var(--mut);text-transform:capitalize}dd{margin:0}
+
+/* ---- masthead, filter bar, permit panel ---- */
+header{padding:16px 16px 12px;border-bottom:3px double var(--line);margin-bottom:4px}.kick{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:600}
+header h1{font-size:30px;line-height:1.15;margin:3px 0 2px;letter-spacing:-.01em}header .sub{font-size:15px;color:var(--fg);margin:2px 0 6px;max-width:760px}.about{margin-top:4px;font-size:13px;color:var(--mut);max-width:860px}.about summary{cursor:pointer}.about p{margin:6px 0 0}
+.fbar{display:flex;flex-wrap:wrap;gap:10px 20px;padding:10px 16px 8px;align-items:flex-end}.fg{display:flex;flex-direction:column;gap:3px}.fg.grow{flex:1 1 340px}.fl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
+#reset{padding:2px 10px;font-size:13px;margin-left:4px}#summary{font-size:14px;color:var(--fg)}
+footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:6px}
+[hidden]{display:none!important}#overview{display:flex;flex-direction:column;gap:12px}
+#detail{padding:0;overflow:auto}@media(min-width:900px){#detail{position:sticky;top:8px;max-height:calc(100vh - 16px)}}
+#detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
+.crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
+#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
 </style></head><body>
-<header><button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button><h1>Chicago building permits, from The Economist</h1>
-<p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1920 to 1930: not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p></header>
-<div class="f"><input id="q" placeholder="Search anything: owner, street, architect, mason, building type…">
-<select id="p5" title="Five-year span"><option value="">Any 5 years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select>
-<span class="nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></span>
-<select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select>
-<select id="ca"><option value="">All community areas</option></select>
-<input id="ar" placeholder="Architect / builder" size="18"><input id="min" type="number" placeholder="Min $" style="width:90px">
-<span><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span><button class="btn" id="mv" title="Show the average per issue instead of totals (fair when only some issues are loaded)">Per issue</button></div>
+<header>
+<button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
+<div class="kick">The weekly Chicago <i>Economist</i> &middot; its &ldquo;Building Permits&rdquo; lists</div>
+<h1>Chicago Building Permits, 1920&ndash;1930</h1>
+<p class="sub">Every permit the paper printed, read from the scans and placed on today's map. Click a blob or a row to get down to a single property.</p>
+<details class="about"><summary>About this data</summary><p>Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1920 to 1930: not every issue is here yet). Text is machine-read and may contain errors; every permit shows the scan it came from. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Assessor photos come from Cook County and show the property <b>today</b>, not the building as it was then.</p></details>
+</header>
+<div class="fbar">
+ <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><input id="ar" placeholder="architect / builder" size="18"></div></div>
+ <div class="fg"><span class="fl">When</span><div class="fr"><select id="p5" title="Five-year span"><option value="">Any 5 years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></div>
+ <div class="fg"><span class="fl">Issue &amp; the ones after it</span><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></div>
+ <div class="fg"><span class="fl">Where</span><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></div>
+ <div class="fg"><span class="fl">Cost at least</span><div class="fr"><input id="min" type="number" placeholder="$" style="width:90px"></div></div>
+ <div class="fg"><span class="fl">Map &amp; chart show</span><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span><button class="btn" id="mv" title="Show the average per issue instead of totals (fair when only some issues are loaded)">Per issue</button></div></div>
+</div>
 <div class="chips" id="chips"></div><div id="summary"></div>
 <div class="grid">
  <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
  <div class="side">
+  <div id="overview">
   <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wk"></div></div>
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
+  </div>
+  <div class="card" id="detail" hidden>
+   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div id="mt"></div>
+  </div>
  </div></div>
 <div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn">Size (ft)</th><th data-k="ext" title="Based on the Assessor's year built">Standing today?</th><th data-k="cost" class="n">Cost</th><th>Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
-<div id="m"><div class="bar"><div class="in"><button class="btn" id="prv" title="Previous permit (←)">‹ Prev</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (→)">Next ›</button><span class="hint">← → to move · Esc to close</span><button class="btn close" id="cls">Close ✕</button></div></div><div class="c"><div class="mg"><div class="ml"><div id="mt"></div><p id="pb"></p></div><div id="pg"></div></div></div></div>
+<footer>Sources: <i>The Economist</i> (Chicago), scanned by Google Books &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors.</footer>
+<div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id),m=$('m');
@@ -116,7 +142,8 @@ function drawCA(){
  $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit — filled: likely still standing; faint: unknown; hollow: a different building is there now (size grows with cost)`}
 /* ---- map: individual permits when few are in view, otherwise count blobs on a pixel grid (click a blob to zoom into it) ---- */
 const SHOW_MAX=1000,CELL=60;
-function drawPts(){ptLayer.clearLayers();
+function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
+function drawPts0(){ptLayer.clearLayers();
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
  if(vis.length<=SHOW_MAX){
   vis.forEach(r=>{const rad=Math.max(3,Math.min(11,2+Math.sqrt((r.cost||20000)/12000)));
@@ -166,12 +193,13 @@ function go(){
  const pts=cur.filter(r=>r.lat);if(($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:14})}}
 const KEYS0=0;const KEYS={q:'q',p5:'span',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
 let OPEN=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('avg')=='1'){perIssue=true;$('mv').classList.add('on')}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');history.replaceState(null,'','#'+p)}
+function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden)p.set('open',CURR.id);history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
  if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('p5').value)c.push([$('p5').value,()=>$('p5').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
- $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)})}
+ $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','p5','yr','qt','mo','iss','reg','ca','min'].forEach(x=>$(x).value='');$('span').value='1';AS.clear();go()};$('chips').append(e)}}
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 function weeks(){
  const dom=[...new Set(D.filter(inPeriod).map(r=>r.d))].sort(),span=dom.length?(new Date(dom[dom.length-1])-new Date(dom[0]))/864e5:0;
@@ -190,10 +218,10 @@ function weeks(){
   if(!n)g+=`<rect x="${x}" y="${H-B-6}" width="${bw*.76}" height="6" rx="2" fill="none" stroke="var(--line)" stroke-dasharray="3 2"><title>${tip}</title></rect>`;
   else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
   if(gran=='w'?(i%2==0||ks.length<8):(gran=='y'||ks.length<=14||i%2==0))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
-  if(gran=='y')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n} issues</text>`});
+  if(gran=='y')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
  $('wkt').textContent={w:'By week',m:'By month',y:'By year'}[gran];
- $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded)')+' — click '+(gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
+ $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded; the small figure under each bar is how many)')+' — click '+(gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
  $('wk').querySelectorAll('rect.bar').forEach(e=>e.onclick=()=>{const k=e.dataset.k;
   if(gran=='w')$('iss').value=$('iss').value==k?'':k;
   else if(gran=='m'){$('mo').value=$('mo').value==k?'':k;$('iss').value=''}
@@ -227,12 +255,21 @@ function phView(r,pin,label){
  const img=pin?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}"><small>${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo of the property <b>today</b>, PIN ${pin} — not the ${(r.d||"").slice(0,4)} building.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''} <a class=lk href="https://www.cookcountyassessor.com/pin/${pin}" target=_blank rel=noopener>Assessor page</a></small>`:'';
  $('ph').innerHTML=lots+nb+img}
 m.addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
-async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${ix+1} of ${cur.length}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;m.scrollTop=0;const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];
+const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
+function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
+ (r.boxes||[]).slice(0,3).forEach(bx=>{const [y0,x0,y1,x1]=bx.box,pad=14,py=5,X0=Math.max(0,x0-pad),X1=Math.min(1000,x1+pad),Y0=Math.max(0,y0-py),Y1=Math.min(1000,y1+py);
+  const d=document.createElement('div');d.className='crop';const im=new Image();im.alt='The entry as printed';im.src='pages/'+bx.pdf+'.jpg';d.append(im);box.append(d);
+  const fit=()=>{const W=box.clientWidth||520,nw=im.naturalWidth,Wd=Math.min(W*1000/(X1-X0),nw*2.4),Hd=Wd*im.naturalHeight/nw;d.style.width=Math.min(Wd*(X1-X0)/1000,W)+'px';d.style.height=((Y1-Y0)/1000*Hd)+'px';im.style.width=Wd+'px';im.style.marginLeft=(-X0/1000*Wd)+'px';im.style.marginTop=(-Y0/1000*Hd)+'px'};
+  if(im.complete&&im.naturalWidth)fit();else im.onload=fit})}
+function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
+ $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
+function closeDetail(){CURR=null;$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
+async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const ix=cur.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${cur.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=cur.length-1;const b=r.boxes;
  const ex={likely:['●','Probably still standing','ok'],older:['○','Older building there today',''],newer:['○','Probably replaced',''],unknown:['–','Standing today: unknown','mut']}[r.ext]||['–','','mut'];
  const facts=[(r.st?r.st+'-story ':'')+(r.bld||''),r.sz?'<b>'+dims(r.sz)+' ft</b>':'',r.cost!=null?'<b>'+money(r.cost)+'</b>'+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const people=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<dt>${esc(x[0])}</dt><dd>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</dd>`).join('');
- const b0=r.boxes[0]||{};
- $('mt').innerHTML=`<div class="srcbox"><div><span>Publication</span>The Economist (Chicago)</div><div><span>Issue date</span>${fmtDate(r.d)}</div><div><span>Page</span>${r.pg||'?'} <em>(scan ${b0.pdf||'?'}${b0.col?', col. '+b0.col:''})</em></div><div><span>Listed under</span>Building Permits${r.reg?' — '+esc(r.reg):''}</div></div><div class=hd>
+ const b0=b[0]||{};
+ $('mt').innerHTML=`<div class="srcbox"><div><span>Publication</span>The Economist (Chicago)</div><div><span>Issue date</span>${fmtDate(r.d)}</div><div><span>Page</span>${r.pg||'?'} <em>(scan page ${b0.pdf?sp(b0.pdf):'?'}${b0.col?', col. '+b0.col:''})</em></div><div><span>Listed under</span>Building Permits${r.reg?' — '+esc(r.reg):''}</div></div><div class=hd>
   <div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
   <div class=owner>${esc(r.own||'Owner not given')}${r.oa?` <span class=mut>— ${esc(r.oa)}</span>`:''}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div>
@@ -243,9 +280,14 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   <dt>Address</dt><dd>${r.now?esc(r.now):'<span class=mut>no matching address in the county data</span>'}</dd>
   ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
   ${r.extn?`<dt>Still there?</dt><dd class=mut>${esc(r.extn)}</dd>`:''}</dl>
- <h3>The property</h3><div id=ph></div>${r.lat?`<div id=mm></div><div class=ov><span class=mut>${r.geo=='exact'?'Today\'s address point':'Approximate location (no exact address match)'}</span> · <a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a></div>`:''}
+ <h3>The property</h3><div id=ph></div>${r.lat?`<div class=ov><span class=mut>${r.geo=='exact'?'Shown on the map at today\'s address point':'Approximate location on the map (no exact address match)'}</span> · <a class="btn" style="padding:2px 8px;font-size:13px;text-decoration:none;color:var(--fg)" target=_blank rel=noopener href="${ovUrl(r)}" title="Opens the County's aerial viewer (vertical view, plus N/S/E/W angles) in a new tab, centered here">Overhead &amp; angled aerial views ↗</a></div>`:''}
+ <h3>As printed</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
  <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`;
- clearTimeout(phT);phView(r,null);if(MM){MM.remove();MM=null}if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'');drawMini(r)},450);window._b=b;$('pb').innerHTML='<span class=zh>Scan: click the page to zoom in or out; drag to move.</span> '+pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${p}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
+ $('scanbtn').onclick=()=>openScan(r);entryCrops(r);
+ clearTimeout(phT);phView(r,null);if(r.pin)$('ph').insertAdjacentHTML('beforeend','<small>Loading assessor photo…</small>');phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
+ $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;
+ if(r.lat)map.setView([r.lat,r.lon],Math.max(map.getZoom(),17));drawPts();toHash();
+ const t=$('detail').getBoundingClientRect().top;if(t<0||t>innerHeight*.6)$('detail').scrollIntoView({behavior:'smooth',block:'start'})}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
 function applyZoom(center){const pg=$('pg'),pi=pg.querySelector('.pgi');if(!pi)return;const z=+pg.dataset.z||2.5;const im=pi.querySelector('img');im.style.width=ZOOM?Math.round(pg.clientWidth*z)+'px':'100%';im.style.maxWidth='none';pi.style.width='';pg.classList.toggle('zin',ZOOM);pg.classList.toggle('zout',!ZOOM);
@@ -260,7 +302,10 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const ix=cur.indexOf(CURR),n=cur[ix+d];if(ix>=0&&n)show(n)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
-addEventListener('keydown',e=>{if(m.style.display!='block'||/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;if(e.key=='ArrowRight')(e.preventDefault(),step(1));else if(e.key=='ArrowLeft')(e.preventDefault(),step(-1));else if(e.key=='Escape')m.style.display='none'});
+addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+ if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
+ if($('detail').hidden||m.style.display=='block')return;if(e.key=='ArrowRight'){e.preventDefault();step(1)}else if(e.key=='ArrowLeft'){e.preventDefault();step(-1)}});
+$('dback').onclick=closeDetail;
 function stepIss(dir){const cur=$('iss').value,i=cur?ISS.indexOf(cur)+dir:(dir>0?0:ISS.length-1);if(i<0||i>=ISS.length)return;const d=ISS[i];if(!inPeriod(D.find(r=>r.d==d)))['p5','yr','qt','mo'].forEach(x=>$(x).value='');fillIss();$('iss').value=d;go()}
 $('ip').onclick=()=>stepIss(-1);$('in').onclick=()=>stepIss(1);
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
