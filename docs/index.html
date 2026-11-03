@@ -54,7 +54,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 header{padding:16px 16px 12px;border-bottom:3px double var(--line);margin-bottom:4px}.kick{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:600}
 header h1{font-size:26px;line-height:1.15;margin:0 0 4px}header .sub{font-size:13.5px;color:var(--mut);margin:2px 0 4px;max-width:900px}.about{margin-top:4px;font-size:13px;color:var(--mut);max-width:860px}.about summary{cursor:pointer}.about p{margin:6px 0 0}
 .fbar{display:flex;flex-wrap:wrap;gap:10px 20px;padding:10px 16px 8px;align-items:flex-end}.fg{display:flex;flex-direction:column;gap:3px}.fg.grow{flex:1 1 340px}.fl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
-.fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
+.sgw{position:relative;display:inline-block}#sg{position:absolute;z-index:60;top:100%;left:0;min-width:100%;width:max-content;max-width:340px;max-height:320px;overflow:auto;background:var(--card,#fff);border:1px solid var(--bd,#bbb);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-top:2px}#sg[hidden]{display:none}#sg div{padding:5px 9px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:14px;white-space:nowrap}#sg div.on,#sg div:hover{background:var(--hl,rgba(120,140,200,.25))}#sg small{color:var(--mut,#777)}.fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
 #reset{padding:2px 10px;font-size:13px;margin-left:4px}#summary{font-size:14px;color:var(--fg)}
 footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:6px}
 [hidden]{display:none!important}#overview{display:flex;flex-direction:column;gap:12px}
@@ -66,10 +66,10 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
 <h1>Chicago building permits, from The Economist</h1>
-<p class="sub">Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1915 to 1930: not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
+<p class="sub">Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1902 to 1930: not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
 </header>
 <div class="fbar">
- <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><input id="ar" placeholder="architect / builder" size="18"></div></div>
+ <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><span class="sgw"><input id="ar" placeholder="architect / builder" size="18" autocomplete="off"><div id="sg" hidden></div></span></div></div>
  <div class="fg"><span class="fl">When</span><div class="fr"><select id="p5" title="Five-year span"><option value="">Any 5 years</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></div>
  <div class="fg"><span class="fl">Issue &amp; the ones after it</span><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></div>
  <div class="fg"><span class="fl">Where</span><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></div>
@@ -117,7 +117,7 @@ const num=r=>{const m=(r.sz||'').match(/(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)/);return
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
 const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
-const AS=new Set(),AN={};
+const AS=new Set(),AN={},AC={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
@@ -170,7 +170,7 @@ function ensureSearch(){return SEARCHP??=fetch('data/search.json').then(x=>x.jso
 fetch('data/index.json').then(r=>r.json()).then(async ix=>{const d=D=unpack(ix);CA=await (await fetch('ca.json')).json();
  [...new Set(d.map(P5))].sort().forEach(x=>$('p5').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));[...new Set(d.map(r=>r.d.slice(0,7)))].sort().forEach(x=>$('mo').add(new Option(monthName(x),x)));
  ISS=[...new Set(d.map(r=>r.d))].sort();ISS.forEach(x=>$('iss').add(new Option(x,x)));
- CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const dl=document.createElement('datalist');dl.id='archlist';const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'&&!seen[nk(a)]){seen[nk(a)]=1;AN[nk(a)]=a;dl.append(new Option(a))}});document.body.append(dl);$('ar').setAttribute('list','archlist');fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
+ CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}suggestInit();fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
 const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),P5=r=>{const y=Math.floor(+r.d.slice(0,4)/5)*5;return y+'-'+(y+4)};
 const MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],monthName=k=>MON3[+k.slice(5,7)-1]+' '+k.slice(0,4);
 function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('p5').value||P5(r)==$('p5').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
@@ -224,6 +224,18 @@ function weeks(){
   else if(gran=='m'){$('mo').value=$('mo').value==k?'':k;$('iss').value=''}
   else{$('yr').value=$('yr').value==k?'':k;$('qt').value='';$('mo').value='';$('iss').value=''}
   go()})}
+/* ---- architect suggestions: type 2+ letters, pick one to add it to the selection ---- */
+let sgI=-1,sgK=[];
+function suggestShow(){const t=nk($('ar').value),box=$('sg');if(t.length<2){box.hidden=true;return}
+ const hit=Object.keys(AN).filter(k=>!AS.has(k)&&k.includes(t));const ws=k=>(' '+k).includes(' '+t);hit.sort((a,b)=>(ws(b)-ws(a))||AC[b]-AC[a]||(a<b?-1:1));sgK=hit.slice(0,12);sgI=-1;
+ box.innerHTML=sgK.map((k,i)=>`<div data-i="${i}">${esc(AN[k])}<small>${AC[k]}</small></div>`).join('')+(hit.length>12?`<div class="more" style="color:var(--mut,#777)" data-i="-2">${hit.length-12} more: keep typing</div>`:'')||'<div style="color:var(--mut,#777)">no matching architect</div>';box.hidden=false}
+function suggestPick(i){const k=sgK[i];if(!k)return;AS.add(k);$('ar').value='';$('sg').hidden=true;go()}
+function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',suggestShow);a.addEventListener('focus',suggestShow);
+ box.addEventListener('mousedown',e=>{const d=e.target.closest('[data-i]');if(d&&+d.dataset.i>=0){e.preventDefault();suggestPick(+d.dataset.i)}});
+ a.addEventListener('keydown',e=>{const n=box.querySelectorAll('[data-i]').length;if(box.hidden||!n)return;
+  if(e.key=='ArrowDown'||e.key=='ArrowUp'){e.preventDefault();sgI=(sgI+(e.key=='ArrowDown'?1:-1)+sgK.length)%sgK.length;box.querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i==sgI))}
+  else if(e.key=='Enter'&&sgI>=0){e.preventDefault();suggestPick(sgI)}else if(e.key=='Escape')box.hidden=true});
+ document.addEventListener('click',e=>{if(!e.target.closest('.sgw'))box.hidden=true})}
 /* ---- architects in the current selection ---- */
 let showAll=false;
 function archs(){const by={},nm={};D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();nm[key]??=a;a=nm[key];const s=by[a]??={n:0,c:0};s.n++;s.c+=r.cost||0});
