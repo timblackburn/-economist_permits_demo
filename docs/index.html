@@ -4,11 +4,11 @@
 <script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">   <!-- Leaflet 1.9.4, served from this site (docs/vendor/leaflet), not a third-party CDN -->
 <style>
-:root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;
+:root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;--selrow:#fff0c2;
 --q1:#e3eefb;--q2:#bcd6f3;--q3:#8db9ea;--q4:#5a98de;--q5:#2a78d6;--none:#ece8dd}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;--selrow:#4d4220;
 --q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}}
-:root[data-theme="dark"]{--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;
+:root[data-theme="dark"]{--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;--selrow:#4d4220;
 --q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
@@ -105,6 +105,7 @@ td.crew{font-size:12.5px;line-height:1.35;min-width:150px}td.crew .con{font-weig
 @media(min-width:1181px){.layout .side{overflow:hidden}#overview{flex:1 1 auto;min-height:0}#overview>.card:last-child{flex:1 1 0;min-height:150px;display:flex;flex-direction:column}#overview>.card:last-child #archs{flex:1 1 auto;min-height:0;overflow:auto}}
 #totop{font-size:12.5px;white-space:nowrap}
 table{table-layout:fixed}td,th{overflow-wrap:anywhere}td.crew{min-width:0;font-size:13.5px}td.crew .con a,td.crew .trade a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--mut)}td.crew .con a:hover,td.crew .trade a:hover{color:var(--acc);border-bottom-color:var(--acc)}
+tbody tr.r.sel,tbody tr.r.sel:nth-child(even),tbody tr.r.sel:hover{background:var(--selrow)}tbody tr.r.sel td:first-child{box-shadow:inset 4px 0 0 var(--acc)}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -130,7 +131,7 @@ table{table-layout:fixed}td,th{overflow-wrap:anywhere}td.crew{min-width:0;font-s
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous walks along a street in house-number order, then on to the nearest street; or follows the order of the table below">Next: along the street</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div class="dbar"><button class="btn" id="dback" title="Back to the chart and rankings (Esc)">&larr; Overview</button><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous walks along a street in house-number order, then on to the nearest street; or follows the order of the table below">Next: along the street</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
@@ -559,7 +560,7 @@ window.addEventListener('scroll',stuckBar,{passive:true});window.addEventListene
 function tbh(){const b=$('tbar');if(b)document.documentElement.style.setProperty('--tbh',b.offsetHeight+'px')}
 window.addEventListener('resize',tbh);
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt=AGG?'':` <span class=mut>Sorted by <b>${sn[0]}</b> (${sd>0?sn[1]:sn[2]}); click any column heading to re-sort.</span>`;el.innerHTML=(AGG?`<b>${n.toLocaleString()}</b> permits match. Pick a community area, zoom the map in or search to list them here.`:n>400?`Showing the first <b>400</b> of <b>${n.toLocaleString()}</b> permits; narrow the filters to see the rest, or download them all.`:`Showing all <b>${n.toLocaleString()}</b> permits.`)+srt}
-function table(){tnote();tbh();stuckBar();if(AGG){$('tb').innerHTML=`<tr><td colspan=10><b>${TOT.n.toLocaleString()} permits</b> match. Pick a community area, zoom the map in, or search to list them here &mdash; or <button class=btn id=listall>list all of them</button> <span class=mut>(downloads about 6 MB)</span></td></tr>`;$('listall').onclick=()=>{LISTALL=true;go()};return}
+function table(){tnote();tbh();stuckBar();setTimeout(markRow,0);if(AGG){$('tb').innerHTML=`<tr><td colspan=10><b>${TOT.n.toLocaleString()} permits</b> match. Pick a community area, zoom the map in, or search to list them here &mdash; or <button class=btn id=listall>list all of them</button> <span class=mut>(downloads about 6 MB)</span></td></tr>`;$('listall').onclick=()=>{LISTALL=true;go()};return}
  $('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${esc(r.own)}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td><td class="crew">${r.con?`<div class=con><a class=lk data-c="${esc(r.con)}">${esc(r.con)}</a></div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': '),nm=t.slice(i+2);return `<div class=trade><span>${esc(t.slice(0,i))}</span> <a class=lk data-c="${esc(nm)}">${esc(nm)}</a></div>`}).join(''):''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>show(cur[+e.dataset.k]));$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();a.dataset.c!=null?setContractor(a.dataset.c):setArch(a.dataset.a)})}
 let CURR=null,phT=null;
@@ -608,7 +609,9 @@ function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
   if(im.complete&&im.naturalWidth)fit();else im.onload=fit})}
 function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
  $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
-function closeDetail(){CURR=null;$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
+function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr)tr.classList.add('sel')}const b=$('dtable');if(b)b.hidden=!tr}
+$('dtable').onclick=()=>{const tr=$('tb').querySelector('tr.sel');if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})};
+function closeDetail(){CURR=null;markRow();$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`,newer:`County Assessor records give ${r.yb} for the building at this address, later than this permit: the original may have been replaced, rebuilt or moved.`}[r.ext]||'';
@@ -635,7 +638,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  ${r.chm?r.chm.map(c=>`<p class=chmnote>The Chicago History Museum&rsquo;s index of <i>The American Contractor</i> also lists a permit at this address (issued ${fmtDate(c[2])}${c[3]?', page '+esc(c[3]):''}${c[0]?'; owner '+esc(c[0]):''}${c[1]?'; architect '+esc(c[1]):''}). The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`).join(''):''}`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r)}
  clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
- $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;
+ $('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;markRow();
  if(r.lat)flyTo(r);drawPts();toHash();
  const t=$('detail').getBoundingClientRect().top;if(Math.abs(t-8)>30)window.scrollTo({top:Math.max(0,t+scrollY-8),behavior:'smooth'})}
 let ZOOM=true,CURRP=null;
