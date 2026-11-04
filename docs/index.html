@@ -54,7 +54,7 @@ dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;margin:8px 0;font-s
 header{padding:16px 16px 12px;border-bottom:3px double var(--line);margin-bottom:4px}.kick{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc);font-weight:600}
 header h1{font-size:26px;line-height:1.15;margin:0 0 4px}header .sub{font-size:13.5px;color:var(--mut);margin:2px 0 4px;max-width:900px}.about{margin-top:4px;font-size:13px;color:var(--mut);max-width:860px}.about summary{cursor:pointer}.about p{margin:6px 0 0}
 .fbar{display:flex;flex-wrap:wrap;gap:10px 20px;padding:10px 16px 8px;align-items:flex-end}.fg{display:flex;flex-direction:column;gap:3px}.fg.grow{flex:1 1 340px}.fl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
-.sgw{position:relative;display:inline-block}#sg{position:absolute;z-index:60;top:100%;left:0;min-width:100%;width:max-content;max-width:340px;max-height:320px;overflow:auto;background:var(--card,#fff);border:1px solid var(--bd,#bbb);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-top:2px}#sg[hidden]{display:none}#sg div{padding:5px 9px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:14px;white-space:nowrap}#sg div.on,#sg div:hover{background:var(--hl,rgba(120,140,200,.25))}#sg small{color:var(--mut,#777)}.fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
+.sgw{position:relative;display:inline-block}#sg{position:absolute;z-index:60;top:100%;left:0;min-width:100%;width:max-content;max-width:340px;max-height:320px;overflow:auto;background:var(--card,#fff);border:1px solid var(--bd,#bbb);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);margin-top:2px}#sg[hidden]{display:none}#sg div{padding:5px 9px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:14px;white-space:nowrap}#sg div.on,#sg div:hover{background:var(--hl,rgba(120,140,200,.25))}#sg .ck{display:inline-block;width:1.2em}#sg div.all{border-bottom:1px solid var(--bd,#bbb);font-weight:600}#sg div.sel{font-weight:600}#sg small{color:var(--mut,#777)}.fr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fg.grow .fr{flex-wrap:nowrap}.fg.grow #q{flex:1 1 auto;min-width:120px}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
 #reset{padding:2px 10px;font-size:13px;margin-left:4px}#summary{font-size:14px;color:var(--fg)}
 footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:6px}
 [hidden]{display:none!important}#overview{display:flex;flex-direction:column;gap:12px}
@@ -65,8 +65,8 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
-<h1>Chicago building permits, from The Economist</h1>
-<p class="sub">Weekly permit lists transcribed from scans of the Chicago <i>Economist</i> (selected quarters from 1883 to 1930: not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
+<h1>Chicago building permits, 1883&ndash;1930</h1>
+<p class="sub">Weekly permit lists transcribed from scans of Chicago trade papers: mostly <i>The Economist</i>, with <i>The American Contractor</i> and <i>The Real Estate and Building Journal</i> filling in some weeks (selected periods from 1883 to 1930; not every issue is here yet). Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
 </header>
 <div class="fbar">
  <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><span class="sgw"><input id="ar" placeholder="architect / builder" size="18" autocomplete="off"><div id="sg" hidden></div></span></div></div>
@@ -226,18 +226,27 @@ function weeks(){
   else if(gran=='d'){$('dec').value=$('dec').value==k?'':k;$('yr').value='';$('qt').value='';$('mo').value='';$('iss').value=''}
   else{$('yr').value=$('yr').value==k?'':k;$('qt').value='';$('mo').value='';$('iss').value=''}
   go()})}
-/* ---- architect suggestions: type 2+ letters, pick one to add it to the selection ---- */
-let sgI=-1,sgK=[];
-function suggestShow(){const t=nk($('ar').value),box=$('sg');if(t.length<2){box.hidden=true;return}
- const hit=Object.keys(AN).filter(k=>!AS.has(k)&&k.includes(t));const ws=k=>(' '+k).includes(' '+t);hit.sort((a,b)=>(ws(b)-ws(a))||AC[b]-AC[a]||(a<b?-1:1));sgK=hit.slice(0,12);sgI=-1;
- box.innerHTML=sgK.map((k,i)=>`<div data-i="${i}">${esc(AN[k])}<small>${AC[k]}</small></div>`).join('')+(hit.length>12?`<div class="more" style="color:var(--mut,#777)" data-i="-2">${hit.length-12} more: keep typing</div>`:'')||'<div style="color:var(--mut,#777)">no matching architect</div>';box.hidden=false}
-function suggestPick(i){const k=sgK[i];if(!k)return;AS.add(k);$('ar').value='';$('sg').hidden=true;go()}
-function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',suggestShow);a.addEventListener('focus',suggestShow);
- box.addEventListener('mousedown',e=>{const d=e.target.closest('[data-i]');if(d&&+d.dataset.i>=0){e.preventDefault();suggestPick(+d.dataset.i)}});
- a.addEventListener('keydown',e=>{const n=box.querySelectorAll('[data-i]').length;if(box.hidden||!n)return;
-  if(e.key=='ArrowDown'||e.key=='ArrowUp'){e.preventDefault();sgI=(sgI+(e.key=='ArrowDown'?1:-1)+sgK.length)%sgK.length;box.querySelectorAll('div').forEach((d,i)=>d.classList.toggle('on',i==sgI))}
-  else if(e.key=='Enter'&&sgI>=0){e.preventDefault();suggestPick(sgI)}else if(e.key=='Escape')box.hidden=true});
- document.addEventListener('click',e=>{if(!e.target.closest('.sgw'))box.hidden=true})}
+/* ---- architect suggestions: a multi-select list. Type 2+ letters; tick as many names as you like (the list stays open on the same matches) ---- */
+let sgI=-1,sgK=[],sgQ='',sgAll=[];
+function suggestShow(){const typed=nk($('ar').value),box=$('sg');if(typed.length>=2)sgQ=typed;const t=sgQ;if(t.length<2){box.hidden=true;return}
+ const st=box.scrollTop,ws=k=>(' '+k).includes(' '+t);
+ sgAll=Object.keys(AN).filter(k=>k.includes(t));sgAll.sort((a,b)=>(ws(b)-ws(a))||AC[b]-AC[a]||(a<b?-1:1));sgK=sgAll.slice(0,40);
+ const allOn=sgAll.length>0&&sgAll.every(k=>AS.has(k));
+ box.innerHTML=(sgAll.length>1?`<div class="all" data-all="1"><span><span class=ck>${allOn?'☑':'☐'}</span> All ${sgAll.length} matching “${esc(t)}”</span></div>`:'')
+  +sgK.map((k,i)=>`<div data-i="${i}" class="${AS.has(k)?'sel':''}"><span><span class=ck>${AS.has(k)?'☑':'☐'}</span> ${esc(AN[k])}</span><small>${AC[k]}</small></div>`).join('')
+  +(sgAll.length>40?`<div class="more" style="color:var(--mut,#777)">${sgAll.length-40} more: type more letters to narrow</div>`:'')
+  ||'<div style="color:var(--mut,#777)">no matching architect</div>';
+ box.hidden=false;box.scrollTop=st;box.querySelectorAll('[data-i]').forEach((d,i)=>d.classList.toggle('on',i==sgI))}
+function suggestToggle(i){const k=sgK[i];if(!k)return;AS.has(k)?AS.delete(k):AS.add(k);after()}
+function suggestAll(){const on=sgAll.every(k=>AS.has(k));sgAll.forEach(k=>on?AS.delete(k):AS.add(k));after()}
+function after(){$('ar').value='';go();suggestShow()}            // the typed text would also filter the table, so clear it; the list stays pinned to sgQ
+function suggestClose(){$('sg').hidden=true;sgQ='';sgI=-1}
+function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',()=>{sgI=-1;suggestShow()});a.addEventListener('focus',suggestShow);
+ box.addEventListener('mousedown',e=>{const d=e.target.closest('[data-i],[data-all]');if(!d)return;e.preventDefault();d.dataset.all?suggestAll():suggestToggle(+d.dataset.i)});
+ a.addEventListener('keydown',e=>{if(e.key=='Escape'){suggestClose();return}if(box.hidden||!sgK.length)return;
+  if(e.key=='ArrowDown'||e.key=='ArrowUp'){e.preventDefault();sgI=(sgI+(e.key=='ArrowDown'?1:-1)+sgK.length)%sgK.length;box.querySelectorAll('[data-i]').forEach((d,i)=>d.classList.toggle('on',i==sgI));const el=box.querySelector('[data-i].on');el&&el.scrollIntoView({block:'nearest'})}
+  else if(e.key=='Enter'&&sgI>=0){e.preventDefault();suggestToggle(sgI)}});
+ document.addEventListener('click',e=>{if(!e.target.closest('.sgw'))suggestClose()})}
 /* ---- architects in the current selection ---- */
 let showAll=false;
 function archs(){const by={},nm={};D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();nm[key]??=a;a=nm[key];const s=by[a]??={n:0,c:0};s.n++;s.c+=r.cost||0});
