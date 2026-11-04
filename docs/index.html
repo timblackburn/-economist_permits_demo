@@ -72,10 +72,11 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
 .fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
 .mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
-.layout{--ph:clamp(560px,calc(100vh - 24px),820px);align-items:start}
-.layout .filters,.layout .mapc,.layout .side{position:sticky;top:8px;height:var(--ph);max-height:none;box-sizing:border-box}
-.layout .side{overflow:auto}.layout .mapc{overflow:hidden}.layout #detail{position:static;max-height:none;overflow:visible}
-@media(max-width:1180px){.layout{grid-template-columns:1fr}.layout .filters,.layout .mapc,.layout .side{position:static;max-height:none;height:auto;overflow:visible}#map{min-height:420px}}
+.layout{align-items:stretch}
+.layout .filters{position:static;height:auto;max-height:calc(100vh - 16px);overflow:auto}                     /* the filters pane sets the height of the row... */
+.layout .mapc,.layout .side{position:static;height:0;min-height:100%;overflow:auto;box-sizing:border-box}    /* ...and the map and the right pane follow it */
+.layout .mapc{overflow:hidden}.layout #detail{position:static;max-height:none;overflow:visible}
+@media(max-width:1180px){.layout{grid-template-columns:1fr}.layout .filters{max-height:none}.layout .mapc,.layout .side{height:auto;min-height:0;overflow:visible}#map{min-height:420px}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -143,6 +144,7 @@ const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
 const map=L.map('map',{renderer:L.canvas({tolerance:6})}).setView([41.84,-87.68],10);
+new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
