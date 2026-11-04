@@ -123,8 +123,8 @@ td:first-child{white-space:nowrap}
 .mapc>h2{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}.mapc>h2 .shade{margin-left:auto;white-space:nowrap}
 #detail .dbar{padding:6px 10px;min-height:0}#detail .dbar .btn{padding:2px 8px;font-size:12.5px;line-height:1.5}#detail .dbar #pos{font-size:12px;min-width:0;margin:0 4px}#detail .dbar .dnav{gap:3px}
 .card>h2.wkh{display:flex;align-items:center;gap:8px}.mtog{margin-left:auto;display:inline-flex;border:1px solid rgba(255,255,255,.6);border-radius:5px;overflow:hidden}.mtog button{background:transparent;border:0;color:#fff;font:inherit;font-size:12px;padding:2px 10px;cursor:pointer}.mtog button+button{border-left:1px solid rgba(255,255,255,.6)}.mtog button.on{background:#fff;color:var(--wh);font-weight:600;cursor:default}.mtog button:not(.on):hover{background:rgba(255,255,255,.18)}
-@media(min-width:1181px){.paneopen #tbar{margin-right:calc(clamp(400px,34vw,520px) + 38px)}
- #tdock{top:10px!important;max-height:calc(100vh - 20px)!important}#detail.floating{top:10px!important;max-height:calc(100vh - 20px)!important}}
+@media(min-width:1181px){.paneopen #detail{position:fixed!important;top:0!important;bottom:0;left:var(--px);width:var(--pw);height:100vh;max-height:none!important;overflow:auto!important;margin:0;z-index:36;border-radius:0}
+ .paneopen #tdock{display:contents}.paneopen #tarea.docked{display:block;padding-right:0}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -645,7 +645,11 @@ function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b
 /* ---- the property panel docks beside the table when a row is picked (the table narrows, nothing to scroll back to); picked from the map it stays in the right-hand column ---- */
 let DOCK=false,MODE='side';
 const canDock=()=>innerWidth>=1181;
-function reserve(on){on=!!on&&canDock();document.body.classList.toggle('paneopen',on);$('tarea').classList.toggle('docked',on);$('tdock').hidden=!on}
+/* the open panel takes the right-hand column (same left edge and width as the By-decade / Architects widgets) at the full height of the window; the summary bar and table end where the map ends */
+function fitPane(){const on=document.body.classList.contains('paneopen'),sd=document.querySelector('.side').getBoundingClientRect(),mp=document.querySelector('.mapc').getBoundingClientRect();
+ document.body.style.setProperty('--px',sd.left+'px');document.body.style.setProperty('--pw',sd.width+'px');
+ for(const id of ['tbar','tarea']){const e=$(id);e.style.marginRight='';if(on){const pr=e.parentElement.getBoundingClientRect().right,over=e.getBoundingClientRect().right-mp.right;e.style.marginRight=Math.max(0,over)+'px'}}}
+function reserve(on){on=!!on&&canDock();document.body.classList.toggle('paneopen',on);$('tarea').classList.toggle('docked',on);$('tdock').hidden=!on;fitPane()}
 function setMode(m){if(!canDock())m='side';if(m===MODE)return;MODE=m;DOCK=m!=='side';const d=$('detail'),side=document.querySelector('.side');
  if(m==='dock'){$('tdock').appendChild(d);d.classList.remove('floating');$('overview').hidden=false}
  else{if(d.parentNode!==side)side.appendChild(d);d.classList.toggle('floating',m==='float');$('overview').hidden=!!CURR}
