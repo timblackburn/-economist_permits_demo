@@ -683,7 +683,6 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  ${who?`<div class=who>${who}</div>`:''}
  <div id=ph></div>
  <dl class=c2>
-  <dt>Listed</dt><dd>${fmtDate(r.d)} · page ${r.pg||'?'}${r.reg?' · '+esc(r.reg)+' list':''}${r.pp?' · '+esc(r.pp):''}</dd>
   <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
   ${r.a9?`<dt>1909 numbering</dt><dd>${esc(r.a9)}${r.a9o?` <span class=mut>(printed as ${esc(r.a9o)})</span>`:''}${r.a9e?' <span class=mut>&mdash; estimated from neighbouring numbers: the 1909 guide does not list this one</span>':''}</dd>`:''}
   ${r.alt?`<dt>Possible address</dt><dd>${esc(r.alt[0])} <span class=mut>&mdash; the corner house on the cross street, ${r.alt[2]} m from where this address falls. Corner houses were sometimes renumbered onto the other street.</span></dd>`:''}
@@ -691,7 +690,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
   ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
- ${(r.pp||'').startsWith('The American Contractor index')?`<h3>No scanned image</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (issue of ${fmtDate(r.d)}, page ${r.pg||'?'}). The index has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`:`<h3>From the scan</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
+ ${(r.pp||'').startsWith('The American Contractor index')?`<h3>No scanned image</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (issue of ${fmtDate(r.d)}, page ${r.pg||'?'}). The index has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`:`<h3>Permit from ${esc(r.pp||'the printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
  <details class=raw><summary>Printed text</summary><p>${esc(r.text)}</p></details>`}
  ${r.chm?r.chm.map(c=>`<p class=chmnote>The Chicago History Museum&rsquo;s index of <i>The American Contractor</i> also lists a permit at this address (issued ${fmtDate(c[2])}${c[3]?', page '+esc(c[3]):''}${c[0]?'; owner '+esc(c[0]):''}${c[1]?'; architect '+esc(c[1]):''}). The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`).join(''):''}`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r)}
