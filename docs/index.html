@@ -126,7 +126,7 @@ const map=L.map('map',{renderer:L.canvas({tolerance:6})}).setView([41.84,-87.68]
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
-const CA_ZOOM=12,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>$('shade').checked||commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
+const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>$('shade').checked||commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
 function style(l){const n=l.feature.properties.n,sel=F.area==n,sh=shadeOn();l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
 function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
@@ -162,13 +162,16 @@ function drawPts0(){ptLayer.clearLayers();
   c.addTo(ptLayer);
   L.marker(ll,{interactive:false,icon:L.divIcon({className:'cl',html:`<span>${metric=='n'?e.n.toLocaleString():short(e.c)}</span>`,iconSize:[0,0]})}).addTo(ptLayer)}
  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+` · ${vis.length.toLocaleString()} in view, grouped into ${cells.size} blobs: click one or zoom in to see each permit`};
-function communityView(){   // community boundaries with the name and the count of permits matching the current filters
- let shown=0,total=0;
- caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds(),sw=map.latLngToContainerPoint(b.getSouthWest()),ne=map.latLngToContainerPoint(b.getNorthEast()),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
-  total+=st.n;if(!st.n)return;shown++;
-  const v=metric=='n'?st.n.toLocaleString():short(st.c),nm=w>=56&&h>=28?`<b>${esc(f.name)}</b>`:'';
+function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
+ let shown=0;const vb=map.getBounds();
+ caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
+  if(!st.n)return;shown++;
+  const s0=Math.max(b.getSouth(),vb.getSouth()),n0=Math.min(b.getNorth(),vb.getNorth()),w0=Math.max(b.getWest(),vb.getWest()),e0=Math.min(b.getEast(),vb.getEast());
+  if(s0>=n0||w0>=e0)return;                           // not on screen
+  const sw=map.latLngToContainerPoint([s0,w0]),ne=map.latLngToContainerPoint([n0,e0]),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
   if(w<34||h<18)return;                               // too small to label at this zoom: hover for the details
-  L.marker(b.getCenter(),{interactive:false,icon:L.divIcon({className:'calw',html:`<div class=calab style="width:${Math.min(110,Math.max(40,w-4))}px">${nm}<span>${v}</span></div>`,iconSize:[0,0]})}).addTo(ptLayer)});
+  const v=metric=='n'?st.n.toLocaleString():short(st.c),nm=w>=56&&h>=28?`<b>${esc(f.name)}</b>`:'';
+  L.marker([(s0+n0)/2,(w0+e0)/2],{interactive:false,icon:L.divIcon({className:'calw',html:`<div class=calab style="width:${Math.min(130,Math.max(40,w-4))}px">${nm}<span>${v}</span></div>`,iconSize:[0,0]})}).addTo(ptLayer)});
  const placed=cur.filter(r=>r.lat).length;
  $('mapnote').textContent=`${placed.toLocaleString()} of ${cur.length.toLocaleString()} placed in ${shown} community areas · zoom in to see each building`}
 function drawLegendOnly(){drawCA()}
