@@ -136,6 +136,7 @@ td:first-child{white-space:nowrap}
 #detail .who .wr{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:10px;padding:4px 0;border-top:1px solid var(--line)}#detail .who .wr:first-child{border-top:0}
 #detail .who .wr .wl{min-width:0;padding:0;display:block;font-size:12.5px;line-height:1.55;text-transform:capitalize}#detail .who .wr .wl.nc{text-transform:none}
 #detail .who .wv{display:block}#detail .who .wa{display:block;color:var(--mut);font-size:12.5px;line-height:1.35}
+@media(max-width:1180px){#tarea .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}#detail{touch-action:pan-y}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -723,6 +724,10 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
+/* touch: swipe the permit panel left / right for the next / previous permit (mostly-horizontal swipes only) */
+(()=>{let x0=0,y0=0,t0=0,on=false;const d=$('detail');
+ d.addEventListener('touchstart',e=>{if(e.touches.length!=1||e.target.closest('input,select,textarea,#pg')){on=false;return}on=true;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
+ d.addEventListener('touchend',e=>{if(!on)return;on=false;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8&&Date.now()-t0<700)step(dx<0?1:-1)},{passive:true})})();
 addEventListener('keydown',e=>{const ae=document.activeElement,tg=ae.tagName;if(e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
  });
