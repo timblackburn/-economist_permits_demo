@@ -117,6 +117,7 @@ header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:
 #about h3{margin:16px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}#about h3:first-child{margin-top:0}#about table{width:100%;min-width:0;table-layout:auto;font-size:13px;margin:6px 0}#about th{position:static;background:var(--th);color:#fff;font-size:12px;cursor:default;top:auto;padding:5px 8px}#about td{padding:5px 8px;border-bottom:1px solid var(--line)}#about td.n,#about th.n{text-align:right}#about ul{margin:4px 0;padding-left:20px}#about li{margin:2px 0}
 footer .credit{white-space:nowrap}
 td:first-child{white-space:nowrap}
+.mapc>#map{margin-left:-17px;margin-right:-17px;border-radius:0}.dotkey .kl{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.leaflet-top.leaflet-right .leaflet-control-attribution{margin-top:6px;margin-right:6px;font-size:10.5px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -191,7 +192,7 @@ const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
-const map=L.map('map',{renderer:L.canvas({tolerance:6})}).setView([41.84,-87.68],10);
+const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
@@ -487,10 +488,10 @@ function dotColor(r){if(DOTC=='arch')return ARCHCOL[nk(arch(r))]||OTHERC;
  if(DOTC=='time'){const k=CHART.key(r.d),i=CHART.ks.indexOf(k);return i<0?OTHERC:timeColor(k,i)}
  if(!(r.cost>0))return OTHERC;let b=0;while(b<COSTBR.length&&r.cost>=COSTBR[b])b++;return COSTC[b]}
 function dotKey(){const m=[['cost','Cost'],['arch','Architect'],['time','Time']];let h='<span class="by">Color dots by: '+m.map(([k,l])=>`<button class="qb${DOTC==k?' on':''}" data-m="${k}">${l}</button>`).join('<span class="dot">·</span>')+'</span>';
- if(DOTC=='cost')h+=COSTC.map((c,i)=>`<span class="it"><i style="background:${c}"></i>${i==0?'under '+fmtC(COSTBR[0]):i==COSTC.length-1?fmtC(COSTBR[i-1])+'+':fmtC(COSTBR[i-1])+'–'+fmtC(COSTBR[i])}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>no cost</span>`;
+ if(DOTC=='cost')h+='<div class="kl">'+COSTC.map((c,i)=>`<span class="it"><i style="background:${c}"></i>${i==0?'under '+fmtC(COSTBR[0]):i==COSTC.length-1?fmtC(COSTBR[i-1])+'+':fmtC(COSTBR[i-1])+'–'+fmtC(COSTBR[i])}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>no cost</span></div>`;
  else if(DOTC=='arch')h+=ARCHTOP.map(t=>`<span class="it"><i style="background:${t.color}"></i>${esc(t.name)}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>all others</span>`;
- else if(CHART.gran=='d')h+=CHART.ks.map(k=>`<span class="it"><i style="background:${DECC[k]||OTHERC}"></i>${esc(k)}</span>`).join('');
- else{const ks=CHART.ks,f=ks[0],l=ks[ks.length-1],lb=k=>CHART.gran=='m'?monthName(k):k;h+=ks.length?`<span class="it">${esc(lb(f))}<span class="dgrad" style="background:linear-gradient(90deg,${TIMEPAL.join(',')})"></span>${esc(lb(l))}</span><span class="it">(the chart's bars: ${({w:'issues',m:'months',y:'years',d:'decades'})[CHART.gran]})</span>`:''}
+ else if(CHART.gran=='d')h+='<div class="kl">'+CHART.ks.map(k=>`<span class="it"><i style="background:${DECC[k]||OTHERC}"></i>${esc(k)}</span>`).join('')+'</div>';
+ else{const ks=CHART.ks,f=ks[0],l=ks[ks.length-1],lb=k=>CHART.gran=='m'?monthName(k):k;h+=ks.length?`<div class="kl"><span class="it">${esc(lb(f))}<span class="dgrad" style="background:linear-gradient(90deg,${TIMEPAL.join(',')})"></span>${esc(lb(l))}</span><span class="it">(the chart's bars: ${({w:'issues',m:'months',y:'years',d:'decades'})[CHART.gran]})</span></div>`:''}
  $('dotkey').innerHTML=h}
 $('dotkey').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.dataset.m==DOTC)return;DOTC=b.dataset.m;toHash();archs();weeks();drawPts();dotKey()});
 /* ---- contractor filter: click a contractor or trade name in the table (like the architect links) to keep only permits that name them ---- */
@@ -643,7 +644,7 @@ let DOCK=false;
 const canDock=()=>innerWidth>=1181;
 function dock(on){if(on&&!canDock())on=false;if(on===DOCK)return;DOCK=on;const d=$('detail');if(on){$('tdock').appendChild(d);$('tdock').hidden=false;$('tarea').classList.add('docked')}else{document.querySelector('.side').appendChild(d);$('tdock').hidden=true;$('tarea').classList.remove('docked')}if(MM)setTimeout(()=>MM&&MM.invalidateSize(),80)}
 addEventListener('resize',()=>{if(DOCK&&!canDock()){dock(false);if(CURR)$('overview').hidden=true}});
-function keepRowInView(tr){if(!tr||!DOCK)return;const top=($('tbar')?$('tbar').offsetHeight:52)+44,r=tr.getBoundingClientRect();if(r.top<top||r.bottom>innerHeight-12)tr.scrollIntoView({behavior:Math.abs(r.top-innerHeight/2)>innerHeight*1.5?'auto':'smooth',block:'center'})}   // a long jump is instant, a short one is smooth
+function keepRowInView(tr){if(!tr||!DOCK)return;const head=($('tbar')?$('tbar').offsetHeight:52)+44,r=tr.getBoundingClientRect();if(r.top<head||r.bottom>innerHeight*.85)window.scrollTo({top:scrollY+r.top-(innerHeight-head)/2-r.height/2+0*head,behavior:'auto'})}   // placed at once (overlapping smooth scrolls cancel each other); recentres when the row nears the bottom of the window
 function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr){tr.classList.add('sel');keepRowInView(tr)}}const b=$('dtable');if(b)b.hidden=!tr||DOCK}
 $('dtable').onclick=()=>{const tr=$('tb').querySelector('tr.sel');if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})};
 function closeDetail(){CURR=null;markRow();dock(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
