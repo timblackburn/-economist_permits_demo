@@ -125,6 +125,8 @@ td:first-child{white-space:nowrap}
 .card>h2.wkh{display:flex;align-items:center;gap:8px}.mtog{margin-left:auto;display:inline-flex;border:1px solid rgba(255,255,255,.6);border-radius:5px;overflow:hidden}.mtog button{background:transparent;border:0;color:#fff;font:inherit;font-size:12px;padding:2px 10px;cursor:pointer}.mtog button+button{border-left:1px solid rgba(255,255,255,.6)}.mtog button.on{background:#fff;color:var(--wh);font-weight:600;cursor:default}.mtog button:not(.on):hover{background:rgba(255,255,255,.18)}
 @media(min-width:1181px){.paneopen #detail{position:fixed!important;top:var(--pt,0px)!important;bottom:0;left:var(--px);width:var(--pw);height:auto;max-height:none!important;overflow:auto!important;margin:0;z-index:36;border-radius:0}
  .paneopen #tdock{display:contents}.paneopen #tarea.docked{display:block;padding-right:0}}
+#detail .dbar .dtitle{font-weight:600;font-size:15px;margin-right:auto;letter-spacing:.2px}
+#detail .dbar .btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff}#detail .dbar .btn:hover:not(:disabled){background:rgba(255,255,255,.28)}#detail .dbar .btn:disabled{opacity:.4;cursor:default}#detail .dbar #dback{margin-left:8px}#detail .dbar #dtable{margin-right:8px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -151,7 +153,7 @@ td:first-child{white-space:nowrap}
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
@@ -711,7 +713,7 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
-addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
+addEventListener('keydown',e=>{const ae=document.activeElement,tg=ae.tagName;if(e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
  if($('detail').hidden||m.style.display=='block')return;if(e.key=='ArrowRight'){e.preventDefault();step(1)}else if(e.key=='ArrowLeft'){e.preventDefault();step(-1)}});
 $('dback').onclick=closeDetail;
