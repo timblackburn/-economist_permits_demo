@@ -13,7 +13,7 @@
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
 .f{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px;align-items:center}
-.nav{display:inline-flex;gap:4px;align-items:center}.fbar input,.fbar select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
+.nav{display:inline-flex;gap:4px;align-items:center}.fbar input,.fbar select,.filters input,.filters select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
 .btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
 .chips{padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px;min-height:6px}
 .chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer}.chip b{color:var(--acc);margin-left:6px}
@@ -62,23 +62,37 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 #detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
 .crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
 .phbox{display:flex;align-items:center;justify-content:center;width:100%;max-width:360px;height:270px;background:var(--none);border-radius:4px;overflow:hidden;font-size:13px}#ph .phbox img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:0}.phcap{display:block;min-height:3.2em;margin-top:3px}#ph .pins{min-height:2.2em}.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
+/* ---- three columns on a desktop: search & filters | map | permit detail ---- */
+.layout{display:grid;grid-template-columns:minmax(250px,280px) minmax(0,1fr) minmax(330px,390px);gap:12px;padding:8px 16px 0;align-items:start}
+.filters{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;display:flex;flex-direction:column;gap:10px}
+.filters .fg{gap:4px}.filters input,.filters select{width:100%;box-sizing:border-box}.filters .big{font-size:16px;padding:9px 10px}
+.filters .fr{display:grid;grid-template-columns:1fr 1fr;gap:6px}.filters .fr.nav{grid-template-columns:auto 1fr auto}.filters .fr.nav #span{grid-column:1/-1}
+.filters .fr .btn{width:auto}#reg,#ca{grid-column:1/-1}.filters .seg{display:inline-flex}.filters .chips{padding:0;min-height:0}
+.filters #summary{padding:0;font-size:13.5px;color:var(--fg)}
+.narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
+.fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
+.mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
+@media(max-width:1060px){.layout{grid-template-columns:1fr}.filters,.mapc{position:static;max-height:none;height:auto}#map{min-height:420px}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
 <p class="sub">Weekly permit lists transcribed from scans of Chicago trade papers: mostly <i>The Economist</i>, with <i>The American Contractor</i> and <i>The Real Estate and Building Journal</i> filling in some weeks (selected periods from 1883 to 1930; not every issue is here yet). Some weeks of 1898&ndash;1912 come only from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no scans. Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
 </header>
-<div class="fbar">
- <div class="fg grow"><span class="fl">Find</span><div class="fr"><input id="q" placeholder="owner, street, building type, mason…"><span class="sgw"><input id="ar" placeholder="architect / builder" size="18" autocomplete="off"><div id="sg" hidden></div></span></div></div>
- <div class="fg"><span class="fl">When</span><div class="fr"><select id="dec" title="Decade"><option value="">Any decade</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></div>
- <div class="fg"><span class="fl">Issue &amp; the ones after it</span><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></div>
- <div class="fg"><span class="fl">Where</span><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></div>
- <div class="fg"><span class="fl">Cost at least</span><div class="fr"><input id="min" type="number" placeholder="$" style="width:90px"></div></div>
- <div class="fg"><span class="fl">Map &amp; chart show</span><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span><button class="btn" id="mv" title="Show the average per issue instead of totals (fair when only some issues are loaded)">Per issue</button></div></div>
-</div>
-<div class="chips" id="chips"></div><div id="summary"></div>
-<div class="grid">
- <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
+<div class="layout">
+<aside class="filters card" id="filters">
+ <div class="fg"><span class="fl">Search</span><input id="q" class="big" placeholder="owner, street, building…"></div>
+ <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
+ <div id="summary"></div>
+ <div class="chips" id="chips"></div>
+ <div class="narrow">Narrow by</div>
+ <details class="fgroup" open><summary>When</summary><div class="fr"><select id="dec" title="Decade"><option value="">Any decade</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></details>
+ <details class="fgroup"><summary>Issue</summary><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></details>
+ <details class="fgroup" open><summary>Where</summary><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></details>
+ <details class="fgroup"><summary>Cost</summary><div class="fr"><label class="mut">at least</label><input id="min" type="number" placeholder="$" style="width:90px"></div></details>
+ <details class="fgroup" open><summary>Map &amp; chart show</summary><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span><button class="btn" id="mv" title="Show the average per issue instead of totals (fair when only some issues are loaded)">Per issue</button></div></details>
+</aside>
+<div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
  <div class="side">
   <div id="overview">
   <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wk"></div></div>
@@ -95,6 +109,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id),m=$('m');
+if(innerWidth<=1060)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* ---- theme: Auto (follows the device, live) / Light / Dark; the choice is remembered ---- */
 let pref='auto';try{pref=localStorage.getItem('permits-theme')||'auto'}catch(e){}
 if(!['auto','light','dark'].includes(pref))pref='auto';
