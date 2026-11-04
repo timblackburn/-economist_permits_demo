@@ -4,11 +4,11 @@
 <script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
 <style>
-:root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;
+:root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;
 --q1:#e3eefb;--q2:#bcd6f3;--q3:#8db9ea;--q4:#5a98de;--q5:#2a78d6;--none:#ece8dd}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;
 --q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}}
-:root[data-theme="dark"]{--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;
+:root[data-theme="dark"]{--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;
 --q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
@@ -84,6 +84,17 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .layout .mapc,.layout .side{position:static;height:0;min-height:100%;overflow:auto;box-sizing:border-box}    /* ...and the map and the right pane follow it */
 .layout .mapc{overflow:hidden}.layout #detail{position:static;max-height:none;overflow:visible}
 @media(max-width:1180px){.layout{grid-template-columns:1fr}.layout .filters{max-height:none}.layout .mapc,.layout .side{height:auto;min-height:0;overflow:visible}#map{min-height:420px}}
+
+/* ---- solid colour bands: page header, widget headings, table header; striped rows ---- */
+header{background:var(--hd);color:#fff;border-bottom:0;margin:0 0 16px;padding:20px 20px 18px;position:relative}
+header h1{color:#fff}header .sub,header p{color:rgba(255,255,255,.86)}header .kick{color:#f0c9b8}header a{color:#fff}
+header .thbtn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.45)}header .thbtn:hover{background:rgba(255,255,255,.22)}
+.card>h2,.filters>h2{margin:-15px -17px 14px;padding:9px 16px;background:var(--wh);color:#fff;border-radius:5px 5px 0 0;font-size:14px;font-weight:600;letter-spacing:.01em}
+.card>h2 span,.card>h2 label,.card>h2 small{color:rgba(255,255,255,.82)}.card>h2 label{font-weight:400}
+#detail .dbar{background:var(--wh);border-bottom:0;border-radius:5px 5px 0 0;color:#fff}#detail .dbar #pos{color:rgba(255,255,255,.85)}
+th{background:var(--th);color:#fff;border-bottom:0}th:first-child{border-radius:6px 0 0 6px}th:last-child{border-radius:0 6px 6px 0}th:hover{filter:brightness(1.12)}
+tbody tr.r:nth-child(even){background:var(--stripe)}tr.r:hover,tbody tr.r:nth-child(even):hover{background:var(--rowhover)}
+td{border-bottom:1px solid transparent}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -92,6 +103,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 </header>
 <div class="layout">
 <aside class="filters card" id="filters">
+ <h2>Search &amp; filter</h2>
  <div class="fg"><span class="fl">Search</span><span class="sgw qw"><input id="q" class="big" placeholder="owner, street, building, or an address…" autocomplete="off" aria-autocomplete="list"><span id="qhint" hidden>↵ Enter</span><div id="qsg" hidden role="listbox"></div></span><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  <div class="fg"><span class="fl">Community areas</span><span class="sgw qw"><button type="button" id="cab" class="cabtn" aria-haspopup="listbox" aria-expanded="false">All community areas</button><div id="cap" hidden><input id="cas" placeholder="find an area…" autocomplete="off" aria-label="Find a community area"><div id="cal" role="listbox" aria-multiselectable="true"></div><div class="cafoot"><a class="lk" id="cclr">clear selection</a></div></div></span></div>
