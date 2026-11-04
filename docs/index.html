@@ -549,6 +549,8 @@ function chips(){toHash();qlocUpdate();const c=[];
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
  if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}}
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
+/* round-number axis: the top of the axis and the gridlines fall on 1, 2, 2.5 or 5 times a power of ten */
+function niceScale(m){const raw=m/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p,max=Math.ceil(m/st-1e-9)*st,ticks=[];for(let v=0;v<=max+st/1e6;v+=st)ticks.push(+v.toFixed(6));return{max,ticks}}
 function weeks(){
  const dom=ISS.filter(d=>inPeriod({d})),span=dom.length?(new Date(dom[dom.length-1])-new Date(dom[0]))/864e5:0;
  const gran=span<=120?'w':span<=400?'m':span<=4000?'y':'d',key=d=>gran=='w'?d:gran=='m'?d.slice(0,7):gran=='y'?d.slice(0,4):Math.floor(+d.slice(0,4)/10)*10+'s',by={},nIss={};
@@ -557,10 +559,10 @@ function weeks(){
   if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
- const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?40:28,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx0=Math.max(1,...vals),NS=niceScale(mx0),mx=NS.max,W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?40:28,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
  let g='';let seg=null;if(DOTC=='arch'&&!AGG){seg={};cur.forEach(r=>{const k=key(r.d);if(!by[k])return;const a=nk(arch(r)),ak=ARCHCOL[a]?a:'~o',o=seg[k]??={},e=o[ak]??={n:0,c:0};e.n++;e.c+=r.cost||0})}
- [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
+ NS.ticks.forEach(v=>{const y=H-B-(H-B-8)*v/mx;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(v)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
  const unit={w:'issue',m:'month',y:'year',d:'decade'}[gran];
  g+=`<text transform="rotate(-90 9 ${(H-B)/2})" x="9" y="${(H-B)/2+4}" text-anchor="middle" fill="var(--mut)" font-size="11">${metric=='n'?'Permits':'Building cost'}</text>`;
