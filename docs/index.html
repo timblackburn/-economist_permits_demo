@@ -70,7 +70,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .filters .fr .btn{width:auto}#reg,#ca{grid-column:1/-1}.filters .seg{display:inline-flex}.filters .chips{padding:0;min-height:0}
 .filters #summary{padding:0;font-size:13.5px;color:var(--fg)}
 .narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
-.dr{padding:8px 10px}.dates{display:flex;align-items:center;gap:6px}.dates input{flex:1;min-width:0;padding:5px 7px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--surface,#fff);color:var(--fg);text-align:center}
+.dr{padding:2px 0 0}.dates{display:flex;align-items:center;gap:6px}.dates input{flex:1;min-width:0;padding:5px 7px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--surface,#fff);color:var(--fg);text-align:center}
 .rs{position:relative;height:34px;margin:8px 7px 2px}.rs svg{position:absolute;left:0;top:0;width:100%;height:12px;border-radius:3px;background:var(--bg)}
 .rs input[type=range]{position:absolute;left:-7px;top:6px;width:calc(100% + 14px);margin:0;height:24px;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
 .rs input[type=range]::-webkit-slider-runnable-track{background:none;height:24px}.rs input[type=range]::-moz-range-track{background:none;height:24px}
@@ -95,10 +95,10 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
  <div class="fg"><span class="fl">Search</span><input id="q" class="big" placeholder="owner, street, building…"></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  <div class="fg"><span class="fl">Community area</span><select id="ca" style="width:100%"><option value="">All community areas</option></select></div>
+ <div class="fg"><span class="fl">Dates</span><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></div>
  <div id="summary"></div>
  <div class="chips" id="chips"></div>
  <div class="narrow">Narrow by</div>
- <details class="fgroup" open><summary>When</summary><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></details>
  <details class="fgroup"><summary>Cost</summary><div class="fr"><label class="mut">at least</label><input id="min" type="number" placeholder="$" style="width:90px"></div></details>
  <details class="fgroup" open><summary>Map &amp; chart show</summary><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span></div></details>
 </aside>
