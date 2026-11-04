@@ -138,30 +138,19 @@ function drawCA(){
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
  $('legend').innerHTML=(shadeOn()&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+(shadeOn()?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (the dot grows with cost)`}
-/* ---- map: individual permits when few are in view, otherwise count blobs on a pixel grid (click a blob to zoom into it) ---- */
-const SHOW_MAX=2500,CELL=60;
+/* ---- map: community areas with counts at zoom 14 and out; every permit as its own dot from zoom 15 ---- */
+
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
 let lastComm=null;
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
  if(comm){communityView();return}
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
- if(vis.length<=SHOW_MAX){
   vis.forEach(r=>{const rad=Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000)));
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:.88,color:css('--ring')});
-   c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
+   c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
-  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'');return}
- const cells=new Map();
- for(const r of vis){const q=map.project([r.lat,r.lon],z),k=Math.floor(q.x/CELL)+':'+Math.floor(q.y/CELL);let e=cells.get(k);if(!e)cells.set(k,e={n:0,c:0,la:0,lo:0,pts:[]});e.n++;e.c+=r.cost||0;e.la+=r.lat;e.lo+=r.lon;e.pts.push([r.lat,r.lon])}
- let mx=1;for(const e of cells.values())mx=Math.max(mx,metric=='n'?e.n:e.c);
- for(const e of cells.values()){const v=metric=='n'?e.n:e.c,rad=9+25*Math.sqrt(v/mx),ll=[e.la/e.n,e.lo/e.n];
-  const c=L.circleMarker(ll,{radius:rad,weight:2,color:css('--ring'),fillColor:css('--s2'),fillOpacity:.62});
-  c.bindTooltip(`<b>${e.n.toLocaleString()} permits</b>${money(e.c)} listed<br><i>click to zoom in</i>`,{className:'tip'});
-  c.on('click',ev=>{L.DomEvent.stop(ev);const b=L.latLngBounds(e.pts);if(b.getSouthWest().equals(b.getNorthEast())||map.getBoundsZoom(b.pad(.1))<=z)map.setView(ll,Math.min(z+2,19));else map.fitBounds(b.pad(.15),{maxZoom:19})});
-  c.addTo(ptLayer);
-  L.marker(ll,{interactive:false,icon:L.divIcon({className:'cl',html:`<span>${metric=='n'?e.n.toLocaleString():short(e.c)}</span>`,iconSize:[0,0]})}).addTo(ptLayer)}
- $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+` · ${vis.length.toLocaleString()} in view, grouped into ${cells.size} blobs: click one or zoom in to see each permit`};
+  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'')}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
