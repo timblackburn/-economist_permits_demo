@@ -70,6 +70,13 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .filters .fr .btn{width:auto}#reg,#ca{grid-column:1/-1}.filters .seg{display:inline-flex}.filters .chips{padding:0;min-height:0}
 .filters #summary{padding:0;font-size:13.5px;color:var(--fg)}
 .narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
+.dr{padding:8px 10px}.dates{display:flex;align-items:center;gap:6px}.dates input{flex:1;min-width:0;padding:5px 7px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--surface,#fff);color:var(--fg);text-align:center}
+.rs{position:relative;height:34px;margin:8px 7px 2px}.rs svg{position:absolute;left:0;top:0;width:100%;height:12px;border-radius:3px;background:var(--bg)}
+.rs input[type=range]{position:absolute;left:-7px;top:6px;width:calc(100% + 14px);margin:0;height:24px;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.rs input[type=range]::-webkit-slider-runnable-track{background:none;height:24px}.rs input[type=range]::-moz-range-track{background:none;height:24px}
+.rs input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:14px;height:24px;border-radius:5px;background:var(--acc);border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px var(--acc);cursor:ew-resize}
+.rs input[type=range]::-moz-range-thumb{pointer-events:auto;width:10px;height:20px;border-radius:5px;background:var(--acc);border:2px solid var(--surface,#fff);cursor:ew-resize}
+.rs input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--fg)}.rnote{display:flex;justify-content:space-between;font-size:12px;margin-top:2px}.lnk{background:none;border:0;color:var(--acc);cursor:pointer;font-size:12px;padding:0;text-decoration:underline}
 .fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
 .mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
 .layout{align-items:stretch}
@@ -90,8 +97,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
  <div id="summary"></div>
  <div class="chips" id="chips"></div>
  <div class="narrow">Narrow by</div>
- <details class="fgroup" open><summary>When</summary><div class="fr"><select id="dec" title="Decade"><option value="">Any decade</option></select><select id="yr" title="Year"><option value="">Any year</option></select><select id="qt" title="Quarter"><option value="">Any quarter</option></select><select id="mo" title="Month"><option value="">Any month</option></select></div></details>
- <details class="fgroup"><summary>Issue</summary><div class="fr nav"><button class="btn" id="ip" title="Previous issue">‹</button><select id="iss"><option value="">All issues</option></select><button class="btn" id="in" title="Next issue">›</button><select id="span" title="Show this issue and the ones that follow it"><option value="1">this issue only</option><option value="2">+ next issue</option><option value="3">+ next 2 issues</option><option value="4">+ next 3 issues</option></select></div></details>
+ <details class="fgroup" open><summary>When</summary><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></details>
  <details class="fgroup" open><summary>Where</summary><div class="fr"><select id="reg"><option value="">All regions</option><option>South</option><option>Southwest</option><option>North</option><option>Northwest</option></select><select id="ca"><option value="">All community areas</option></select></div></details>
  <details class="fgroup"><summary>Cost</summary><div class="fr"><label class="mut">at least</label><input id="min" type="number" placeholder="$" style="width:90px"></div></details>
  <details class="fgroup" open><summary>Map &amp; chart show</summary><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span></div></details>
@@ -127,7 +133,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pre
 applyTheme(false);
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
 let COUNTS=null,DICT=null,ALLKEYS=[],LOADED=new Set(),SHP={},ALLP=null,LISTALL=false,AGG=true,TOT={n:0,placed:0},GOTOK=0;
-let ISS=[],D=[],CA=null,cur=[],sk='d',sd=1,metric='n',perIssue=false,F={area:null};
+let R={a:null,b:null},V=null,ISSN=[],ISS=[],D=[],CA=null,cur=[],sk='d',sd=1,metric='n',perIssue=false,F={area:null};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
 const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+n;
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -211,7 +217,7 @@ const ALLLOADED=()=>LEGACY||ALLKEYS.every(k=>LOADED.has(k));
 function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}}
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
-const rowFilters=()=>!!($('q').value||$('ar').value||AS.size||(+$('min').value>0)||$('iss').value||$('reg').value);
+const rowFilters=()=>!!($('q').value||$('ar').value||AS.size||(+$('min').value>0)||!dateAligned()||archKey()===null||$('reg').value);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL||rowFilters())return ALLKEYS;
  if($('inview').checked)return viewShards();
@@ -225,8 +231,7 @@ async function boot(){
  const [cj,dj,ca]=await Promise.all([fetch('data/counts.json').then(r=>r.json()),fetch('data/dict.json').then(r=>r.json()),fetch('ca.json').then(r=>r.json())]);
  COUNTS=cj;DICT=dj;CA=ca;ALLKEYS=Object.keys(cj.areas);
  const months=Object.keys(cj.cube).sort(),pd=m=>({d:m+'-01'});
- [...new Set(months.map(m=>Dec(pd(m))))].forEach(x=>$('dec').add(new Option(x,x)));[...new Set(months.map(m=>Yr(pd(m))))].forEach(x=>$('yr').add(new Option(x,x)));[...new Set(months.map(m=>Qt(pd(m))))].forEach(x=>$('qt').add(new Option(x,x)));months.forEach(x=>$('mo').add(new Option(monthName(x),x)));
- ISS=cj.issues.map(e=>e[0]);ISS.forEach(x=>$('iss').add(new Option(x,x)));
+ ISS=cj.issues.map(e=>e[0]);
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));
  suggestInit();fromHash();await go();
  if(OPEN){if(OPENA)await loadShards([OPENA]);else await loadAll();const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}}
@@ -234,18 +239,52 @@ async function boot(){
 function legacyBoot(){
  ALLKEYS=['*'];LOADED=new Set(['*']);
  fetch('data/index.json').then(r=>r.json()).then(async ix=>{const d=D=unpack(ix);CA=await (await fetch('ca.json')).json();
- [...new Set(d.map(Dec))].sort().forEach(x=>$('dec').add(new Option(x,x)));[...new Set(d.map(Yr))].sort().forEach(x=>$('yr').add(new Option(x,x)));[...new Set(d.map(Qt))].sort().forEach(x=>$('qt').add(new Option(x,x)));[...new Set(d.map(r=>r.d.slice(0,7)))].sort().forEach(x=>$('mo').add(new Option(monthName(x),x)));
- ISS=[...new Set(d.map(r=>r.d))].sort();ISS.forEach(x=>$('iss').add(new Option(x,x)));
+ ISS=[...new Set(d.map(r=>r.d))].sort();
  CA.features.map(f=>f.properties).sort((a,b)=>a.name>b.name?1:-1).forEach(p=>$('ca').add(new Option(p.name,p.n)));buildArchIndex();suggestInit();fromHash();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
 }
 
 const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),Dec=r=>Math.floor(+r.d.slice(0,4)/10)*10+'s';
 const MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],monthName=k=>MON3[+k.slice(5,7)-1]+' '+k.slice(0,4);
-function inPeriod(r){return(!$('mo').value||r.d.slice(0,7)==$('mo').value)&&(!$('dec').value||Dec(r)==$('dec').value)&&(!$('yr').value||Yr(r)==$('yr').value)&&(!$('qt').value||Qt(r)==$('qt').value)}
-function fillIss(){const keep=$('iss').value,s=$('iss');s.length=1;ISS.filter(d=>inPeriod({d})).forEach(x=>s.add(new Option(x,x)));s.value=[...s.options].some(o=>o.value==keep)?keep:''}
-function issWin(){const i=$('iss').value;if(!i)return null;const k=ISS.indexOf(i);return new Set(ISS.slice(k,k+(+$('span').value||1)))}
-function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',i=$('iss').value,rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
- return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&((skip=='iss'||!W)?inPeriod(r):W.has(r.d))&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
+const inPeriod=r=>!R.a||(r.d>=R.a&&r.d<=R.b);
+function issWin(){return null}
+/* ---- the date range: two slider handles + From/To boxes. R = chosen dates (null = all). V = the span the slider currently shows; it zooms in around a short selection so single issues can be picked ---- */
+const dn=t=>Date.parse(t)/864e5,ds=n=>new Date(Math.round(n)*864e5).toISOString().slice(0,10),eom=t=>{const y=+t.slice(0,4),m=+t.slice(5,7);return ds(Date.UTC(y,m,0)/864e5)},som=t=>t.slice(0,7)+'-01';
+function dateAligned(){return !R.a||(R.a.slice(8)=='01'&&eom(R.b)==R.b)}
+function archKey(){if(!R.a)return 'all';const y1=R.a.slice(0,4),y2=R.b.slice(0,4),m1=+R.a.slice(5,7),m2=+R.b.slice(5,7);
+ if(R.a.slice(0,7)==R.b.slice(0,7))return R.a.slice(0,7);
+ if(y1==y2){if(m1==1&&m2==12)return y1;if((m1-1)%3==0&&m2==m1+2)return y1+' Q'+((m1-1)/3+1)}
+ if(y1[3]=='0'&&+y2==+y1+9&&m1==1&&m2==12)return y1.slice(0,3)+'0s';return null}
+function fullSpan(){return ISS.length?[dn(ISS[0]),dn(ISS[ISS.length-1])]:[0,1]}
+function setR(a,b,zoom){const f=fullSpan();if(!a||(a<=som(ISS[0])&&b>=eom(ISS[ISS.length-1])))R={a:null,b:null};else R={a,b};
+ if(zoom!==false)autoZoom();syncRange()}
+function autoZoom(){const f=fullSpan();if(!R.a){V=f;return}const a=dn(R.a),b=dn(R.b),sp=b-a;if(sp<=540){const pad=Math.max(sp,60);V=[Math.max(f[0],a-pad),Math.min(f[1],b+pad)]}else V=f}
+function syncRange(){if(!ISS.length)return;if(!ISSN.length)ISSN=ISS.map(dn);const f=fullSpan();if(!V)V=f;const a=R.a?dn(R.a):f[0],b=R.b?dn(R.b):f[1],w=V[1]-V[0]||1,pos=t=>Math.max(0,Math.min(1000,Math.round((t-V[0])/w*1000)));
+ $('r1').value=pos(a);$('r2').value=pos(b);$('d1').value=R.a?R.a:'';$('d2').value=R.b?R.b:'';$('d1').placeholder=ISS[0];$('d2').placeholder=ISS[ISS.length-1];
+ let g='',x1=pos(a),x2=pos(b);g+=`<rect x="${x1}" y="0" width="${Math.max(x2-x1,2)}" height="12" fill="var(--acc)" opacity=".22"/>`;
+ ISSN.forEach(t=>{if(t<V[0]||t>V[1])return;g+=`<rect x="${(t-V[0])/w*1000}" y="2" width="${Math.max(1.4,7/w*1000/7)}" height="8" fill="var(--mut)"/>`});$('cov').innerHTML=g;
+ const n=ISS.filter(d=>inPeriod({d})).length;$('rn').textContent=(R.a?`${n} issue${n==1?'':'s'}`:`all ${n} issues`)+(V[0]>f[0]||V[1]<f[1]?` · showing ${ds(V[0])} to ${ds(V[1])}`:'');$('rz').hidden=!(V[0]>f[0]||V[1]<f[1])}
+function snapT(t,end,span){if(span>366){const d=ds(t);return end?eom(d):som(d)}let k=0,best=1e9;ISSN.forEach((x,i)=>{const e=Math.abs(x-t);if(e<best){best=e;k=i}});return ISS[k]}
+let goT=0;function slide(which){const w=V[1]-V[0],t1=V[0]+$('r1').value/1000*w,t2=V[0]+$('r2').value/1000*w;let lo=Math.min(t1,t2),hi=Math.max(t1,t2);if(which==1&&t1>t2)lo=hi=t2;if(which==2&&t2<t1)lo=hi=t1;const span=hi-lo,a=snapT(lo,false,span),b=snapT(hi,true,span);
+ R={a,b};if(a<=som(ISS[0])&&b>=eom(ISS[ISS.length-1]))R={a:null,b:null};syncRange();clearTimeout(goT);goT=setTimeout(go,140)}
+function parseD(t,end){t=(t||'').trim();let m;if(!t)return null;
+ if(m=t.match(/^(\d{4})$/))return end?m[1]+'-12-31':m[1]+'-01-01';
+ if(m=t.match(/^(\d{4})-(\d{1,2})$/)){const x=m[1]+'-'+m[2].padStart(2,'0');return end?eom(x+'-01'):x+'-01'}
+ if(m=t.match(/^(\d{1,2})\/(\d{4})$/)){const x=m[2]+'-'+m[1].padStart(2,'0');return end?eom(x+'-01'):x+'-01'}
+ if(m=t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+ if(m=t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))return m[3]+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');
+ if(m=t.match(/^([A-Za-z]{3,9})\.?\s+(\d{4})$/)){const k=MON3.findIndex(x=>x.toLowerCase()==m[1].slice(0,3).toLowerCase());if(k>=0){const x=m[2]+'-'+String(k+1).padStart(2,'0');return end?eom(x+'-01'):x+'-01'}}
+ const d=Date.parse(t+' UTC');return isNaN(d)?null:ds(d/864e5)}
+function typedRange(){const a=parseD($('d1').value,false),b=parseD($('d2').value,true);const A=a||(R.a||ISS[0]),B=b||(R.b||ISS[ISS.length-1]);if(A>B){syncRange();return}setR(A,B);go()}
+function rangeLabel(){const a=R.a,b=R.b,ma=a.slice(8)=='01',mb=eom(b)==b,ya=a.slice(0,4),yb=b.slice(0,4);if(a==b)return 'Issue '+a;if(ma&&mb){if(a.slice(5)=='01-01'&&b.slice(5)=='12-31'){if(ya==yb)return ya;if(ya[3]=='0'&&+yb==+ya+9)return ya.slice(0,3)+'0s';return ya+'–'+yb}if(a.slice(0,7)==b.slice(0,7))return monthName(a);return monthName(a)+' – '+monthName(b)}return a+' to '+b}
+function legacyRange(p){let a=null,b=null,m;const i=p.get('issue'),n=+(p.get('n')||1);
+ if(i){const k=ISS.indexOf(i);if(k>=0){a=i;b=ISS[Math.min(ISS.length-1,k+n-1)]}}
+ else if(p.get('month')){a=som(p.get('month')+'-01');b=eom(a)}
+ else if(m=(p.get('qtr')||'').match(/^(\d{4}) Q([1-4])$/)){const mm=String((+m[2]-1)*3+1).padStart(2,'0');a=m[1]+'-'+mm+'-01';b=eom(m[1]+'-'+String(+mm+2).padStart(2,'0')+'-01')}
+ else if(p.get('year')){a=p.get('year')+'-01-01';b=p.get('year')+'-12-31'}
+ else if(m=(p.get('decade')||'').match(/^(\d{3})0s$/)){a=m[1]+'0-01-01';b=m[1]+'9-12-31'}
+ if(a)setR(a,b)}
+function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',rg=$('reg').value,ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(!rg||r.reg==rg)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
 async function go(){
  const tok=++GOTOK;
  if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(()=>{if(tok===GOTOK)go()});
@@ -254,7 +293,7 @@ async function go(){
  if(want.length){$('summary').textContent='Loading permit details…';await loadShards(want);if(tok!==GOTOK)return}
  render(rk)}
 function render(rk){
- AGG=!rk;fillIss();
+ AGG=!rk;syncRange();
  F.area=$('ca').value?+$('ca').value:null;
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  const cubeOK=!LEGACY&&!rowFilters()&&!$('inview').checked;
@@ -265,15 +304,15 @@ function render(rk){
  $('wkstats').textContent=`listed total ${money(t)}`+(!AGG&&cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  buildWalk();chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
-const KEYS0=0;const KEYS={q:'q',dec:'decade',yr:'year',qt:'qtr',mo:'month',iss:'issue',span:'n',reg:'region',ca:'ca',ar:'ar',min:'min'};
-let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+const KEYS0=0;const KEYS={q:'q',reg:'region',ca:'ca',ar:'ar',min:'min'};
+let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
+function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(R.a){p.set('from',R.a);p.set('to',R.b)}if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if($('dec').value)c.push([$('dec').value,()=>$('dec').value='']);if($('yr').value)c.push([$('yr').value,()=>$('yr').value='']);if($('qt').value)c.push([$('qt').value,()=>$('qt').value='']);if($('mo').value)c.push([monthName($('mo').value),()=>$('mo').value='']);if($('iss').value){const w=[...issWin()];c.push([w.length>1?`Issues ${w[0]} to ${w[w.length-1]}`:'Issue '+w[0],()=>{$('iss').value='';$('span').value='1'}])}if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if($('reg').value)c.push([$('reg').value,()=>$('reg').value='']);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','dec','yr','qt','mo','iss','reg','ca','min'].forEach(x=>$(x).value='');$('span').value='1';AS.clear();go()};$('chips').append(e)}}
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','reg','ca','min'].forEach(x=>$(x).value='');setR(null,null);AS.clear();go()};$('chips').append(e)}}
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 function weeks(){
  const dom=ISS.filter(d=>inPeriod({d})),span=dom.length?(new Date(dom[dom.length-1])-new Date(dom[0]))/864e5:0;
@@ -284,7 +323,7 @@ function weeks(){
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
  const ks=Object.keys(by),val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
- const winKeys=new Set([...(issWin()||[])].map(key)),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
+ const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
  let g='';
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
@@ -298,10 +337,9 @@ function weeks(){
  $('wkt').textContent={w:'By week',m:'By month',y:'By year',d:'By decade'}[gran];
  $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded; the small figure under each bar is how many)')+' — click '+(gran=='d'?'a decade':gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
  $('wk').querySelectorAll('rect.bar').forEach(e=>e.onclick=()=>{const k=e.dataset.k;
-  if(gran=='w')$('iss').value=$('iss').value==k?'':k;
-  else if(gran=='m'){$('mo').value=$('mo').value==k?'':k;$('iss').value=''}
-  else if(gran=='d'){$('dec').value=$('dec').value==k?'':k;$('yr').value='';$('qt').value='';$('mo').value='';$('iss').value=''}
-  else{$('yr').value=$('yr').value==k?'':k;$('qt').value='';$('mo').value='';$('iss').value=''}
+  const same=(x,y)=>R.a==x&&R.b==y;let A,B;
+  if(gran=='w'){A=B=k}else if(gran=='m'){A=k+'-01';B=eom(A)}else if(gran=='d'){A=k.slice(0,3)+'0-01-01';B=k.slice(0,3)+'9-12-31'}else{A=k+'-01-01';B=k+'-12-31'}
+  if(same(A,B))setR(null,null);else setR(A,B);
   go()})}
 /* ---- architect suggestions: a multi-select list. Type 2+ letters; tick as many names as you like (the list stays open on the same matches) ---- */
 let sgI=-1,sgK=[],sgQ='',sgAll=[];
@@ -327,7 +365,7 @@ function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',()
  document.addEventListener('click',e=>{if(!e.target.closest('.sgw'))suggestClose()})}
 /* ---- architects in the current selection ---- */
 let showAll=false;
-function archs(){const by={},nm={};let partial=false;if(AGG){const pk=$('mo').value||$('qt').value||$('yr').value||$('dec').value||'all';((COUNTS.arch[pk]||{n:[],c:[]})[metric=='n'?'n':'c']).forEach(([a,n,c])=>{by[a]={n,c}});partial=true}else D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();const e=nm[key]??={sp:{},n:0,c:0};e.sp[a]=(e.sp[a]||0)+1;e.n++;e.c+=r.cost||0});
+function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()||'all';((COUNTS.arch[pk]||{n:[],c:[]})[metric=='n'?'n':'c']).forEach(([a,n,c])=>{by[a]={n,c}});partial=true}else D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();const e=nm[key]??={sp:{},n:0,c:0};e.sp[a]=(e.sp[a]||0)+1;e.n++;e.c+=r.cost||0});
  if(!AGG)for(const e of Object.values(nm)){const name=Object.entries(e.sp).sort((x,y)=>y[1]-x[1]||(x[0]<y[0]?-1:1))[0][0];by[name]={n:e.n,c:e.c}}   // the most common spelling, whatever order the rows arrived in
  const all=Object.entries(by).sort((a,b)=>(metric=='n'?b[1].n-a[1].n||b[1].c-a[1].c:b[1].c-a[1].c||b[1].n-a[1].n)||(a[0]<b[0]?-1:a[0]>b[0]?1:0)),L1=(showAll?all:all.slice(0,10).concat(all.slice(10).filter(([k])=>AS.has(nk(k))))).sort((x,y)=>AS.has(nk(y[0]))-AS.has(nk(x[0]))),mx=Math.max(1,...L1.map(([,s])=>s[metric]));
  $('archs').innerHTML=L1.map(([a,s])=>`<div class="arch${AS.has(nk(a))?' sel':''}" data-a="${esc(a)}" title="${esc(a)}: ${s.n} permits, ${money(s.c)}"><span class="an">${AS.has(nk(a))?'✓ ':''}${esc(a)}</span><span class="t"><i style="width:${100*s[metric]/mx}%"></i></span><span class="v">${metric=='n'?s.n:short(s.c)}</span></div>`).join('')||'<span style="color:var(--mut);font-size:13px">none</span>';
@@ -434,11 +472,14 @@ addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeEl
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
  if($('detail').hidden||m.style.display=='block')return;if(e.key=='ArrowRight'){e.preventDefault();step(1)}else if(e.key=='ArrowLeft'){e.preventDefault();step(-1)}});
 $('dback').onclick=closeDetail;
-function stepIss(dir){const cur=$('iss').value,i=cur?ISS.indexOf(cur)+dir:(dir>0?0:ISS.length-1);if(i<0||i>=ISS.length)return;const d=ISS[i];if(!inPeriod({d}))['dec','yr','qt','mo'].forEach(x=>$(x).value='');fillIss();$('iss').value=d;go()}
-$('ip').onclick=()=>stepIss(-1);$('in').onclick=()=>stepIss(1);
+$('r1').addEventListener('input',()=>slide(1));$('r2').addEventListener('input',()=>slide(2));
+['r1','r2'].forEach(id=>{$(id).addEventListener('change',()=>{const v=+$(id).value;if(R.a){const sp=dn(R.b)-dn(R.a),f=fullSpan();if(V[0]<=f[0]&&V[1]>=f[1]){if(sp<=540)autoZoom()}else if(v<=4||v>=996){const c=(V[0]+V[1])/2,h=(V[1]-V[0]);V=[Math.max(f[0],c-h),Math.min(f[1],c+h)]}}syncRange()});
+ $(id).addEventListener('keydown',e=>{if(e.key!='ArrowLeft'&&e.key!='ArrowRight')return;e.preventDefault();if(!ISS.length)return;const w=V[1]-V[0],t=V[0]+$(id).value/1000*w;let k=0,best=1e9;ISSN.forEach((x,i)=>{const d=Math.abs(x-t);if(d<best){best=d;k=i}});k=Math.max(0,Math.min(ISS.length-1,k+(e.key=='ArrowLeft'?-1:1)));const keep=id=='r1'?(R.b||ISS[ISS.length-1]):(R.a||ISS[0]);const mine=ISS[k];const a=id=='r1'?mine:keep,b=id=='r1'?keep:mine;if(a<=b){R={a,b};if(a<=som(ISS[0])&&b>=eom(ISS[ISS.length-1]))R={a:null,b:null};syncRange();clearTimeout(goT);goT=setTimeout(go,140)}})});
+$('d1').addEventListener('change',typedRange);$('d2').addEventListener('change',typedRange);
+$('rz').onclick=()=>{V=fullSpan();syncRange()};
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','dec','yr','qt','mo','iss','span','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','reg','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
 $('inview').addEventListener('change',()=>go());
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onchange=()=>{perIssue=$('mv').checked;go()};
