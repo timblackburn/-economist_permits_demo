@@ -22,7 +22,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
 .card h2{margin:0 0 6px;font-size:14px;font-weight:600}.card h2 span{color:var(--mut);font-weight:400;font-size:12px;margin-left:6px}
-#map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
+#map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.calw{background:none;border:0}.calab{transform:translate(-50%,-50%);text-align:center;pointer-events:none;font:600 12px/1.12 system-ui,sans-serif;color:var(--fg);text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 5px var(--surface)}.calab b{display:block;font-weight:700;font-size:10px;line-height:1.05;margin-bottom:1px}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
 .side{display:flex;flex-direction:column;gap:12px}
 .legend{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut);margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:22px;height:10px;border-radius:2px}
 .leaflet-container{font:inherit}.leaflet-tile-pane{filter:grayscale(.9) brightness(1.06) contrast(.85)}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}.cl span{display:block;width:60px;margin:-7px 0 0 -30px;text-align:center;font:700 12px/14px system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
@@ -126,26 +126,30 @@ const map=L.map('map',{renderer:L.canvas({tolerance:6})}).setView([41.84,-87.68]
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:18,className:'tiles'}).addTo(map);
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
-function style(l){const n=l.feature.properties.n,sel=F.area==n,sh=$('shade').checked;l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
+const CA_ZOOM=12,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>$('shade').checked||commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
+function style(l){const n=l.feature.properties.n,sel=F.area==n,sh=shadeOn();l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
 function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
-  l.on('click',()=>{$('ca').value=F.area==f.properties.n?'':f.properties.n;go()});
+  l.on('click',()=>{const pick=F.area!=f.properties.n;$('ca').value=pick?f.properties.n:'';if(pick&&commMode())map.fitBounds(l.getBounds().pad(.05),{maxZoom:CA_ZOOM+2});go()});
   l.on('mouseover',()=>l.setStyle({weight:2.5,color:css('--fg')}));l.on('mouseout',()=>style(l));
   l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}`},{sticky:true,className:'tip'})}}).addTo(map);ptLayer.addTo(map);map.fitBounds(caLayer.getBounds())}
  const vals=Object.values(stat).map(s=>s[metric]).filter(v=>v>0).sort((a,b)=>a-b);
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
- $('legend').innerHTML=($('shade').checked&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+($('shade').checked?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (the dot grows with cost)`}
+ $('legend').innerHTML=(shadeOn()&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+(shadeOn()?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (the dot grows with cost)`}
 /* ---- map: individual permits when few are in view, otherwise count blobs on a pixel grid (click a blob to zoom into it) ---- */
-const SHOW_MAX=1000,CELL=60;
+const SHOW_MAX=2500,CELL=60;
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
+let lastComm=null;
 function drawPts0(){ptLayer.clearLayers();
+ const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
+ if(comm){communityView();return}
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
  if(vis.length<=SHOW_MAX){
   vis.forEach(r=>{const rad=Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000)));
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:.88,color:css('--ring')});
-   c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
+   c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'});
    c.on('click',e=>{L.DomEvent.stop(e);show(r,true)});c.addTo(ptLayer)});
   $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'');return}
  const cells=new Map();
@@ -158,6 +162,16 @@ function drawPts0(){ptLayer.clearLayers();
   c.addTo(ptLayer);
   L.marker(ll,{interactive:false,icon:L.divIcon({className:'cl',html:`<span>${metric=='n'?e.n.toLocaleString():short(e.c)}</span>`,iconSize:[0,0]})}).addTo(ptLayer)}
  $('mapnote').textContent=`${placed.length.toLocaleString()} of ${cur.length.toLocaleString()} placed`+(cur.length>placed.length?` (${cur.length-placed.length} lack a usable address)`:'')+` · ${vis.length.toLocaleString()} in view, grouped into ${cells.size} blobs: click one or zoom in to see each permit`};
+function communityView(){   // community boundaries with the name and the count of permits matching the current filters
+ let shown=0,total=0;
+ caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds(),sw=map.latLngToContainerPoint(b.getSouthWest()),ne=map.latLngToContainerPoint(b.getNorthEast()),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
+  total+=st.n;if(!st.n)return;shown++;
+  const v=metric=='n'?st.n.toLocaleString():short(st.c),nm=w>=56&&h>=28?`<b>${esc(f.name)}</b>`:'';
+  if(w<34||h<18)return;                               // too small to label at this zoom: hover for the details
+  L.marker(b.getCenter(),{interactive:false,icon:L.divIcon({className:'calw',html:`<div class=calab style="width:${Math.min(110,Math.max(40,w-4))}px">${nm}<span>${v}</span></div>`,iconSize:[0,0]})}).addTo(ptLayer)});
+ const placed=cur.filter(r=>r.lat).length;
+ $('mapnote').textContent=`${placed.toLocaleString()} of ${cur.length.toLocaleString()} placed in ${shown} community areas · zoom in to see each building`}
+function drawLegendOnly(){drawCA()}
 let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('inview').checked&&$('detail').hidden)go();else if(cur.length)drawPts()},$('inview').checked?250:120)});
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
@@ -273,8 +287,9 @@ function phView(r,pin,label){
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const nb=r.nb&&((r.nb.lo||[])[0]||(r.nb.hi||[])[0])?`<div class=pins>${one((r.nb.lo||[])[0],true)} ${r.pin?`<button class="btn${(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin))?' on':''}" data-pin="${r.pin}" data-label="" title="Back to the permit's own building">This building</button>`:''} ${one((r.nb.hi||[])[0],false)}</div>`:'';
  const real=pin&&pin!=='__loading';
- const img=`<div class=phbox>${real?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}">`:`<span class=mut>${pin==='__loading'?'Loading photo…':'No photo for this address'}</span>`}</div><small class=phcap>${real?`${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.':''}`:''}</small>`;
- $('ph').innerHTML=lots+nb+img}
+ const img=`<div class=phbox>${real?`<img alt="Assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}">`:`<span class=mut>${pin==='__loading'?'Loading photo…':'No photo for this address'}</span>`}</div><small class=phcap>${real?`${label?`<b>${esc(label)}</b> — `:''}Cook County Assessor photo; the date it was taken is on the photo.${label&&r.pin!=pin&&!ps.some(x=>x[1]==pin)?(r.alt&&r.alt[1]==pin?' This is the <b>corner house on the cross street</b>: it may be this building under a later address. It is not the address the permit gives.':' This is a <b>neighboring</b> building, not part of the permit; it is shown to help you find the right one.'):''}`:''}</small>`;
+ const alt=r.alt&&r.alt[1]?`<div class=pins><span class=mut>Possible corner address:</span> <button class="btn${r.alt[1]==pin?' on':''}" data-pin="${r.alt[1]}" data-label="${esc(r.alt[0])}" title="The nearest corner house on the cross street, ${r.alt[2]} m from where this address falls. Shows its photo — not part of the permit.">${esc(r.alt[0])}</button></div>`:'';
+ $('ph').innerHTML=lots+nb+alt+img}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 let WALK=[],walkNear=true;
 function hilbert(x,y){const n=65536;let d=0;for(let s=n/2;s>=1;s/=2){const rx=(x&s)>0?1:0,ry=(y&s)>0?1:0;d+=s*s*((3*rx)^ry);if(ry==0){if(rx==1){x=n-1-x;y=n-1-y}const t=x;x=y;y=t}}return d}
@@ -320,6 +335,8 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  <dl class=c2>
   <dt>Listed</dt><dd>${fmtDate(r.d)} · page ${r.pg||'?'}${r.reg?' · '+esc(r.reg)+' list':''}${r.pp?' · '+esc(r.pp):''}</dd>
   <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
+  ${r.a9?`<dt>1909 numbering</dt><dd>${esc(r.a9)}${r.a9o?` <span class=mut>(printed as ${esc(r.a9o)})</span>`:''}${r.a9e?' <span class=mut>&mdash; estimated from neighbouring numbers: the 1909 guide does not list this one</span>':''}</dd>`:''}
+  ${r.alt?`<dt>Possible address</dt><dd>${esc(r.alt[0])} <span class=mut>&mdash; the corner house on the cross street, ${r.alt[2]} m from where this address falls. Corner houses were sometimes renumbered onto the other street.</span></dd>`:''}
   ${r.now?`<dt>Address now</dt><dd>${esc(r.now)}</dd>`:`<dt>Address now</dt><dd><span class=mut>no matching address in the county data</span></dd>`}
   ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
