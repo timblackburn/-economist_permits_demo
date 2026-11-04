@@ -161,7 +161,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© Op
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
 const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
-function style(l){const n=l.feature.properties.n,sel=AREAS.has(n),sh=shadeOn();l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
+function style(l){const n=l.feature.properties.n,sel=AREAS.has(n),sh=shadeOn();l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sel&&sh?.1:sh?.38:(sel?.08:0)})}
 /* ---- click any house (zoomed in, not on a permit dot): the County's address, PIN, assessor photo and year built, looked up live from the County's open data; nothing is stored here ---- */
 /* ---- County assessor photos: the County stamps the PIN and date in a strip along the bottom (the last ~10%); we hide that strip and let people click the photo to expand it ---- */
 const phImg=(pin,alt,extra)=>`<div class=phcrop data-open="0"><img alt="${alt}" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}" onerror="this.closest('.phcrop').replaceWith(Object.assign(document.createElement('span'),{className:'mut',textContent:'The County has no photo for this parcel.'}))"></div><div class=phhint>Cropped to hide the County&rsquo;s PIN and date strip. <b>Click the photo to expand</b> and see them.</div>`;
@@ -213,18 +213,22 @@ function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMar
 let lastComm=null;
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
- if(comm){communityView();return}
- const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1),vis=placed.filter(r=>bd.contains([r.lat,r.lon])),z=map.getZoom();
-  const radOf=r=>Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000)));   // big dots first so small ones sit on top; a click goes to the dot nearest the cursor (dots overlap a lot at zoom 15-16)
+ if(comm){const smp=AREAS.size?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // with areas selected their permits show as dots at any zoom
+ drawDots(false)}
+function drawDots(low){
+ const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1);let vis=placed.filter(r=>bd.contains([r.lat,r.lon]));const z=map.getZoom();let sampled='';
+ if(low&&vis.length>12000){const k=Math.ceil(vis.length/12000);vis=vis.filter((_,i)=>i%k==0);sampled=` · showing a sample of ${vis.length.toLocaleString()} dots; zoom in to see every one`}
+  const radOf=low?(()=>z<=12?2.5:z==13?3.5:4.5):(r=>Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000))));   // big dots first so small ones sit on top; a click goes to the dot nearest the cursor (dots overlap a lot at zoom 15-16)
   vis.sort((a,b)=>radOf(b)-radOf(a)).forEach(r=>{const rad=radOf(r);
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:.88,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}show(best,true)});c.addTo(ptLayer)});
+  if(low)return sampled;
   $('mapnote').textContent=`${TOT.placed.toLocaleString()} of ${TOT.n.toLocaleString()} placed`+(TOT.n>TOT.placed?` (${(TOT.n-TOT.placed).toLocaleString()} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'')}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
-  if(!st.n)return;shown++;
+  if(!st.n||AREAS.has(f.n))return;shown++;
   const s0=Math.max(b.getSouth(),vb.getSouth()),n0=Math.min(b.getNorth(),vb.getNorth()),w0=Math.max(b.getWest(),vb.getWest()),e0=Math.min(b.getEast(),vb.getEast());
   if(s0>=n0||w0>=e0)return;                           // not on screen
   const sw=map.latLngToContainerPoint([s0,w0]),ne=map.latLngToContainerPoint([n0,e0]),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
