@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chicago Building Permits</title>
 <script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">   <!-- Leaflet 1.9.4, served from this site (docs/vendor/leaflet), not a third-party CDN -->
 <style>
 :root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;
 --q1:#e3eefb;--q2:#bcd6f3;--q3:#8db9ea;--q4:#5a98de;--q5:#2a78d6;--none:#ece8dd}
@@ -136,7 +136,7 @@ th[data-k]{cursor:pointer;user-select:none;white-space:nowrap}th[data-k]::after{
 <div class="wrap"><table><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn" title="Size (ft); sorts by floor area (width × depth)">Size (ft)</th><th data-k="cost" class="n">Cost</th><th data-k="ar">Architect</th></tr></thead><tbody id="tb"></tbody></table></div>
 <footer>Sources: <i>The Economist</i> (Chicago) and, for some weeks of 1913&ndash;14 and 1917&ndash;18, <i>The American Contractor</i>, for 1883&ndash;97 <i>The Real Estate and Building Journal</i>, and the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912), scanned by Google Books and the Internet Archive &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors.</footer>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
 <script>
 const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
@@ -444,16 +444,18 @@ document.addEventListener('click',e=>{if(!e.target.closest('#cap')&&e.target!==$
 document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('cap').hidden){$('cap').hidden=true;$('cab').focus()}});
 /* ---- colouring the dots: by cost (default), by architect or by time; the chart and the architect list use the same colours ---- */
 let DOTC='cost',ARCHCOL={},ARCHTOP=[],CHART={gran:'d',key:d=>d,ks:[]};
-const OTHERC='#9aa0a6',COSTBR=[3000,6000,12000,25000,75000],COSTC=['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026','#7a0019'],ARCHPAL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e','#17becf','#8c564b','#e377c2'],TIMEPAL=['#440154','#482878','#3e4989','#31688e','#26828e','#1f9e89','#35b779','#6ece58','#b5de2b','#fde725'];
+const OTHERC='#9aa0a6',COSTBR=[3000,6000,12000,25000,75000],COSTC=['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026','#7a0019'],ARCHPAL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e','#17becf','#8c564b','#e377c2'],TIMEPAL=['#30123b','#4662d7','#36aaf9','#1ae4b6','#72fe5e','#c7ef34','#fabb20','#f66b19','#cb2a04','#7a0403'],DECC={'1880s':'#6a3d9a','1890s':'#1f78b4','1900s':'#33a02c','1910s':'#e6ab02','1920s':'#e31a1c','1930s':'#8c564b'};
 const rampC=t=>{const x=Math.max(0,Math.min(1,t))*(TIMEPAL.length-1),i=Math.floor(x),f=x-i,h=c=>[1,3,5].map(j=>parseInt(c.slice(j,j+2),16)),a=h(TIMEPAL[i]),b=h(TIMEPAL[Math.min(i+1,TIMEPAL.length-1)]);return'#'+a.map((v,j)=>Math.round(v+(b[j]-v)*f).toString(16).padStart(2,'0')).join('')};
+const timeColor=(k,i)=>CHART.gran=='d'?(DECC[k]||OTHERC):rampC(CHART.ks.length>1?i/(CHART.ks.length-1):.5);
 function setArchPalette(all){ARCHCOL={};ARCHTOP=[];const seen=new Set();for(const nm of [...[...AS].map(k=>AN[k]||k),...all.map(x=>x[0])]){const k=nk(nm);if(!k||seen.has(k))continue;seen.add(k);if(ARCHTOP.length<8){ARCHCOL[k]=ARCHPAL[ARCHTOP.length];ARCHTOP.push({k,name:AN[k]||nm,color:ARCHCOL[k]})}}}
 const archColor=a=>DOTC=='arch'?(ARCHCOL[nk(a)]||OTHERC):'';
 function dotColor(r){if(DOTC=='arch')return ARCHCOL[nk(arch(r))]||OTHERC;
- if(DOTC=='time'){const i=CHART.ks.indexOf(CHART.key(r.d));return i<0?OTHERC:rampC(CHART.ks.length>1?i/(CHART.ks.length-1):.5)}
+ if(DOTC=='time'){const k=CHART.key(r.d),i=CHART.ks.indexOf(k);return i<0?OTHERC:timeColor(k,i)}
  if(!(r.cost>0))return OTHERC;let b=0;while(b<COSTBR.length&&r.cost>=COSTBR[b])b++;return COSTC[b]}
 function dotKey(){const m=[['cost','Cost'],['arch','Architect'],['time','Time']];let h='<span class="by">Color dots by: '+m.map(([k,l])=>`<button class="qb${DOTC==k?' on':''}" data-m="${k}">${l}</button>`).join('<span class="dot">·</span>')+'</span>';
  if(DOTC=='cost')h+=COSTC.map((c,i)=>`<span class="it"><i style="background:${c}"></i>${i==0?'under '+fmtC(COSTBR[0]):i==COSTC.length-1?fmtC(COSTBR[i-1])+'+':fmtC(COSTBR[i-1])+'–'+fmtC(COSTBR[i])}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>no cost</span>`;
  else if(DOTC=='arch')h+=ARCHTOP.map(t=>`<span class="it"><i style="background:${t.color}"></i>${esc(t.name)}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>all others</span>`;
+ else if(CHART.gran=='d')h+=CHART.ks.map(k=>`<span class="it"><i style="background:${DECC[k]||OTHERC}"></i>${esc(k)}</span>`).join('');
  else{const ks=CHART.ks,f=ks[0],l=ks[ks.length-1],lb=k=>CHART.gran=='m'?monthName(k):k;h+=ks.length?`<span class="it">${esc(lb(f))}<span class="dgrad" style="background:linear-gradient(90deg,${TIMEPAL.join(',')})"></span>${esc(lb(l))}</span><span class="it">(the chart's bars: ${({w:'issues',m:'months',y:'years',d:'decades'})[CHART.gran]})</span>`:''}
  $('dotkey').innerHTML=h}
 $('dotkey').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.dataset.m==DOTC)return;DOTC=b.dataset.m;toHash();archs();weeks();drawPts();dotKey()});
@@ -481,7 +483,7 @@ function weeks(){
  ks.forEach((k,i)=>{const h=(H-B-8)*vals[i]/mx,x=L0+i*bw+bw*.12,n=nIss[k]||0,tip=gran=='w'?`${k}: ${by[k].n} permits, ${money(by[k].c)}`:n?`${gran=='m'?monthName(k):k}: ${by[k].n} permits, ${money(by[k].c)} · ${n} issue${n>1?'s':''} loaded${perIssue?' (bar shows the average per issue)':''}`:`${gran=='m'?monthName(k):k}: no issues loaded`;
   if(!n)g+=`<rect x="${x}" y="${H-B-6}" width="${bw*.76}" height="6" rx="2" fill="none" stroke="var(--line)" stroke-dasharray="3 2"><title>${tip}</title></rect>`;
   else if(DOTC=='arch'&&!AGG&&seg&&seg[k]){const order=[...ARCHTOP.map(t=>t.k),'~o'],tot=order.reduce((q,o)=>q+(seg[k][o]?seg[k][o][metric]:0),0)||1;let y0=H-B;order.forEach(o=>{const e=seg[k][o];if(!e||!e[metric])return;const hh=h*e[metric]/tot;y0-=hh;const nm=o=='~o'?'all others':(AN[o]||o);g+=`<rect class="bar" data-k="${k}" x="${x}" y="${y0}" width="${bw*.76}" height="${Math.max(hh,0)}" fill="${o=='~o'?OTHERC:ARCHCOL[o]}"><title>${tip} — ${esc(nm)}</title></rect>`})}
-  else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${DOTC=='time'?rampC(ks.length>1?i/(ks.length-1):.5):winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
+  else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${DOTC=='time'?timeColor(k,i):winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
   if(gran=='w'?(i%2==0||ks.length<8):(gran=='d'||(gran=='y'&&(ks.length<=14||k.endsWith('0')||k.endsWith('5')))||(gran=='m'&&(ks.length<=14||i%2==0))))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'||gran=='d'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
   if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
