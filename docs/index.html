@@ -120,6 +120,7 @@ td:first-child{white-space:nowrap}
 .mapc>#map{margin-left:-17px;margin-right:-17px;border-radius:0}.dotkey .kl{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.leaflet-top.leaflet-right .leaflet-control-attribution{margin-top:6px;margin-right:6px;font-size:10.5px}
 .mapc>h2{margin-bottom:0}.legend .it{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:8px}#pgr{display:inline-flex;gap:8px;align-items:center;font-size:13px}#pgr .btn,.pgrow .btn{padding:4px 10px;font-size:13px}.pgrow td{text-align:center;padding:14px;background:var(--bg)!important;cursor:default}tbody tr.pgrow:hover{background:var(--bg)!important}
 @media(min-width:1181px){#detail.floating{position:fixed!important;top:calc(var(--tbh,52px) + 10px);right:20px;width:clamp(400px,34vw,520px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto!important;z-index:36;margin:0}}
+.mapc>h2{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}.mapc>h2 .shade{margin-left:auto;white-space:nowrap}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -140,7 +141,7 @@ td:first-child{white-space:nowrap}
  <div class="chips" id="chips"></div>
  <div class="quiet" title="What the map shading, the chart and the architect ranking count"><span>Map &amp; chart count:</span> <button class="qb on" id="mc">permits</button><span class="dot">·</span><button class="qb" id="mk">listed cost</button></div>
 </aside>
-<div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
+<div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="Keep only the permits inside the current map view: the table, chart, architects and counts follow what is visible on the map"><input type="checkbox" id="inview"> Filter by map</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
  <div class="side">
   <div id="overview">
   <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label><div id="wk"></div></div>
@@ -253,6 +254,13 @@ function drawCA(){
 
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
 let lastComm=null;
+/* ---- the note in the map heading: how many permits are in the results; with "Filter by map" on, how many of them are inside the map view ---- */
+function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
+ if(f){let all=null;const rowLevel=!!($('q').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
+  if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
+  else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;
+  t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
+ el.textContent=t;const unp=Math.max(0,TOT.n-TOT.placed);el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address and are not on the map':''}
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
  if(comm){const smp=AREAS.size?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // with areas selected their permits show as dots at any zoom
@@ -271,7 +279,7 @@ function drawDots(low){
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true)});c.addTo(ptLayer)});
   if(low)return sampled;
-  $('mapnote').textContent=`${TOT.placed.toLocaleString()} of ${TOT.n.toLocaleString()} placed`+(TOT.n>TOT.placed?` (${(TOT.n-TOT.placed).toLocaleString()} lack a usable address)`:'')+(vis.length<placed.length?` · ${vis.length.toLocaleString()} in view`:'')}
+  mapNote()}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
@@ -283,7 +291,7 @@ function communityView(){   // community boundaries with the name and the count 
   const v=metric=='n'?st.n.toLocaleString():short(st.c),nm=w>=56&&h>=28?`<b>${esc(f.name)}</b>`:'';
   L.marker([(s0+n0)/2,(w0+e0)/2],{interactive:false,icon:L.divIcon({className:'calw',html:`<div class=calab style="width:${Math.min(130,Math.max(40,w-4))}px">${nm}<span>${v}</span></div>`,iconSize:[0,0]})}).addTo(ptLayer)});
  const placed=TOT.placed;
- $('mapnote').textContent=`${placed.toLocaleString()} of ${TOT.n.toLocaleString()} placed in ${shown} community areas · zoom in to see each building`}
+ mapNote()}
 function drawLegendOnly(){drawCA()}
 let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('inview').checked&&$('detail').hidden)go();else if(!LEGACY&&!commMode()&&viewShards().some(k=>!LOADED.has(k)))go();else if(cur.length||commMode())drawPts()},$('inview').checked?250:120)});
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
@@ -384,7 +392,7 @@ function syncCost(){const n=STOPS.length-1,i1=nearStop(CLO),i2=nearStop(CHI);$('
 function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b)a=b;if(which==2&&b<a)b=a;CLO=STOPS[a];CHI=STOPS[b];syncCost();clearTimeout(goT);goT=setTimeout(go,140)}
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
 
-function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',co=costOn(),aq=q?addrQ(q):null;
+function flt(skip){const B=($('inview').checked&&skip!='view')?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',co=costOn(),aq=q?addrQ(q):null;
  return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!q||hay(r).includes(q)||(aq&&rangeHit(r,aq)))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
 async function go(){
  const tok=++GOTOK;
