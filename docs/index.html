@@ -323,7 +323,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`,newer:`County Assessor records give ${r.yb} for the building at this address, later than this permit: the original may have been replaced, rebuilt or moved.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
  const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?money(r.cost)+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
- const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}</div>`).join('');
+ const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}${x[3]?` <span class=mut>(from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan)</span>`:''}</div>`).join('');
  const b0=b[0]||{};
  $('mt').innerHTML=`<div class=hd>
   <div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
