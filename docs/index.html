@@ -652,7 +652,7 @@ function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
   const fit=()=>{const W=box.clientWidth||520,nw=im.naturalWidth,Wd=Math.min(W*1000/(X1-X0),nw*2.4),Hd=Wd*im.naturalHeight/nw;d.style.width=Math.min(Wd*(X1-X0)/1000,W)+'px';d.style.height=((Y1-Y0)/1000*Hd)+'px';im.style.width=Wd+'px';im.style.marginLeft=(-X0/1000*Wd)+'px';im.style.marginTop=(-Y0/1000*Hd)+'px'};
   if(im.complete&&im.naturalWidth)fit();else im.onload=fit})}
 function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
- $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');draw(b,pgs[0]);m.style.display='block'}
+ $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');m.style.display='block';draw(b,pgs[0])}
 /* ---- the property panel docks beside the table when a row is picked (the table narrows, nothing to scroll back to); picked from the map it stays in the right-hand column ---- */
 let DOCK=false,MODE='side';
 const canDock=()=>innerWidth>=1181;
