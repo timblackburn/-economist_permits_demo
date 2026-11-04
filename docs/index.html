@@ -127,6 +127,7 @@ td:first-child{white-space:nowrap}
  .paneopen #tdock{display:contents}.paneopen #tarea.docked{display:block;padding-right:0}}
 #detail .dbar .dtitle{font-weight:600;font-size:15px;margin-right:auto;letter-spacing:.2px}
 #detail .dbar .btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff}#detail .dbar .btn:hover:not(:disabled){background:rgba(255,255,255,.28)}#detail .dbar .btn:disabled{opacity:.4;cursor:default}#detail .dbar #dback{margin-left:8px}#detail .dbar #dtable{margin-right:8px}
+#detail .harea{float:right;margin:2px 0 4px 10px;padding:1px 9px;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--mut);white-space:nowrap}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -678,12 +679,11 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]!='owner'&&OWNERISH.test(x[1])?esc(ownerOf(x[1],r)):x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}${x[3]?` <span class=mut>(from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan)</span>`:''}</div>`).join('');
  const b0=b[0]||{};
  $('mt').innerHTML=`<div class=hd>
-  <div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
+  ${r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:''}<div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${who?`<div class=who>${who}</div>`:''}
  <div id=ph></div>
  <dl class=c2>
-  <dt>Area</dt><dd>${esc(r.can||'not placed on the map')}${r.geo&&r.geo!='exact'&&r.can?' <span class=mut>(approximate)</span>':''}</dd>
   ${r.a9?`<dt>1909 numbering</dt><dd>${esc(r.a9)}${r.a9o?` <span class=mut>(printed as ${esc(r.a9o)})</span>`:''}${r.a9e?' <span class=mut>&mdash; estimated from neighbouring numbers: the 1909 guide does not list this one</span>':''}</dd>`:''}
   ${r.alt?`<dt>Possible address</dt><dd>${esc(r.alt[0])} <span class=mut>&mdash; the corner house on the cross street, ${r.alt[2]} m from where this address falls. Corner houses were sometimes renumbered onto the other street.</span></dd>`:''}
   ${r.now?`<dt>Address now</dt><dd>${esc(r.now)}</dd>`:`<dt>Address now</dt><dd><span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b>${esc(r.alt[0])}</b>`:''}</dd>`}
