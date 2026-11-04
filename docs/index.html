@@ -133,6 +133,9 @@ td:first-child{white-space:nowrap}
 @media(min-width:1181px){.paneopen #tarea .wrap{padding-right:0}.paneopen #tbar{padding-right:0}}
 .pgb{padding:2px 10px;font-size:15px;line-height:1.3}.pgn{margin:0 4px}
 #detail .rawtxt{margin:6px 0 0;font-size:13px;color:var(--mut)}#crops{cursor:zoom-in}
+#detail .who .wr{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:10px;padding:4px 0;border-top:1px solid var(--line)}#detail .who .wr:first-child{border-top:0}
+#detail .who .wr .wl{min-width:0;padding:0;display:block;font-size:12.5px;line-height:1.55;text-transform:capitalize}#detail .who .wr .wl.nc{text-transform:none}
+#detail .who .wv{display:block}#detail .who .wa{display:block;color:var(--mut);font-size:12.5px;line-height:1.35}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -685,20 +688,20 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
  const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?money(r.cost)+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
- const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]!='owner'&&OWNERISH.test(x[1])?esc(ownerOf(x[1],r)):x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}${x[3]?` <span class=mut>(from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan)</span>`:''}</div>`).join('');
+ const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div class=wr><span class=wl>${esc(x[0])}</span><span class=wv>${x[0]!='owner'&&OWNERISH.test(x[1])?esc(ownerOf(x[1],r)):x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?`<span class=wa>${esc(x[2])}</span>`:''}${x[3]?`<span class=wa>from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan</span>`:''}</span></div>`).join('');
  const b0=b[0]||{};
  $('mt').innerHTML=`<div class=hd>
   ${r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:''}<div class=addr>${(r.chg||r.nowp)&&r.site?`<span class=ptd title="Printed as: ${esc(r.site)}${r.chg?' (street since renamed)':''}">${esc(r.mod||r.site)}</span>`:esc(r.mod||r.site||'Address not given')}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
   const cur=r.now?esc(r.now):`<span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
-  return `<div class=who><div><span class='wl nc'>Current address</span>${cur} ${razed}</div>${who}</div>`})()}
+  return `<div class=who><div class=wr><span class='wl nc'>Current address</span><span class=wv>${cur} ${razed}</span></div>${who}</div>`})()}
  <div id=ph></div>
  <dl class=c2>
   ${r.a9?`<dt>1909 numbering</dt><dd>${esc(r.a9)}${r.a9o?` <span class=mut>(printed as ${esc(r.a9o)})</span>`:''}${r.a9e?' <span class=mut>&mdash; estimated from neighbouring numbers: the 1909 guide does not list this one</span>':''}</dd>`:''}
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
   ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
- ${(r.pp||'').startsWith('The American Contractor index')?`<h3>No scanned image</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (issue of ${fmtDate(r.d)}, page ${r.pg||'?'}). The index has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`:`<h3>Permit from ${esc(r.pp||'the printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button></p>
+ ${(r.pp||'').startsWith('The American Contractor index')?`<h3>No scanned image</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (issue of ${fmtDate(r.d)}, page ${r.pg||'?'}). The index has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`:`<h3>${esc(r.pp||'The printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button></p>
  <p class=rawtxt>${esc(r.text)}</p>`}
  ${r.chm?r.chm.map(c=>`<p class=chmnote>The Chicago History Museum&rsquo;s index of <i>The American Contractor</i> also lists a permit at this address (issued ${fmtDate(c[2])}${c[3]?', page '+esc(c[3]):''}${c[0]?'; owner '+esc(c[0]):''}${c[1]?'; architect '+esc(c[1]):''}). The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`).join(''):''}`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
