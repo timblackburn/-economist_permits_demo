@@ -122,6 +122,7 @@ td:first-child{white-space:nowrap}
 @media(min-width:1181px){#detail.floating{position:fixed!important;top:calc(var(--tbh,52px) + 10px);right:20px;width:clamp(400px,34vw,520px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto!important;z-index:36;margin:0}}
 .mapc>h2{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}.mapc>h2 .shade{margin-left:auto;white-space:nowrap}
 #detail .dbar{padding:6px 10px;min-height:0}#detail .dbar .btn{padding:2px 8px;font-size:12.5px;line-height:1.5}#detail .dbar #pos{font-size:12px;min-width:0;margin:0 4px}#detail .dbar .dnav{gap:3px}
+.card>h2.wkh{display:flex;align-items:center;gap:8px}.mtog{margin-left:auto;display:inline-flex;border:1px solid rgba(255,255,255,.6);border-radius:5px;overflow:hidden}.mtog button{background:transparent;border:0;color:#fff;font:inherit;font-size:12px;padding:2px 10px;cursor:pointer}.mtog button+button{border-left:1px solid rgba(255,255,255,.6)}.mtog button.on{background:#fff;color:var(--wh);font-weight:600;cursor:default}.mtog button:not(.on):hover{background:rgba(255,255,255,.18)}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -140,12 +141,11 @@ td:first-child{white-space:nowrap}
  <div class="fg"><span class="fl">Cost</span><div class="dr"><div class="dates"><input id="c1" aria-label="Lowest cost" placeholder="any" autocomplete="off"><span class="mut">to</span><input id="c2" aria-label="Highest cost" placeholder="no limit" autocomplete="off"></div><div class="rs" id="crs"><svg id="ccov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="k1" min="0" max="18" value="0" step="1" aria-label="Lowest cost"><input type="range" id="k2" min="0" max="18" value="18" step="1" aria-label="Highest cost"></div><div class="rnote"><span id="cn" class="mut"></span></div></div></div>
  <div id="summary"></div>
  <div class="chips" id="chips"></div>
- <div class="quiet" title="What the map shading, the chart and the architect ranking count"><span>Map &amp; chart count:</span> <button class="qb on" id="mc">permits</button><span class="dot">·</span><button class="qb" id="mk">listed cost</button></div>
 </aside>
 <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="Keep only the permits inside the current map view: the table, chart, architects and counts follow what is visible on the map"><input type="checkbox" id="inview"> Filter by map</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
  <div class="side">
   <div id="overview">
-  <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label><div id="wk"></div></div>
+  <div class="card"><h2 class="wkh"><span id="wkt">By week</span><span id="wknote" hidden></span><span class="mtog" title="What the chart, the map shading and the architect ranking count"><button id="mc" class="on">Permits</button><button id="mk">Permit cost</button></span></h2><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label><div id="wk"></div></div>
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
@@ -556,7 +556,7 @@ function weeks(){
   if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
  $('wkt').textContent={w:'By week',m:'By month',y:'By year',d:'By decade'}[gran];
- $('wknote').textContent=(metric=='n'?'permits':'listed cost')+(perIssue?' per issue (average)':gran=='w'?' per issue':' (total of the issues loaded; the small figure under each bar is how many)')+' — click '+(gran=='d'?'a decade':gran=='y'?'a year':gran=='m'?'a month':'an issue')+' to drill in';
+ $('wknote').textContent='';
  $('wk').querySelectorAll('rect.bar').forEach(e=>e.onclick=()=>{const k=e.dataset.k;
   const same=(x,y)=>R.a==x&&R.b==y;let A,B;
   if(gran=='w'){A=B=k}else if(gran=='m'){A=k+'-01';B=eom(A)}else if(gran=='d'){A=k.slice(0,3)+'0-01-01';B=k.slice(0,3)+'9-12-31'}else{A=k+'-01-01';B=k+'-12-31'}
