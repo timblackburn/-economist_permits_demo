@@ -184,7 +184,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pre
 applyTheme(false);
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
 let COUNTS=null,DICT=null,ALLKEYS=[],LOADED=new Set(),SHP={},ALLP=null,LISTALL=false,AGG=true,TOT={n:0,placed:0},GOTOK=0;
-let PAGE=0;const PS=400;let CS=new Set(),CSN={};let R={a:null,b:null},V=null,ISSN=[],ISS=[],D=[],CA=null,cur=[],sk='d',sd=1,metric='n',perIssue=false,F={area:null},AREAS=new Set(),CAN={};
+let PAGE=0;const PS=400;let CS=new Set(),CSN={};let R={a:null,b:null},V=null,ISSN=[],ISS=[],D=[],CA=null,cur=[],sk='mod',sd=1,metric='n',perIssue=false,F={area:null},AREAS=new Set(),CAN={};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
 const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k':'$'+n;
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -715,7 +715,9 @@ const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)}
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 addEventListener('keydown',e=>{const ae=document.activeElement,tg=ae.tagName;if(e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
- if($('detail').hidden||m.style.display=='block')return;if(e.key=='ArrowRight'){e.preventDefault();step(1)}else if(e.key=='ArrowLeft'){e.preventDefault();step(-1)}});
+ });
+/* capture phase, so the map (or anything else focused) never takes the arrows while the property panel is open */
+addEventListener('keydown',e=>{if(e.key!='ArrowRight'&&e.key!='ArrowLeft')return;const ae=document.activeElement,tg=ae.tagName;if($('detail').hidden||m.style.display=='block'||e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;e.preventDefault();e.stopPropagation();step(e.key=='ArrowRight'?1:-1)},true);
 $('dback').onclick=closeDetail;
 $('r1').addEventListener('input',()=>slide(1));$('r2').addEventListener('input',()=>slide(2));
 ['r1','r2'].forEach(id=>{$(id).addEventListener('change',()=>{const v=+$(id).value;if(R.a){const sp=dn(R.b)-dn(R.a),f=fullSpan();if(V[0]<=f[0]&&V[1]>=f[1]){if(sp<=540)autoZoom()}else if(v<=4||v>=996){const c=(V[0]+V[1])/2,h=(V[1]-V[0]);V=[Math.max(f[0],c-h),Math.min(f[1],c+h)]}}syncRange()});
