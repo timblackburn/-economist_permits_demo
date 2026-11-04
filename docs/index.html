@@ -162,6 +162,7 @@ let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('i
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
  for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
+const IMG='pages/';   // page images: a relative folder now; the Azure address (https://<account>.blob.core.windows.net/pages/) once the images are moved
 const DETC={};
 async function loadDetail(r){if(r._det)return;const sh=DETC[r.d]??=fetch('data/d/'+r.d+'.json').then(x=>x.json());const dt=(await sh)[r.id];if(dt)Object.assign(r,dt);r._det=1}
 let SEARCH=null,SEARCHP=null;
@@ -289,7 +290,7 @@ function flyTo(r){const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoi
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
 function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
  (r.boxes||[]).slice(0,3).forEach(bx=>{const [y0,x0,y1,x1]=bx.box,pad=14,py=5,X0=Math.max(0,x0-pad),X1=Math.min(1000,x1+pad),Y0=Math.max(0,y0-py),Y1=Math.min(1000,y1+py);
-  const d=document.createElement('div');d.className='crop';const im=new Image();im.alt='The entry as printed';im.src='pages/'+bx.pdf+'.jpg';d.append(im);box.append(d);
+  const d=document.createElement('div');d.className='crop';const im=new Image();im.alt='The entry as printed';im.src=IMG+bx.pdf+'.jpg';d.append(im);box.append(d);
   const fit=()=>{const W=box.clientWidth||520,nw=im.naturalWidth,Wd=Math.min(W*1000/(X1-X0),nw*2.4),Hd=Wd*im.naturalHeight/nw;d.style.width=Math.min(Wd*(X1-X0)/1000,W)+'px';d.style.height=((Y1-Y0)/1000*Hd)+'px';im.style.width=Wd+'px';im.style.marginLeft=(-X0/1000*Wd)+'px';im.style.marginTop=(-Y0/1000*Hd)+'px'};
   if(im.complete&&im.naturalWidth)fit();else im.onload=fit})}
 function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
@@ -326,7 +327,7 @@ function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[
 function applyZoom(center){const pg=$('pg'),pi=pg.querySelector('.pgi');if(!pi)return;const z=+pg.dataset.z||2.5;const im=pi.querySelector('img');im.style.width=ZOOM?Math.round(pg.clientWidth*z)+'px':'100%';im.style.maxWidth='none';pi.style.width='';pg.classList.toggle('zin',ZOOM);pg.classList.toggle('zout',!ZOOM);
  const hl=pi.querySelector('.hl');if(center&&hl){pg.scrollLeft=hl.offsetLeft+hl.offsetWidth/2-pg.clientWidth/2;pg.scrollTop=hl.offsetTop+hl.offsetHeight/2-pg.clientHeight/2}}
 function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFactor(bs);
- pg.innerHTML=`<div class=pgi><img src="pages/${p}.jpg">`+bs.map(x=>{const [y0,x0,y1,x1]=x.box,pad=10;return `<div class=hl style="top:${(y0-pad)/10}%;left:${(x0-pad)/10}%;width:${(x1-x0+2*pad)/10}%;height:${(y1-y0+2*pad)/10}%"></div>`}).join('')+'</div>';
+ pg.innerHTML=`<div class=pgi><img src="${IMG}${p}.jpg">`+bs.map(x=>{const [y0,x0,y1,x1]=x.box,pad=10;return `<div class=hl style="top:${(y0-pad)/10}%;left:${(x0-pad)/10}%;width:${(x1-x0+2*pad)/10}%;height:${(y1-y0+2*pad)/10}%"></div>`}).join('')+'</div>';
  const im=pg.querySelector('img'),go=()=>{if(CURRP===p)applyZoom(true)};CURRP=p;if(im.complete&&im.naturalWidth)go();else im.addEventListener('load',go,{once:true})}
 (()=>{let sx,sy,sl,st,moved=0,down=false;const pg=()=>$('pg');
  m.addEventListener('mousedown',e=>{if(!e.target.closest('#pg'))return;down=true;moved=0;sx=e.clientX;sy=e.clientY;sl=pg().scrollLeft;st=pg().scrollTop;e.preventDefault()});
