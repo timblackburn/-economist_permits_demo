@@ -131,6 +131,7 @@ td:first-child{white-space:nowrap}
 #detail .ptd{border-bottom:1px dashed var(--mut);cursor:help}#detail .razed{color:#b8860b;cursor:help;margin-left:2px}
 #detail .who .wl{min-width:128px;padding-right:6px;box-sizing:border-box}#detail .who .wl.nc{text-transform:none}
 @media(min-width:1181px){.paneopen #tarea .wrap{padding-right:0}.paneopen #tbar{padding-right:0}}
+.pgb{padding:2px 10px;font-size:15px;line-height:1.3}.pgn{margin:0 4px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -551,7 +552,7 @@ function weeks(){
   if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
- const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?36:24,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?40:28,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
  let g='';let seg=null;if(DOTC=='arch'&&!AGG){seg={};cur.forEach(r=>{const k=key(r.d);if(!by[k])return;const a=nk(arch(r)),ak=ARCHCOL[a]?a:'~o',o=seg[k]??={},e=o[ak]??={n:0,c:0};e.n++;e.c+=r.cost||0})}
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
@@ -614,7 +615,7 @@ window.addEventListener('scroll',stuckBar,{passive:true});window.addEventListene
 function tbh(){const b=$('tbar');if(b)document.documentElement.style.setProperty('--tbh',b.offsetHeight+'px')}
 window.addEventListener('resize',tbh);
 const pages=()=>Math.max(1,Math.ceil(cur.length/PS));
-function pagerHTML(){const n=pages();return `<button class="btn" data-pg="${PAGE-1}"${PAGE<=0?' disabled':''}>‹ Previous ${PS}</button> <span class="mut">Page ${PAGE+1} of ${n}</span> <button class="btn" data-pg="${PAGE+1}"${PAGE>=n-1?' disabled':''}>Next ${PS} ›</button>`}
+function pagerHTML(){const n=pages();return `<button class="btn pgb" data-pg="${PAGE-1}"${PAGE<=0?' disabled':''} title="Previous ${PS} permits">&lsaquo;</button> <span class="mut pgn">Page ${PAGE+1} of ${n}</span> <button class="btn pgb" data-pg="${PAGE+1}"${PAGE>=n-1?' disabled':''} title="Next ${PS} permits">&rsaquo;</button>`}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[data-pg]');if(!b||b.disabled)return;PAGE=Math.max(0,Math.min(pages()-1,+b.dataset.pg));table();const tb=$('tbar');window.scrollTo({top:Math.max(0,$('tarea').getBoundingClientRect().top+scrollY-(tb?tb.offsetHeight:52)-6),behavior:'auto'})});
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt='';$('pgr').innerHTML=(!AGG&&n>PS)?pagerHTML():'';el.innerHTML=(AGG?`<b>${n.toLocaleString()}</b> permits match. Pick a community area, zoom the map in or search to list them here.`:n>PS?`Showing <b>${(PAGE*PS+1).toLocaleString()}&ndash;${Math.min(n,PAGE*PS+PS).toLocaleString()}</b> of <b>${n.toLocaleString()}</b> permits`:`Showing all <b>${n.toLocaleString()}</b> permits`)+(()=>{if(AGG||!$('inview').checked)return '';const all=allIgnoringView();return all!=null&&all>n?` &middot; <span class=mut>${(all-n).toLocaleString()} more outside the map view</span>`:''})()+srt}
 function table(){tnote();tbh();stuckBar();setTimeout(markRow,0);if(AGG){$('tb').innerHTML=`<tr><td colspan=10><b>${TOT.n.toLocaleString()} permits</b> match. Pick a community area, zoom the map in, or search to list them here &mdash; or <button class=btn id=listall>list all of them</button> <span class=mut>(downloads about 6 MB)</span></td></tr>`;$('listall').onclick=()=>{LISTALL=true;go()};return}
