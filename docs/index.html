@@ -284,7 +284,8 @@ function weeks(){
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
  const ks=Object.keys(by),val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
- const winKeys=new Set([...(issWin()||[])].map(key)),tick=metric=='n'?(v=>Math.round(v)):short;let g='';
+ const winKeys=new Set([...(issWin()||[])].map(key)),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
+ let g='';
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
  const unit={w:'issue',m:'month',y:'year',d:'decade'}[gran];
