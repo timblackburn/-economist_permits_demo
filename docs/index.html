@@ -96,10 +96,10 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  <div class="fg"><span class="fl">Community area</span><select id="ca" style="width:100%"><option value="">All community areas</option></select></div>
  <div class="fg"><span class="fl">Dates</span><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></div>
+ <div class="fg"><span class="fl">Cost</span><div class="dr"><div class="dates"><input id="c1" aria-label="Lowest cost" placeholder="any" autocomplete="off"><span class="mut">to</span><input id="c2" aria-label="Highest cost" placeholder="no limit" autocomplete="off"></div><div class="rs" id="crs"><svg id="ccov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="k1" min="0" max="18" value="0" step="1" aria-label="Lowest cost"><input type="range" id="k2" min="0" max="18" value="18" step="1" aria-label="Highest cost"></div><div class="rnote"><span id="cn" class="mut"></span></div></div></div>
  <div id="summary"></div>
  <div class="chips" id="chips"></div>
  <div class="narrow">Narrow by</div>
- <details class="fgroup"><summary>Cost</summary><div class="fr"><label class="mut">at least</label><input id="min" type="number" placeholder="$" style="width:90px"></div></details>
  <details class="fgroup" open><summary>Map &amp; chart show</summary><div class="fr"><span class="seg"><button class="btn on" id="mc">Permits</button><button class="btn" id="mk">Listed cost</button></span></div></details>
 </aside>
 <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade"><input type="checkbox" id="shade"> shade community areas</label><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
@@ -217,7 +217,7 @@ const ALLLOADED=()=>LEGACY||ALLKEYS.every(k=>LOADED.has(k));
 function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}}
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
-const rowFilters=()=>!!($('q').value||$('ar').value||AS.size||(+$('min').value>0)||!dateAligned()||archKey()===null);
+const rowFilters=()=>!!($('q').value||$('ar').value||AS.size||costOn()||!dateAligned()||archKey()===null);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL||rowFilters())return ALLKEYS;
  if($('inview').checked)return viewShards();
@@ -283,8 +283,19 @@ function legacyRange(p){let a=null,b=null,m;const i=p.get('issue'),n=+(p.get('n'
  else if(p.get('year')){a=p.get('year')+'-01-01';b=p.get('year')+'-12-31'}
  else if(m=(p.get('decade')||'').match(/^(\d{3})0s$/)){a=m[1]+'0-01-01';b=m[1]+'9-12-31'}
  if(a)setR(a,b)}
-function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',mn=+$('min').value||0,a=$('ca').value;
- return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(r.cost||0)>=mn}
+/* ---- cost range: a log-style slider (costs run from a few hundred dollars to millions) plus boxes that take any amount ("5000", "5k", "$1.5m") ---- */
+const STOPS=[0,500,1000,2000,3000,5000,7500,10000,15000,20000,30000,50000,75000,100000,150000,250000,500000,1000000,Infinity];let CLO=0,CHI=Infinity;
+const costOn=()=>CLO>0||CHI<Infinity,fmtC=v=>v>=1e6?'$'+(+(v/1e6).toFixed(2))+'M':v>=1e3?'$'+(+(v/1e3).toFixed(1))+'k':'$'+v;
+function parseC(t){t=(t||'').trim().toLowerCase().replace(/[$,\s]/g,'');const m=t.match(/^(\d+(?:\.\d+)?)(k|m)?$/);if(!m)return null;return Math.round(+m[1]*(m[2]=='k'?1e3:m[2]=='m'?1e6:1))}
+const nearStop=v=>{let k=0,b=1e18;STOPS.forEach((x,i)=>{const d=x==Infinity?(v==Infinity?0:1e17):Math.abs(x-v);if(d<b){b=d;k=i}});return k};
+function syncCost(){const n=STOPS.length-1,i1=nearStop(CLO),i2=nearStop(CHI);$('k1').value=i1;$('k2').value=i2;$('c1').value=CLO>0?fmtC(CLO):'';$('c2').value=CHI<Infinity?fmtC(CHI):'';
+ $('ccov').innerHTML=`<rect x="${i1/n*1000}" y="0" width="${Math.max((i2-i1)/n*1000,3)}" height="12" fill="var(--acc)" opacity=".28"/>`+STOPS.map((x,i)=>`<rect x="${i/n*1000-.7}" y="3" width="1.4" height="6" fill="var(--mut)"/>`).join('');
+ $('cn').textContent=costOn()?'permits with a stated cost '+(CLO>0?'from '+fmtC(CLO)+' ':'')+(CHI<Infinity?'up to '+fmtC(CHI):''):'any cost, including unstated'}
+function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b)a=b;if(which==2&&b<a)b=a;CLO=STOPS[a];CHI=STOPS[b];syncCost();clearTimeout(goT);goT=setTimeout(go,140)}
+function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
+
+function flt(skip){const B=$('inview').checked?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',a=$('ca').value,co=costOn();
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!a||r.ca==+a)&&(!q||hay(r).includes(q))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
 async function go(){
  const tok=++GOTOK;
  if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(()=>{if(tok===GOTOK)go()});
@@ -293,7 +304,7 @@ async function go(){
  if(want.length){$('summary').textContent='Loading permit details…';await loadShards(want);if(tok!==GOTOK)return}
  render(rk)}
 function render(rk){
- AGG=!rk;syncRange();
+ AGG=!rk;syncRange();syncCost();
  F.area=$('ca').value?+$('ca').value:null;
  cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'';return (x>y?1:x<y?-1:0)*sd});
  const cubeOK=!LEGACY&&!rowFilters()&&!$('inview').checked;
@@ -304,15 +315,15 @@ function render(rk){
  $('wkstats').textContent=`listed total ${money(t)}`+(!AGG&&cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  buildWalk();chips();drawCA();drawPts();weeks();archs();table();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||F.area)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
-const KEYS0=0;const KEYS={q:'q',ca:'ca',ar:'ar',min:'min'};
-let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(R.a){p.set('from',R.a);p.set('to',R.b)}if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+const KEYS0=0;const KEYS={q:'q',ca:'ca',ar:'ar'};
+let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
+function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(R.a){p.set('from',R.a);p.set('to',R.b)}if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 function chips(){toHash();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);
+ if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
  if($('ca').value)c.push([$('ca').selectedOptions[0].text,()=>$('ca').value='']);if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','ca','min'].forEach(x=>$(x).value='');setR(null,null);AS.clear();go()};$('chips').append(e)}}
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar','ca'].forEach(x=>$(x).value='');CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}}
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 function weeks(){
  const dom=ISS.filter(d=>inPeriod({d})),span=dom.length?(new Date(dom[dom.length-1])-new Date(dom[0]))/864e5:0;
@@ -479,7 +490,8 @@ $('d1').addEventListener('change',typedRange);$('d2').addEventListener('change',
 $('rz').onclick=()=>{V=fullSpan();syncRange()};
 $('shade').onchange=()=>{caLayer&&(caLayer.eachLayer(style),go.legend&&0);go()};
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
-['q','ca','ar','min'].forEach(x=>$(x).addEventListener('input',()=>go()));
+['q','ca','ar'].forEach(x=>$(x).addEventListener('input',()=>go()));
+$('k1').addEventListener('input',()=>slideCost(1));$('k2').addEventListener('input',()=>slideCost(2));$('c1').addEventListener('change',typedCost);$('c2').addEventListener('change',typedCost);
 $('inview').addEventListener('change',()=>go());
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onchange=()=>{perIssue=$('mv').checked;go()};
