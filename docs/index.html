@@ -110,12 +110,19 @@ tbody tr.r.sel,tbody tr.r.sel:nth-child(even),tbody tr.r.sel:hover{background:va
 @media(min-width:1181px){#tarea.docked{display:grid;grid-template-columns:minmax(0,1fr) clamp(400px,34vw,520px);gap:18px;align-items:start;padding-right:20px}
  #tarea.docked table{min-width:0}#tarea.docked col:nth-child(2),#tarea.docked col:nth-child(4),#tarea.docked col:nth-child(6),#tarea.docked th:nth-child(2),#tarea.docked th:nth-child(4),#tarea.docked th:nth-child(6),#tarea.docked td:nth-child(2),#tarea.docked td:nth-child(4),#tarea.docked td:nth-child(6){display:none}
  #tdock{position:sticky;top:calc(var(--tbh,52px) + 10px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto;margin-top:12px;border-radius:6px}#tdock>#detail{position:static;max-height:none;overflow:visible;margin:0}}
+header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:3px;margin-left:4px;white-space:nowrap}header .sub a:hover{text-decoration:underline}
+#about{border:1px solid var(--line);border-radius:8px;max-width:780px;width:calc(100% - 32px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}#about::backdrop{background:rgba(0,0,0,.45)}
+#about .ah{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px;position:sticky;top:0}#about .ab{padding:14px 18px 18px;font-size:14px;line-height:1.5;max-height:calc(100vh - 140px);overflow:auto}
+#about h3{margin:16px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}#about h3:first-child{margin-top:0}#about table{width:100%;min-width:0;table-layout:auto;font-size:13px;margin:6px 0}#about th{position:static;background:var(--th);color:#fff;font-size:12px;cursor:default;top:auto;padding:5px 8px}#about td{padding:5px 8px;border-bottom:1px solid var(--line)}#about td.n,#about th.n{text-align:right}#about ul{margin:4px 0;padding-left:20px}#about li{margin:2px 0}
+footer .credit{white-space:nowrap}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
-<p class="sub">Weekly permit lists transcribed from scans of Chicago trade papers: mostly <i>The Economist</i>, with <i>The American Contractor</i> and <i>The Real Estate and Building Journal</i> filling in some weeks (selected periods from 1883 to 1930; not every issue is here yet). Some weeks of 1898&ndash;1912 come only from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no scans. Text is machine-read and may contain errors. Streets are shown by today's name, with the name printed at the time beneath when it has changed. Click a community area, a bar, an architect, or a row.</p>
+<p class="sub">Weekly building-permit lists from Chicago trade papers, transcribed from scans. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a></p>
 </header>
+<dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
+<div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
 <div class="layout">
 <aside class="filters card" id="filters">
  <h2>Search &amp; filter</h2>
@@ -147,7 +154,7 @@ tbody tr.r.sel,tbody tr.r.sel:nth-child(even),tbody tr.r.sel:hover{background:va
   <button role="menuitem" data-f="kml"><b>KML</b><small>For Google Earth and My Maps. Permits with a location only.</small></button>
  </div></span></div>
 <div id="tarea"><div class="wrap"><table><colgroup><col style="width:6%"><col style="width:4%"><col style="width:18%"><col style="width:8%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:14%"><col style="width:15%"></colgroup><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn" title="Size (ft); sorts by floor area (width × depth)">Size (ft)</th><th data-k="cost" class="n">Cost</th><th data-k="own">Owner</th><th data-k="ar">Architect</th><th data-k="con">Contractors</th></tr></thead><tbody id="tb"></tbody></table></div><aside id="tdock" hidden aria-label="Selected property"></aside></div>
-<footer>Sources: <i>The Economist</i> (Chicago) and, for some weeks of 1913&ndash;14 and 1917&ndash;18, <i>The American Contractor</i>, for 1883&ndash;97 <i>The Real Estate and Building Journal</i>, and the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912), scanned by Google Books and the Internet Archive &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors.</footer>
+<footer>Sources: <i>The Economist</i> (Chicago) and, for some weeks of 1913&ndash;14 and 1917&ndash;18, <i>The American Contractor</i>, for 1883&ndash;97 <i>The Real Estate and Building Journal</i>, and the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912), scanned by Google Books and the Internet Archive &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors. <span class="credit">Compiled by Tim Blackburn.</span> <span id="support"></span></footer>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script>
@@ -488,6 +495,22 @@ $('dotkey').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if
 const cn=t=>(t||'').toLowerCase().replace(/[.,]/g,'').replace(/\s+/g,' ').trim();
 const rowNames=r=>r._cn||(r._cn=[r.con,...(r.trd?r.trd.split('|').map(t=>t.slice(t.indexOf(': ')+2)):[])].filter(Boolean).map(cn));
 function setContractor(name){const k=cn(name);if(CS.has(k))CS.delete(k);else{CS.add(k);CSN[k]=name}go()}
+/* ---- About box: what is included (built from data/about.json so the numbers stay true), how to read it, credits ---- */
+let ABOUTD=null;
+function aboutHTML(a){const f=n=>n.toLocaleString(),yr=d=>d.slice(0,4),fd=d=>d;
+ const rows=(a.sources||[]).map(x=>`<tr><td>${esc(x.label)}</td><td>${yr(x.from)}&ndash;${yr(x.to)}</td><td class="n">${f(x.issues)}</td><td class="n">${f(x.permits)}</td></tr>`).join('');
+ const gaps=(a.gaps||[]).filter(g=>g[2]>=8).map(g=>`<li>No issues between ${fd(g[0])} and ${fd(g[1])} (about ${g[2]} weeks)</li>`).join('');
+ return `<h3>What this is</h3><p>Weekly permit lists transcribed from scans of Chicago trade papers, 1883&ndash;1930: <b>${f(a.total)}</b> permits in all, in issues from ${yr(a.first)} to ${yr(a.last)}. Not every issue is here yet.</p>
+ <h3>What is included</h3><table><thead><tr><th>Source</th><th>Years</th><th class="n">Issues</th><th class="n">Permits</th></tr></thead><tbody>${rows}</tbody></table>
+ <p>Some weeks of 1898&ndash;1912 come only from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no scans.</p>
+ ${gaps?`<h3>Gaps of two months or more</h3><ul>${gaps}</ul>`:''}
+ <h3>Reading the data</h3><ul><li>Text is machine-read and may contain errors.</li><li>Streets are shown by today&rsquo;s name, with the name printed at the time beneath when it has changed.</li><li>A &ldquo;~&rdquo; after a community area means the location is approximate.</li><li>Click a community area, a bar, an architect, a contractor, or a row.</li></ul>
+ <h3>Sources</h3><p><i>The Economist</i> (Chicago), <i>The American Contractor</i>, <i>The Real Estate and Building Journal</i> and <i>Construction News</i>, scanned by Google Books, HathiTrust and the Internet Archive; the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912). Cook County GIS address points and Assessor records; City of Chicago community-area boundaries; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names; map &copy; OpenStreetMap contributors.</p>
+ <h3>Credit</h3><p>Compiled by Tim Blackburn.</p>`}
+function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('abody').innerHTML=aboutHTML(ABOUTD);return}
+ fetch('data/about.json').then(r=>r.json()).then(j=>{ABOUTD=j;$('abody').innerHTML=aboutHTML(j)}).catch(()=>{$('abody').innerHTML='<p>The summary could not be loaded. Try again in a moment.</p>'})}
+$('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});$('aclose').onclick=()=>$('about').close();
+$('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
  if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()}]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
