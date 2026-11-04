@@ -233,7 +233,12 @@ function drawDots(low){
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1);let vis=placed.filter(r=>bd.contains([r.lat,r.lon]));const z=map.getZoom();let sampled='';
  if(low&&vis.length>12000){const k=Math.ceil(vis.length/12000);vis=vis.filter((_,i)=>i%k==0);sampled=` · showing a sample of ${vis.length.toLocaleString()} dots; zoom in to see every one`}
   const radOf=low?(()=>z<=12?2.5:z==13?3.5:4.5):(r=>Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000))));   // big dots first so small ones sit on top; a click goes to the dot nearest the cursor (dots overlap a lot at zoom 15-16)
-  vis.sort((a,b)=>radOf(b)-radOf(a)).forEach(r=>{const rad=radOf(r);
+  const zOf=(()=>{    // drawing order = stacking order: what is drawn last sits on top
+  if(DOTC=='cost')return r=>r.cost>0?r.cost:0;                                     // cheapest at the bottom, costliest on top
+  if(DOTC=='arch'){const rk={};ARCHTOP.forEach((t,i)=>rk[t.k]=ARCHTOP.length-i);return r=>rk[nk(arch(r))]||0}   // everyone else at the bottom, the top architects above them, the busiest on top
+  const cnt={};placed.forEach(r=>{const k=CHART.key(r.d);cnt[k]=(cnt[k]||0)+1});return r=>-(cnt[CHART.key(r.d)]||0)    // the period with the most dots at the bottom
+ })();
+ vis.sort((a,b)=>(zOf(a)-zOf(b))||(radOf(b)-radOf(a))).forEach(r=>{const rad=radOf(r);
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}show(best,true)});c.addTo(ptLayer)});
