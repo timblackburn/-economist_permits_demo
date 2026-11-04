@@ -102,6 +102,8 @@ th[data-k]{cursor:pointer;user-select:none;white-space:nowrap}th[data-k]::after{
 th{top:var(--tbh,52px);z-index:30}
 #map{position:relative;z-index:0;isolation:isolate}
 td.crew{font-size:12.5px;line-height:1.35;min-width:150px}td.crew .con{font-weight:600}td.crew .trade span{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.03em;margin-right:4px}
+@media(min-width:1181px){.layout .side{overflow:hidden}#overview{flex:1 1 auto;min-height:0}#overview>.card:last-child{flex:1 1 0;min-height:150px;display:flex;flex-direction:column}#overview>.card:last-child #archs{flex:1 1 auto;min-height:0;overflow:auto}}
+#totop{font-size:12.5px;white-space:nowrap}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -131,7 +133,7 @@ td.crew{font-size:12.5px;line-height:1.35;min-width:150px}td.crew .con{font-weig
    <div id="mt"></div>
   </div>
  </div></div>
-<div class="tbar" id="tbar"><span id="tnote"></span><span class="mut" id="dln"></span><span class="dlw"><button class="btn dlbtn" id="dlb" aria-haspopup="menu" aria-expanded="false" title="Download the permits that match the current filters">⤓ Download <span id="dlc" class="mut"></span></button>
+<div class="tbar" id="tbar"><span id="tnote"></span><span class="mut" id="dln"></span><a class="lk" id="totop" href="#" hidden title="Scroll back up to the map and filters">↑ Back to map &amp; filters</a><span class="dlw"><button class="btn dlbtn" id="dlb" aria-haspopup="menu" aria-expanded="false" title="Download the permits that match the current filters">⤓ Download <span id="dlc" class="mut"></span></button>
  <div id="dlm" role="menu" hidden>
   <div class="dlh">Download <b id="dln2"></b> permits as…</div>
   <button role="menuitem" data-f="csv"><b>CSV spreadsheet</b><span class="rec">recommended</span><small>Opens in Excel or Google Sheets. Includes every permit.</small></button>
@@ -487,7 +489,7 @@ function weeks(){
   if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
- const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=40,B=gran=='y'||gran=='d'?32:22,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
  let g='';let seg=null;if(DOTC=='arch'&&!AGG){seg={};cur.forEach(r=>{const k=key(r.d);if(!by[k])return;const a=nk(arch(r)),ak=ARCHCOL[a]?a:'~o',o=seg[k]??={},e=o[ak]??={n:0,c:0};e.n++;e.c+=r.cost||0})}
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
@@ -542,10 +544,13 @@ function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()|
 /* ---- table + detail ---- */
 const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A'],con:['contractor (or first trade)','A to Z','Z to A']};
 function sortUI(){document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k==sk,nm=th.dataset.k=='szn'?'Size, by floor area (width × depth)':th.textContent.replace(/\s+/g,' ').trim();th.classList.toggle('sorted',on);th.classList.toggle('desc',on&&sd<0);th.title=(on?`Sorted by ${nm} (${sd>0?'ascending':'descending'}). Click to reverse.`:`Click to sort by ${nm}`)+(th.dataset.k=='con'?'. The main contractor or builder, then the mason, carpenter and other trades. The lists name contractors from about 1900 on; the 1880s-90s lists do not.':'')})}
+$('totop').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})});
+function stuckBar(){const b=$('tbar');if(b)$('totop').hidden=!(b.getBoundingClientRect().top<=1&&scrollY>200)}
+window.addEventListener('scroll',stuckBar,{passive:true});window.addEventListener('resize',stuckBar);
 function tbh(){const b=$('tbar');if(b)document.documentElement.style.setProperty('--tbh',b.offsetHeight+'px')}
 window.addEventListener('resize',tbh);
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt=AGG?'':` <span class=mut>Sorted by <b>${sn[0]}</b> (${sd>0?sn[1]:sn[2]}); click any column heading to re-sort.</span>`;el.innerHTML=(AGG?`<b>${n.toLocaleString()}</b> permits match. Pick a community area, zoom the map in or search to list them here.`:n>400?`Showing the first <b>400</b> of <b>${n.toLocaleString()}</b> permits; narrow the filters to see the rest, or download them all.`:`Showing all <b>${n.toLocaleString()}</b> permits.`)+srt}
-function table(){tnote();tbh();if(AGG){$('tb').innerHTML=`<tr><td colspan=10><b>${TOT.n.toLocaleString()} permits</b> match. Pick a community area, zoom the map in, or search to list them here &mdash; or <button class=btn id=listall>list all of them</button> <span class=mut>(downloads about 6 MB)</span></td></tr>`;$('listall').onclick=()=>{LISTALL=true;go()};return}
+function table(){tnote();tbh();stuckBar();if(AGG){$('tb').innerHTML=`<tr><td colspan=10><b>${TOT.n.toLocaleString()} permits</b> match. Pick a community area, zoom the map in, or search to list them here &mdash; or <button class=btn id=listall>list all of them</button> <span class=mut>(downloads about 6 MB)</span></td></tr>`;$('listall').onclick=()=>{LISTALL=true;go()};return}
  $('tb').innerHTML=cur.slice(0,400).map((r,k)=>`<tr class="r" data-k="${k}"><td>${r.d}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`:''}</td><td class="crew">${r.con?`<div class=con>${esc(r.con)}</div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': ');return `<div class=trade><span>${esc(t.slice(0,i))}</span> ${esc(t.slice(i+2))}</div>`}).join(''):''}</td></tr>`).join('')+(cur.length>400?`<tr><td colspan=10>Showing first 400 of ${cur.length.toLocaleString()}; narrow the filters.</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>show(cur[+e.dataset.k]));$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();setArch(a.dataset.a)})}
 let CURR=null,phT=null;
