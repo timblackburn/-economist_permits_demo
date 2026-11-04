@@ -121,6 +121,7 @@ td:first-child{white-space:nowrap}
 .mapc>h2{margin-bottom:0}.legend .it{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:8px}#pgr{display:inline-flex;gap:8px;align-items:center;font-size:13px}#pgr .btn,.pgrow .btn{padding:4px 10px;font-size:13px}.pgrow td{text-align:center;padding:14px;background:var(--bg)!important;cursor:default}tbody tr.pgrow:hover{background:var(--bg)!important}
 @media(min-width:1181px){#detail.floating{position:fixed!important;top:calc(var(--tbh,52px) + 10px);right:20px;width:clamp(400px,34vw,520px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto!important;z-index:36;margin:0}}
 .mapc>h2{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}.mapc>h2 .shade{margin-left:auto;white-space:nowrap}
+#detail .dbar{padding:6px 10px;min-height:0}#detail .dbar .btn{padding:2px 8px;font-size:12.5px;line-height:1.5}#detail .dbar #pos{font-size:12px;min-width:0;margin:0 4px}#detail .dbar .dnav{gap:3px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -148,7 +149,7 @@ td:first-child{white-space:nowrap}
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="wmode" title="Next / previous walks along a street in house-number order, then on to the nearest street; or follows the order of the table below">Next: along the street</button><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
+   <div class="dbar"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
@@ -159,7 +160,7 @@ td:first-child{white-space:nowrap}
   <button role="menuitem" data-f="geojson"><b>GeoJSON</b><small>For QGIS, ArcGIS and web maps. Permits with a location only.</small></button>
   <button role="menuitem" data-f="kml"><b>KML</b><small>For Google Earth and My Maps. Permits with a location only.</small></button>
  </div></span></div>
-<div id="tarea"><div class="wrap"><table><colgroup><col style="width:6.5%"><col style="width:4%"><col style="width:12.5%"><col style="width:18%"><col style="width:8%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:16%"></colgroup><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod">Site (today's street name)</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn" title="Size (ft); sorts by floor area (width × depth)">Size (ft)</th><th data-k="cost" class="n">Cost</th><th data-k="ar">Architect</th><th data-k="con">Contractors</th></tr></thead><tbody id="tb"></tbody></table></div><aside id="tdock" hidden aria-label="Selected property"></aside></div>
+<div id="tarea"><div class="wrap"><table><colgroup><col style="width:6.5%"><col style="width:4%"><col style="width:12.5%"><col style="width:18%"><col style="width:8%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:16%"></colgroup><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod" title="Sorts by street name, then street number">Address</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn" title="Size (ft); sorts by floor area (width × depth)">Size (ft)</th><th data-k="cost" class="n">Cost</th><th data-k="ar">Architect</th><th data-k="con">Contractors</th></tr></thead><tbody id="tb"></tbody></table></div><aside id="tdock" hidden aria-label="Selected property"></aside></div>
 <footer>Sources: <i>The Economist</i> (Chicago) and, for some weeks of 1913&ndash;14 and 1917&ndash;18, <i>The American Contractor</i>, for 1883&ndash;97 <i>The Real Estate and Building Journal</i>, and the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912), scanned by Google Books and the Internet Archive &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors. <span class="credit">Compiled by Tim Blackburn.</span> <span id="support"></span></footer>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="vendor/leaflet/leaflet.js"></script>
@@ -401,16 +402,18 @@ async function go(){
  const want=[...new Set([...(rk||[]),...dk])].filter(k=>!LOADED.has(k));
  if(want.length){$('summary').textContent='Loading permit details…';await loadShards(want);if(tok!==GOTOK)return}
  render(rk)}
+/* sort key for the Address column: street name (numbered streets in numeric order), then direction, then the first street number as a number */
+const addrKey=r=>{if(r._ak!==undefined)return r._ak;const a=(r.mod||r.site||'').trim(),m=a.match(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/),num=(a.match(/^\s*(\d+)/)||[])[1],rest=a.slice(m?m[0].length:0).trim(),dm=rest.match(/^([NSEW])\.?\s+(.*)$/i),dir=dm?dm[1].toUpperCase():'',street=(dm?dm[2]:rest).toLowerCase().replace(/(\d+)(st|nd|rd|th)\b/g,(x,n)=>n.padStart(6,'0')+x.slice(n.length));return r._ak=street?street+'|'+dir+'|'+String(num||0).padStart(8,'0'):''};
 function render(rk){
  AGG=!rk;syncRange();syncCost();
- PAGE=0;cur=D.filter(flt());const ck=r=>r.con||(r.trd?r.trd.split('|')[0].replace(/^[^:]*:\s*/,''):'');cur.sort((a,b)=>{const x=sk=='szn'?num(a):sk=='con'?ck(a):a[sk]??'',y=sk=='szn'?num(b):sk=='con'?ck(b):b[sk]??'',xe=x===''||x==null||(sk=='szn'&&!x),ye=y===''||y==null||(sk=='szn'&&!y);if(xe||ye)return xe&&ye?0:xe?1:-1;return (x>y?1:x<y?-1:0)*sd});   // blank values (no cost, no architect) always sort last
+ PAGE=0;cur=D.filter(flt());const ck=r=>r.con||(r.trd?r.trd.split('|')[0].replace(/^[^:]*:\s*/,''):'');cur.sort((a,b)=>{const x=sk=='szn'?num(a):sk=='con'?ck(a):sk=='mod'?addrKey(a):a[sk]??'',y=sk=='szn'?num(b):sk=='con'?ck(b):sk=='mod'?addrKey(b):b[sk]??'',xe=x===''||x==null||(sk=='szn'&&!x),ye=y===''||y==null||(sk=='szn'&&!y);if(xe||ye)return xe&&ye?0:xe?1:-1;return (x>y?1:x<y?-1:0)*sd});   // blank values (no cost, no architect) always sort last
  const cubeOK=!LEGACY&&!rowFilters()&&!$('inview').checked;
  if(cubeOK)stat=cubeStat();else{stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0})}   // the map keeps showing every area while one is selected
 
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
  $('wkstats').textContent=`listed total ${money(t)}`+(!AGG&&cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
- buildWalk();chips();drawCA();archs();weeks();drawPts();dotKey();table();dlUpdate();
+ chips();drawCA();archs();weeks();drawPts();dotKey();table();dlUpdate();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',ar:'ar'};
 let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
@@ -592,7 +595,7 @@ function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()|
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
  $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
 /* ---- table + detail ---- */
-const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A'],con:['contractor (or first trade)','A to Z','Z to A']};
+const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address (street name, then number)','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A'],con:['contractor (or first trade)','A to Z','Z to A']};
 function sortUI(){document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k==sk,nm=th.dataset.k=='szn'?'Size, by floor area (width × depth)':th.textContent.replace(/\s+/g,' ').trim();th.classList.toggle('sorted',on);th.classList.toggle('desc',on&&sd<0);th.title=(on?`Sorted by ${nm} (${sd>0?'ascending':'descending'}). Click to reverse.`:`Click to sort by ${nm}`)+(th.dataset.k=='con'?'. The main contractor or builder, then the mason, carpenter and other trades. The lists name contractors from about 1900 on; the 1880s-90s lists do not.':'')})}
 $('totop').addEventListener('click',e=>{e.preventDefault();window.scrollTo({top:0,behavior:'smooth'})});
 function stuckBar(){const b=$('tbar');if(b)$('totop').hidden=!(b.getBoundingClientRect().top<=1&&scrollY>200)}
@@ -624,24 +627,7 @@ function phView(r,pin,label){
  const alt=r.alt&&r.alt[1]?`<div class=pins><span class=mut>Possible corner address:</span> <button class="btn${r.alt[1]==pin?' on':''}" data-pin="${r.alt[1]}" data-label="${esc(r.alt[0])}" title="The nearest corner house on the cross street, ${r.alt[2]} m from where this address falls. Shows its photo — not part of the permit.">${esc(r.alt[0])}</button></div>`:'';
  $('ph').innerHTML=lots+nb+alt+img}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
-let WALK=[],walkNear=true;
-function hilbert(x,y){const n=65536;let d=0;for(let s=n/2;s>=1;s/=2){const rx=(x&s)>0?1:0,ry=(y&s)>0?1:0;d+=s*s*((3*rx)^ry);if(ry==0){if(rx==1){x=n-1-x;y=n-1-y}const t=x;x=y;y=t}}return d}
-const streetKey=r=>{const m=(r.mod||'').match(/\b([NSEW])\s+([A-Za-z0-9].*)$/);return m?m[1]+' '+m[2].toLowerCase():null};
-const houseNo=r=>{const m=(r.mod||'').match(/^\s*(\d+)/);return m?+m[1]:0};
-function buildWalk(){const pl=cur.filter(r=>r.lat);
- for(const r of pl)if(r.h==null)r.h=hilbert(Math.max(0,Math.min(65535,Math.floor((r.lon+87.95)/0.45*65535))),Math.max(0,Math.min(65535,Math.floor((r.lat-41.6)/0.5*65535))));
- // one stretch per street, in house-number order; then each next stretch is the nearest one, entered from whichever end is closer
- const by=new Map();for(const r of pl){const k=streetKey(r)||('~'+Math.round(r.lat*300)+':'+Math.round(r.lon*300));let g=by.get(k);if(!g)by.set(k,g=[]);g.push(r)}
- const G=[...by.values()].map(g=>{g.sort((a,b)=>houseNo(a)-houseNo(b)||(a.d>b.d?1:a.d<b.d?-1:a.id-b.id));return {g,h:Math.min(...g.map(r=>r.h))}}).sort((a,b)=>a.h-b.h);
- let out=[];
- if(G.length>1500){for(const x of G)out.push(...x.g)}                                    // very many streets: keep them in curve order
- else if(G.length){const dist=(p,q)=>{const dy=p.lat-q.lat,dx=(p.lon-q.lon)*.74;return dy*dy+dx*dx};
-  const left=G.slice(),first=left.shift();out.push(...first.g);let end=first.g[first.g.length-1];
-  while(left.length){let best=0,bd=1e9,rev=false;
-   for(let i=0;i<left.length;i++){const g=left[i].g,d1=dist(end,g[0]),d2=dist(end,g[g.length-1]);if(d1<bd){bd=d1;best=i;rev=false}if(d2<bd){bd=d2;best=i;rev=true}}
-   const g=left.splice(best,1)[0].g;if(rev)g.reverse();out.push(...g);end=g[g.length-1]}}
- WALK=out.concat(cur.filter(r=>!r.lat))}
-const order=()=>walkNear?WALK:cur;
+const order=()=>cur;
 function flyTo(r){const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
  if(map.getZoom()>=16&&!far)map.panTo([r.lat,r.lon],{animate:true,duration:.5,easeLinearity:.4});else map.flyTo([r.lat,r.lon],z,{duration:.9})}
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
@@ -713,7 +699,6 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
  addEventListener('mouseup',e=>{if(!down)return;down=false;if(moved<6&&e.target.closest&&e.target.closest('#pg')){const p=pg(),r=p.getBoundingClientRect(),pi=p.querySelector('.pgi'),fx=(e.clientX-r.left+p.scrollLeft)/pi.offsetWidth,fy=(e.clientY-r.top+p.scrollTop)/pi.offsetHeight;
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
-$('wmode').onclick=()=>{walkNear=!walkNear;$('wmode').textContent=walkNear?'Next: along the street':'Next: list order';if(CURR)show(CURR)};
 m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 addEventListener('keydown',e=>{if(/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName))return;
  if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
