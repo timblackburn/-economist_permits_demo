@@ -329,8 +329,10 @@ function setR(a,b,zoom){const f=fullSpan();if(!a||(a<=som(ISS[0])&&b>=eom(ISS[IS
 function autoZoom(){const f=fullSpan();if(!R.a){V=f;return}const a=dn(R.a),b=dn(R.b),sp=b-a;if(sp<=540){const pad=Math.max(sp,60);V=[Math.max(f[0],a-pad),Math.min(f[1],b+pad)]}else V=f}
 function syncRange(){if(!ISS.length)return;if(!ISSN.length)ISSN=ISS.map(dn);const f=fullSpan();if(!V)V=f;const a=R.a?dn(R.a):f[0],b=R.b?dn(R.b):f[1],w=V[1]-V[0]||1,pos=t=>Math.max(0,Math.min(1000,Math.round((t-V[0])/w*1000)));
  $('r1').value=pos(a);$('r2').value=pos(b);$('d1').value=R.a?R.a:'';$('d2').value=R.b?R.b:'';$('d1').placeholder=ISS[0];$('d2').placeholder=ISS[ISS.length-1];
- let g='',x1=pos(a),x2=pos(b);g+=`<rect x="${x1}" y="0" width="${Math.max(x2-x1,2)}" height="12" fill="var(--acc)" opacity=".22"/>`;
- ISSN.forEach(t=>{if(t<V[0]||t>V[1])return;g+=`<rect x="${(t-V[0])/w*1000}" y="2" width="${Math.max(1.4,7/w*1000/7)}" height="8" fill="var(--mut)"/>`});$('cov').innerHTML=g;
+ let g='',x1=pos(a),x2=pos(b);
+ for(let y=Math.floor(new Date(V[0]*864e5).getUTCFullYear()/10)*10;y<=new Date(V[1]*864e5).getUTCFullYear();y+=10){const xa=pos(dn(y+'-01-01')),xb=pos(dn((y+10)+'-01-01'));if(xb>xa)g+=`<rect x="${xa}" y="0" width="${xb-xa}" height="12" fill="${DECC[y+'s']||'#9aa0a6'}" opacity=".9"/>`}
+ g+=`<rect x="0" y="0" width="${x1}" height="12" fill="var(--surface)" opacity=".72"/><rect x="${x2}" y="0" width="${1000-x2}" height="12" fill="var(--surface)" opacity=".72"/>`;
+ ISSN.forEach(t=>{if(t<V[0]||t>V[1])return;g+=`<rect x="${(t-V[0])/w*1000}" y="8.5" width="${Math.max(1.4,7/w*1000/7)}" height="3.5" fill="rgba(0,0,0,.55)"/>`});$('cov').innerHTML=g;
  const n=ISS.filter(d=>inPeriod({d})).length;$('rn').textContent=(R.a?`${n} issue${n==1?'':'s'}`:`all ${n} issues`)+(V[0]>f[0]||V[1]<f[1]?` · showing ${ds(V[0])} to ${ds(V[1])}`:'');$('rz').hidden=!(V[0]>f[0]||V[1]<f[1])}
 function snapT(t,end,span){if(span>366){const d=ds(t);return end?eom(d):som(d)}let k=0,best=1e9;ISSN.forEach((x,i)=>{const e=Math.abs(x-t);if(e<best){best=e;k=i}});return ISS[k]}
 let goT=0;function slide(which){const w=V[1]-V[0],t1=V[0]+$('r1').value/1000*w,t2=V[0]+$('r2').value/1000*w;let lo=Math.min(t1,t2),hi=Math.max(t1,t2);if(which==1&&t1>t2)lo=hi=t2;if(which==2&&t2<t1)lo=hi=t1;const span=hi-lo,a=snapT(lo,false,span),b=snapT(hi,true,span);
@@ -358,7 +360,9 @@ const costOn=()=>CLO>0||CHI<Infinity,fmtC=v=>v>=1e6?'$'+(+(v/1e6).toFixed(2))+'M
 function parseC(t){t=(t||'').trim().toLowerCase().replace(/[$,\s]/g,'');const m=t.match(/^(\d+(?:\.\d+)?)(k|m)?$/);if(!m)return null;return Math.round(+m[1]*(m[2]=='k'?1e3:m[2]=='m'?1e6:1))}
 const nearStop=v=>{let k=0,b=1e18;STOPS.forEach((x,i)=>{const d=x==Infinity?(v==Infinity?0:1e17):Math.abs(x-v);if(d<b){b=d;k=i}});return k};
 function syncCost(){const n=STOPS.length-1,i1=nearStop(CLO),i2=nearStop(CHI);$('k1').value=i1;$('k2').value=i2;$('c1').value=CLO>0?fmtC(CLO):'';$('c2').value=CHI<Infinity?fmtC(CHI):'';
- $('ccov').innerHTML=`<rect x="${i1/n*1000}" y="0" width="${Math.max((i2-i1)/n*1000,3)}" height="12" fill="var(--acc)" opacity=".28"/>`+STOPS.map((x,i)=>`<rect x="${i/n*1000-.7}" y="3" width="1.4" height="6" fill="var(--mut)"/>`).join('');
+ let cb='';for(let i=0;i<n;i++){const lo=STOPS[i],hi=STOPS[i+1],cuts=[lo,...COSTBR.filter(t=>t>lo&&t<hi),hi];for(let j=0;j<cuts.length-1;j++){const a=cuts[j],b=cuts[j+1],bin=COSTBR.filter(t=>a>=t).length,xa=(i+(a-lo)/(hi===Infinity?1:hi-lo)*(hi===Infinity?0:1))/n*1000,xb=hi===Infinity?(i+1)/n*1000:(i+(b-lo)/(hi-lo))/n*1000;cb+=`<rect x="${xa}" y="0" width="${Math.max(xb-xa,.5)}" height="12" fill="${COSTC[bin]}" opacity=".95"/>`}}
+ cb+=`<rect x="0" y="0" width="${i1/n*1000}" height="12" fill="var(--surface)" opacity=".72"/><rect x="${i2/n*1000}" y="0" width="${1000-i2/n*1000}" height="12" fill="var(--surface)" opacity=".72"/>`;
+ $('ccov').innerHTML=cb+STOPS.map((x,i)=>`<rect x="${i/n*1000-.7}" y="3" width="1.4" height="6" fill="rgba(0,0,0,.4)"/>`).join('');
  $('cn').textContent=costOn()?'permits with a stated cost '+(CLO>0?'from '+fmtC(CLO)+' ':'')+(CHI<Infinity?'up to '+fmtC(CHI):''):'any cost, including unstated'}
 function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b)a=b;if(which==2&&b<a)b=a;CLO=STOPS[a];CHI=STOPS[b];syncCost();clearTimeout(goT);goT=setTimeout(go,140)}
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
