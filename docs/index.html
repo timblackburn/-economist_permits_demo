@@ -61,7 +61,7 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 #detail{padding:0;overflow:auto}@media(min-width:900px){#detail{position:sticky;top:8px;max-height:calc(100vh - 16px)}}
 #detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
 .crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
-.phbox{display:flex;align-items:center;justify-content:center;width:100%;max-width:360px;height:270px;background:var(--none);border-radius:4px;overflow:hidden;font-size:13px}#ph .phbox img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:0}.phcap{display:block;min-height:3.2em;margin-top:3px}#ph .pins{min-height:2.2em}.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
+.hph{margin:6px 0;width:230px;min-height:60px}.hph img{width:100%;border-radius:4px;display:block}.hpop .leaflet-popup-content{margin:10px 12px}.phbox{display:flex;align-items:center;justify-content:center;width:100%;max-width:360px;height:270px;background:var(--none);border-radius:4px;overflow:hidden;font-size:13px}#ph .phbox img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:0}.phcap{display:block;min-height:3.2em;margin-top:3px}#ph .pins{min-height:2.2em}.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
 /* ---- three columns on a desktop: search & filters | map | permit detail ---- */
 .layout{display:grid;grid-template-columns:clamp(300px,23vw,380px) minmax(0,1fr) clamp(420px,33vw,540px);gap:12px;padding:8px 16px 0;align-items:start}
 .filters{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;display:flex;flex-direction:column;gap:10px}
@@ -156,6 +156,25 @@ let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
 const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>$('shade').checked||commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
 function style(l){const n=l.feature.properties.n,sel=F.area==n,sh=shadeOn();l.setStyle({weight:sel?3:(sh?1:1.4),color:sel?css('--fg'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:caColor(n),fillOpacity:sh?.38:(sel?.08:0)})}
+/* ---- click any house (zoomed in, not on a permit dot): the County's address, PIN, assessor photo and year built, looked up live from the County's open data; nothing is stored here ---- */
+let HOUSE=null;
+const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
+async function pickHouse(ll){
+ if(HOUSE){map.removeLayer(HOUSE);HOUSE=null}
+ HOUSE=L.circleMarker(ll,{radius:9,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(map);
+ const pop=L.popup({maxWidth:250,className:'hpop',keepInView:true,autoPanPaddingTopLeft:[56,12],autoPanPaddingBottomRight:[12,12]}).setLatLng(ll).setContent('<span class=mut>Looking up the County record…</span>').openOn(map);
+ pop.on('remove',()=>{if(HOUSE){map.removeLayer(HOUSE);HOUSE=null}});
+ try{
+  const d=.0005,q=new URLSearchParams({'$where':`lat>${ll.lat-d} AND lat<${ll.lat+d} AND long>${ll.lng-d} AND long<${ll.lng+d}`,'$limit':'60','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'});
+  const rows=await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q)).json();
+  const kx=Math.cos(ll.lat*Math.PI/180)*111320,ky=110574;
+  let best=null,bd=1e9;rows.forEach(r=>{const x=(+r.long-ll.lng)*kx,y=(+r.lat-ll.lat)*ky,m=Math.hypot(x,y);if(m<bd){bd=m;best=r}});
+  if(!best||bd>40){pop.setContent('<b>No County address point here</b><br><span class=mut>Zoom in and click closer to a building.</span>');return}
+  const addr=`${best.add_number} ${best.lst_predir||''} ${tc(best.st_name)} ${tc(best.lst_type)}`.replace(/\s+/g,' ').trim(),pin=best.pin;
+  window.__hp=()=>pop.update();pop.setContent(`<b>${esc(addr)}</b><br><span class=mut>PIN ${pinD(pin)} · ${Math.round(bd)} m from where you clicked</span><div class=hph><img alt="County assessor photo" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}" onload="window.__hp&&window.__hp()" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'mut',textContent:'The County has no photo for this parcel.'}))"></div><div id=hyb class=mut></div><div class=mut style="margin-top:4px">No permit from these lists is attached to this house in the current view. <a href="https://www.cookcountyassessoril.gov/pin/${pin}" target=_blank rel=noopener>County record</a></div>`);
+  fetch('https://datacatalog.cookcountyil.gov/resource/x54s-btds.json?'+new URLSearchParams({'$select':'char_yrblt,year','$where':`pin='${pin}'`,'$order':'year DESC','$limit':'1'})).then(r=>r.json()).then(j=>{const y=j[0]&&j[0].char_yrblt,e=document.getElementById('hyb');if(y&&e)e.textContent='Year built (Assessor, a hint not a fact): '+Math.round(+y);pop.update()}).catch(()=>{});
+ }catch(e){pop.setContent('<span class=mut>The County lookup did not answer. Try again in a moment.</span>')}}
+map.on('click',e=>{if(!commMode())pickHouse(e.latlng)});
 async function zoomToArea(n,l){   // always land close enough to see the permit dots, centred where this area's permits are
  await loadShards([String(n)]);const pts=D.filter(flt('ca')).filter(r=>r.ca==n&&r.lat);
  if(!pts.length){map.setView(l.getBounds().getCenter(),CA_ZOOM+1);return}
@@ -164,7 +183,7 @@ async function zoomToArea(n,l){   // always land close enough to see the permit 
  map.setView(b.getCenter(),Math.max(CA_ZOOM+1,Math.min(map.getBoundsZoom(b.pad(.1)),CA_ZOOM+3)))}
 function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
-  l.on('click',()=>{const pick=F.area!=f.properties.n;$('ca').value=pick?f.properties.n:'';if(pick&&commMode())zoomToArea(f.properties.n,l);go()});
+  l.on('click',()=>{if(!commMode())return;const pick=F.area!=f.properties.n;$('ca').value=pick?f.properties.n:'';if(pick&&commMode())zoomToArea(f.properties.n,l);go()});
   l.on('mouseover',()=>l.setStyle({weight:2.5,color:css('--fg')}));l.on('mouseout',()=>style(l));
   l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}`},{sticky:true,className:'tip'})}}).addTo(map);ptLayer.addTo(map);map.fitBounds(caLayer.getBounds())}
  const vals=Object.values(stat).map(s=>s[metric]).filter(v=>v>0).sort((a,b)=>a-b);
