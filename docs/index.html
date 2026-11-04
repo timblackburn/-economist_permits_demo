@@ -371,7 +371,7 @@ async function go(){
  render(rk)}
 function render(rk){
  AGG=!rk;syncRange();syncCost();
- cur=D.filter(flt());cur.sort((a,b)=>{const x=sk=='szn'?num(a):a[sk]??'',y=sk=='szn'?num(b):b[sk]??'',xe=x===''||x==null||(sk=='szn'&&!x),ye=y===''||y==null||(sk=='szn'&&!y);if(xe||ye)return xe&&ye?0:xe?1:-1;return (x>y?1:x<y?-1:0)*sd});   // blank values (no cost, no architect) always sort last
+ cur=D.filter(flt());const ck=r=>r.con||(r.trd?r.trd.split('|')[0].replace(/^[^:]*:\s*/,''):'');cur.sort((a,b)=>{const x=sk=='szn'?num(a):sk=='con'?ck(a):a[sk]??'',y=sk=='szn'?num(b):sk=='con'?ck(b):b[sk]??'',xe=x===''||x==null||(sk=='szn'&&!x),ye=y===''||y==null||(sk=='szn'&&!y);if(xe||ye)return xe&&ye?0:xe?1:-1;return (x>y?1:x<y?-1:0)*sd});   // blank values (no cost, no architect) always sort last
  const cubeOK=!LEGACY&&!rowFilters()&&!$('inview').checked;
  if(cubeOK)stat=cubeStat();else{stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0})}   // the map keeps showing every area while one is selected
 
@@ -540,8 +540,8 @@ function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()|
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
  $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
 /* ---- table + detail ---- */
-const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A']};
-function sortUI(){document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k==sk,nm=th.dataset.k=='szn'?'Size, by floor area (width × depth)':th.textContent.replace(/\s+/g,' ').trim();th.classList.toggle('sorted',on);th.classList.toggle('desc',on&&sd<0);th.title=on?`Sorted by ${nm} (${sd>0?'ascending':'descending'}). Click to reverse.`:`Click to sort by ${nm}`})}
+const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A'],con:['contractor (or first trade)','A to Z','Z to A']};
+function sortUI(){document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k==sk,nm=th.dataset.k=='szn'?'Size, by floor area (width × depth)':th.textContent.replace(/\s+/g,' ').trim();th.classList.toggle('sorted',on);th.classList.toggle('desc',on&&sd<0);th.title=(on?`Sorted by ${nm} (${sd>0?'ascending':'descending'}). Click to reverse.`:`Click to sort by ${nm}`)+(th.dataset.k=='con'?'. The main contractor or builder, then the mason, carpenter and other trades. The lists name contractors from about 1900 on; the 1880s-90s lists do not.':'')})}
 function tbh(){const b=$('tbar');if(b)document.documentElement.style.setProperty('--tbh',b.offsetHeight+'px')}
 window.addEventListener('resize',tbh);
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt=AGG?'':` <span class=mut>Sorted by <b>${sn[0]}</b> (${sd>0?sn[1]:sn[2]}); click any column heading to re-sort.</span>`;el.innerHTML=(AGG?`<b>${n.toLocaleString()}</b> permits match. Pick a community area, zoom the map in or search to list them here.`:n>400?`Showing the first <b>400</b> of <b>${n.toLocaleString()}</b> permits; narrow the filters to see the rest, or download them all.`:`Showing all <b>${n.toLocaleString()}</b> permits.`)+srt}
