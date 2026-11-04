@@ -72,7 +72,10 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
 .fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
 .mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
-@media(max-width:1180px){.layout{grid-template-columns:1fr}.filters,.mapc{position:static;max-height:none;height:auto}#map{min-height:420px}}
+.layout{--ph:clamp(560px,calc(100vh - 24px),820px);align-items:start}
+.layout .filters,.layout .mapc,.layout .side{position:sticky;top:8px;height:var(--ph);max-height:none;box-sizing:border-box}
+.layout .side{overflow:auto}.layout .mapc{overflow:hidden}.layout #detail{position:static;max-height:none;overflow:visible}
+@media(max-width:1180px){.layout{grid-template-columns:1fr}.layout .filters,.layout .mapc,.layout .side{position:static;max-height:none;height:auto;overflow:visible}#map{min-height:420px}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
