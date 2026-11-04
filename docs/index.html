@@ -95,6 +95,7 @@ header .thbtn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,
 th{background:var(--th);color:#fff;border-bottom:0}th:first-child{border-radius:6px 0 0 6px}th:last-child{border-radius:0 6px 6px 0}th:hover{filter:brightness(1.12)}
 tbody tr.r:nth-child(even){background:var(--stripe)}tr.r:hover,tbody tr.r:nth-child(even):hover{background:var(--rowhover)}
 td{border-bottom:1px solid transparent}
+.dotkey{font-size:12px;color:var(--mut);margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.dotkey .by{display:flex;gap:6px;align-items:baseline;margin-right:6px}.dotkey .qb{font-size:12px}.dotkey i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px;border:1px solid rgba(0,0,0,.25)}.dotkey .dgrad{display:inline-block;width:110px;height:10px;border-radius:5px;vertical-align:-1px;margin:0 4px}.dotkey .it{white-space:nowrap}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -113,7 +114,7 @@ td{border-bottom:1px solid transparent}
  <div class="chips" id="chips"></div>
  <div class="quiet" title="What the map shading, the chart and the architect ranking count"><span>Map &amp; chart count:</span> <button class="qb on" id="mc">permits</button><span class="dot">·</span><button class="qb" id="mk">listed cost</button></div>
 </aside>
-<div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div></div>
+<div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="The table, chart, architects and counts follow whatever is visible on the map"><input type="checkbox" id="inview"> only what's in the map view</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
  <div class="side">
   <div id="overview">
   <div class="card"><h2><span id="wkt">By week</span> <span id="wknote"></span></h2><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label><div id="wk"></div></div>
@@ -218,7 +219,7 @@ function drawCA(){
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
  const lab=metric=='n'?(x=>Math.round(x)):short,e=[0,...brk,vals[vals.length-1]||0];
- $('legend').innerHTML=(shadeOn()&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+(shadeOn()?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`<span style="color:var(--s2)">●</span> permit (the dot grows with cost)`}
+ $('legend').innerHTML=(shadeOn()&&vals.length?['--q1','--q2','--q3','--q4','--q5'].map((q,i)=>`<i style="background:var(${q})"></i>${i?'':'≤'}${lab(e[i+1])}`).join(' '):'')+(shadeOn()?` <i style="background:var(--none)"></i>none &nbsp;·&nbsp; `:'')+`each dot is one permit; larger dots cost more`}
 /* ---- map: community areas with counts at zoom 14 and out; every permit as its own dot from zoom 15 ---- */
 
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
@@ -232,7 +233,7 @@ function drawDots(low){
  if(low&&vis.length>12000){const k=Math.ceil(vis.length/12000);vis=vis.filter((_,i)=>i%k==0);sampled=` · showing a sample of ${vis.length.toLocaleString()} dots; zoom in to see every one`}
   const radOf=low?(()=>z<=12?2.5:z==13?3.5:4.5):(r=>Math.max(6,Math.min(13,4+Math.sqrt((r.cost||20000)/12000))));   // big dots first so small ones sit on top; a click goes to the dot nearest the cursor (dots overlap a lot at zoom 15-16)
   vis.sort((a,b)=>radOf(b)-radOf(a)).forEach(r=>{const rad=radOf(r);
-   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:css('--s2'),fillOpacity:.88,color:css('--ring')});
+   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}show(best,true)});c.addTo(ptLayer)});
   if(low)return sampled;
@@ -363,11 +364,11 @@ function render(rk){
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
  $('wkstats').textContent=`listed total ${money(t)}`+(!AGG&&cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
- buildWalk();chips();drawCA();drawPts();weeks();archs();table();dlUpdate();
+ buildWalk();chips();drawCA();archs();weeks();drawPts();dotKey();table();dlUpdate();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',ar:'ar'};
-let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(R.a){p.set('from',R.a);p.set('to',R.b)}if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
+function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='cost')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 /* ---- address search: "10711 S Hoyne" also finds the permit for 10709-13 S Hoyne (any number inside a printed range, same side of the street), and can be looked up in the County's records ---- */
 const SKIPW=new Set(['st','street','ave','av','avenue','blvd','boul','boulevard','pl','place','ct','court','rd','road','dr','drive','ter','terrace','pkwy','n','s','e','w','north','south','east','west']);
 function addrQ(q){const m=(q||'').trim().toLowerCase().match(/^(\d{1,6})\s+(.+)$/);if(!m)return null;const words=m[2].replace(/[.,]/g,' ').split(/\s+/).filter(Boolean),dm=words.find(x=>['n','s','e','w','north','south','east','west'].includes(x)),name=words.filter(x=>!SKIPW.has(x));if(!name.length)return null;return{n:+m[1],name,dir:dm?dm[0].toUpperCase():''}}
@@ -440,6 +441,21 @@ $('cal').addEventListener('change',e=>{const c=e.target.closest('input[data-n]')
 $('cclr').onclick=()=>{AREAS.clear();caLabel();caList();go()};
 document.addEventListener('click',e=>{if(!e.target.closest('#cap')&&e.target!==$('cab')){$('cap').hidden=true;$('cab').setAttribute('aria-expanded','false')}});
 document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('cap').hidden){$('cap').hidden=true;$('cab').focus()}});
+/* ---- colouring the dots: by cost (default), by architect or by time; the chart and the architect list use the same colours ---- */
+let DOTC='cost',ARCHCOL={},ARCHTOP=[],CHART={gran:'d',key:d=>d,ks:[]};
+const OTHERC='#9aa0a6',COSTBR=[3000,6000,12000,25000,75000],COSTC=['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026','#7a0019'],ARCHPAL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e','#17becf','#8c564b','#e377c2'],TIMEPAL=['#440154','#482878','#3e4989','#31688e','#26828e','#1f9e89','#35b779','#6ece58','#b5de2b','#fde725'];
+const rampC=t=>{const x=Math.max(0,Math.min(1,t))*(TIMEPAL.length-1),i=Math.floor(x),f=x-i,h=c=>[1,3,5].map(j=>parseInt(c.slice(j,j+2),16)),a=h(TIMEPAL[i]),b=h(TIMEPAL[Math.min(i+1,TIMEPAL.length-1)]);return'#'+a.map((v,j)=>Math.round(v+(b[j]-v)*f).toString(16).padStart(2,'0')).join('')};
+function setArchPalette(all){ARCHCOL={};ARCHTOP=[];const seen=new Set();for(const nm of [...[...AS].map(k=>AN[k]||k),...all.map(x=>x[0])]){const k=nk(nm);if(!k||seen.has(k))continue;seen.add(k);if(ARCHTOP.length<8){ARCHCOL[k]=ARCHPAL[ARCHTOP.length];ARCHTOP.push({k,name:AN[k]||nm,color:ARCHCOL[k]})}}}
+const archColor=a=>DOTC=='arch'?(ARCHCOL[nk(a)]||OTHERC):'';
+function dotColor(r){if(DOTC=='arch')return ARCHCOL[nk(arch(r))]||OTHERC;
+ if(DOTC=='time'){const i=CHART.ks.indexOf(CHART.key(r.d));return i<0?OTHERC:rampC(CHART.ks.length>1?i/(CHART.ks.length-1):.5)}
+ if(!(r.cost>0))return OTHERC;let b=0;while(b<COSTBR.length&&r.cost>=COSTBR[b])b++;return COSTC[b]}
+function dotKey(){const m=[['cost','Cost'],['arch','Architect'],['time','Time']];let h='<span class="by">Color dots by: '+m.map(([k,l])=>`<button class="qb${DOTC==k?' on':''}" data-m="${k}">${l}</button>`).join('<span class="dot">·</span>')+'</span>';
+ if(DOTC=='cost')h+=COSTC.map((c,i)=>`<span class="it"><i style="background:${c}"></i>${i==0?'under '+fmtC(COSTBR[0]):i==COSTC.length-1?fmtC(COSTBR[i-1])+'+':fmtC(COSTBR[i-1])+'–'+fmtC(COSTBR[i])}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>no cost</span>`;
+ else if(DOTC=='arch')h+=ARCHTOP.map(t=>`<span class="it"><i style="background:${t.color}"></i>${esc(t.name)}</span>`).join('')+`<span class="it"><i style="background:${OTHERC}"></i>all others</span>`;
+ else{const ks=CHART.ks,f=ks[0],l=ks[ks.length-1],lb=k=>CHART.gran=='m'?monthName(k):k;h+=ks.length?`<span class="it">${esc(lb(f))}<span class="dgrad" style="background:linear-gradient(90deg,${TIMEPAL.join(',')})"></span>${esc(lb(l))}</span><span class="it">(the chart's bars: ${({w:'issues',m:'months',y:'years',d:'decades'})[CHART.gran]})</span>`:''}
+ $('dotkey').innerHTML=h}
+$('dotkey').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.dataset.m==DOTC)return;DOTC=b.dataset.m;toHash();archs();weeks();drawPts();dotKey()});
 function chips(){toHash();qlocUpdate();const c=[];
  if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()}]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));
@@ -455,15 +471,16 @@ function weeks(){
   if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
- const ks=Object.keys(by),val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?182:170,L0=40,B=gran=='y'||gran=='d'?34:22,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
- let g='';
+ let g='';let seg=null;if(DOTC=='arch'&&!AGG){seg={};cur.forEach(r=>{const k=key(r.d);if(!by[k])return;const a=nk(arch(r)),ak=ARCHCOL[a]?a:'~o',o=seg[k]??={},e=o[ak]??={n:0,c:0};e.n++;e.c+=r.cost||0})}
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
  const unit={w:'issue',m:'month',y:'year',d:'decade'}[gran];
  ks.forEach((k,i)=>{const h=(H-B-8)*vals[i]/mx,x=L0+i*bw+bw*.12,n=nIss[k]||0,tip=gran=='w'?`${k}: ${by[k].n} permits, ${money(by[k].c)}`:n?`${gran=='m'?monthName(k):k}: ${by[k].n} permits, ${money(by[k].c)} · ${n} issue${n>1?'s':''} loaded${perIssue?' (bar shows the average per issue)':''}`:`${gran=='m'?monthName(k):k}: no issues loaded`;
   if(!n)g+=`<rect x="${x}" y="${H-B-6}" width="${bw*.76}" height="6" rx="2" fill="none" stroke="var(--line)" stroke-dasharray="3 2"><title>${tip}</title></rect>`;
-  else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
+  else if(DOTC=='arch'&&!AGG&&seg&&seg[k]){const order=[...ARCHTOP.map(t=>t.k),'~o'],tot=order.reduce((q,o)=>q+(seg[k][o]?seg[k][o][metric]:0),0)||1;let y0=H-B;order.forEach(o=>{const e=seg[k][o];if(!e||!e[metric])return;const hh=h*e[metric]/tot;y0-=hh;const nm=o=='~o'?'all others':(AN[o]||o);g+=`<rect class="bar" data-k="${k}" x="${x}" y="${y0}" width="${bw*.76}" height="${Math.max(hh,0)}" fill="${o=='~o'?OTHERC:ARCHCOL[o]}"><title>${tip} — ${esc(nm)}</title></rect>`})}
+  else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${DOTC=='time'?rampC(ks.length>1?i/(ks.length-1):.5):winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
   if(gran=='w'?(i%2==0||ks.length<8):(gran=='d'||(gran=='y'&&(ks.length<=14||k.endsWith('0')||k.endsWith('5')))||(gran=='m'&&(ks.length<=14||i%2==0))))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'||gran=='d'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
   if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
@@ -501,7 +518,7 @@ let showAll=false;
 function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()||'all';((COUNTS.arch[pk]||{n:[],c:[]})[metric=='n'?'n':'c']).forEach(([a,n,c])=>{by[a]={n,c}});partial=true}else D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();const e=nm[key]??={sp:{},n:0,c:0};e.sp[a]=(e.sp[a]||0)+1;e.n++;e.c+=r.cost||0});
  if(!AGG)for(const e of Object.values(nm)){const name=Object.entries(e.sp).sort((x,y)=>y[1]-x[1]||(x[0]<y[0]?-1:1))[0][0];by[name]={n:e.n,c:e.c}}   // the most common spelling, whatever order the rows arrived in
  const all=Object.entries(by).sort((a,b)=>(metric=='n'?b[1].n-a[1].n||b[1].c-a[1].c:b[1].c-a[1].c||b[1].n-a[1].n)||(a[0]<b[0]?-1:a[0]>b[0]?1:0)),L1=(showAll?all:all.slice(0,10).concat(all.slice(10).filter(([k])=>AS.has(nk(k))))).sort((x,y)=>AS.has(nk(y[0]))-AS.has(nk(x[0]))),mx=Math.max(1,...L1.map(([,s])=>s[metric]));
- $('archs').innerHTML=L1.map(([a,s])=>`<div class="arch${AS.has(nk(a))?' sel':''}" data-a="${esc(a)}" title="${esc(a)}: ${s.n} permits, ${money(s.c)}"><span class="an">${AS.has(nk(a))?'✓ ':''}${esc(a)}</span><span class="t"><i style="width:${100*s[metric]/mx}%"></i></span><span class="v">${metric=='n'?s.n:short(s.c)}</span></div>`).join('')||'<span style="color:var(--mut);font-size:13px">none</span>';
+ setArchPalette(all);$('archs').innerHTML=L1.map(([a,s])=>`<div class="arch${AS.has(nk(a))?' sel':''}" data-a="${esc(a)}" title="${esc(a)}: ${s.n} permits, ${money(s.c)}"><span class="an">${AS.has(nk(a))?'✓ ':''}${esc(a)}</span><span class="t"><i style="width:${100*s[metric]/mx}%;${archColor(a)?"background:"+archColor(a):""}"></i></span><span class="v">${metric=='n'?s.n:short(s.c)}</span></div>`).join('')||'<span style="color:var(--mut);font-size:13px">none</span>';
  if(partial)$('archs').insertAdjacentHTML('beforeend','<div class=mut style="font-size:12px;margin-top:6px">The ten busiest for this period. Pick an area or search to rank every architect.</div>');else if(all.length>10)$('archs').insertAdjacentHTML('beforeend',`<button class=more id=more>${showAll?'Show top 10':'Show all '+all.length+' architects'}</button>`);
  $('archs').classList.toggle('all',showAll);
  $('archnote').textContent='click to add or remove — pick several to combine spellings or firms';
