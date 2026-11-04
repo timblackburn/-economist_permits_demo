@@ -128,6 +128,8 @@ td:first-child{white-space:nowrap}
 #detail .dbar .dtitle{font-weight:600;font-size:15px;margin-right:auto;letter-spacing:.2px}
 #detail .dbar .btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff}#detail .dbar .btn:hover:not(:disabled){background:rgba(255,255,255,.28)}#detail .dbar .btn:disabled{opacity:.4;cursor:default}#detail .dbar #dback{margin-left:8px}#detail .dbar #dtable{margin-right:8px}
 #detail .harea{float:right;margin:2px 0 4px 10px;padding:1px 9px;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--mut);white-space:nowrap}
+#detail .ptd{border-bottom:1px dashed var(--mut);cursor:help}#detail .razed{color:#b8860b;cursor:help;margin-left:2px}
+#detail .who .wl{min-width:128px;padding-right:6px;box-sizing:border-box}#detail .who .wl.nc{text-transform:none}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -673,21 +675,21 @@ $('dtable').onclick=()=>{const tr=$('tb').querySelector('tr.sel');if(tr)tr.scrol
 function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
- const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`,newer:`County Assessor records give ${r.yb} for the building at this address, later than this permit: the original may have been replaced, rebuilt or moved.`}[r.ext]||'';
+ const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
  const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?money(r.cost)+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div><span class=wl>${esc(x[0])}</span>${x[0]!='owner'&&OWNERISH.test(x[1])?esc(ownerOf(x[1],r)):x[0]=='architect'?`<a class=lk onclick='setArch(this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?` <span class=mut>${esc(x[2])}</span>`:''}${x[3]?` <span class=mut>(from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan)</span>`:''}</div>`).join('');
  const b0=b[0]||{};
  $('mt').innerHTML=`<div class=hd>
-  ${r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:''}<div class=addr>${esc(r.mod||r.site||'Address not given')}</div>
+  ${r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:''}<div class=addr>${(r.chg||r.nowp)&&r.site?`<span class=ptd title="Printed as: ${esc(r.site)}${r.chg?' (street since renamed)':''}">${esc(r.mod||r.site)}</span>`:esc(r.mod||r.site||'Address not given')}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
- ${who?`<div class=who>${who}</div>`:''}
+ ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
+  const cur=r.now?esc(r.now):`<span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b>${esc(r.alt[0])}</b>`:''}`;
+  return `<div class=who><div><span class='wl nc'>Current address</span>${cur} ${razed}</div>${who}</div>`})()}
  <div id=ph></div>
  <dl class=c2>
   ${r.a9?`<dt>1909 numbering</dt><dd>${esc(r.a9)}${r.a9o?` <span class=mut>(printed as ${esc(r.a9o)})</span>`:''}${r.a9e?' <span class=mut>&mdash; estimated from neighbouring numbers: the 1909 guide does not list this one</span>':''}</dd>`:''}
   ${r.alt?`<dt>Possible address</dt><dd>${esc(r.alt[0])} <span class=mut>&mdash; the corner house on the cross street, ${r.alt[2]} m from where this address falls. Corner houses were sometimes renumbered onto the other street.</span></dd>`:''}
-  ${r.now?`<dt>Address now</dt><dd>${esc(r.now)}</dd>`:`<dt>Address now</dt><dd><span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b>${esc(r.alt[0])}</b>`:''}</dd>`}
-  ${(r.chg||r.nowp)&&r.site?`<dt>Printed as</dt><dd>${esc(r.site)}${r.chg?' <span class=mut>(street since renamed)</span>':''}</dd>`:''}
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
   ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
  ${(r.pp||'').startsWith('The American Contractor index')?`<h3>No scanned image</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (issue of ${fmtDate(r.d)}, page ${r.pg||'?'}). The index has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`:`<h3>Permit from ${esc(r.pp||'the printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button> <span class=mut>zoomable, with the entry highlighted</span></p>
