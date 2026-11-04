@@ -22,7 +22,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
 .card h2{margin:0 0 6px;font-size:14px;font-weight:600}.card h2 span{color:var(--mut);font-weight:400;font-size:12px;margin-left:6px}
-#map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.chmnote{font-size:13px;color:var(--mut);margin:.6em 0}.chmnote a{color:var(--acc)}.wkstats{font-size:13px;color:var(--mut);margin:0 0 4px}.wknorm{display:block;font-size:13px;margin:0 0 6px;cursor:pointer;text-align:right}.wknorm input{vertical-align:-2px;margin-right:4px}.calw{background:none;border:0}.calab{transform:translate(-50%,-50%);text-align:center;pointer-events:none;font:600 12px/1.12 system-ui,sans-serif;color:var(--fg);text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 5px var(--surface)}.calab b{display:block;font-weight:700;font-size:10px;line-height:1.05;margin-bottom:1px}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
+#map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.chmnote{font-size:13px;color:var(--mut);margin:.6em 0}.chmnote a{color:var(--acc)}.wkstats{font-size:13px;color:var(--mut);margin:0 0 4px}.wknorm{display:block;font-size:13px;margin:0;cursor:pointer;text-align:right;white-space:nowrap}.wkrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 6px}.wkrow .wkstats{margin:0}.wknorm input{vertical-align:-2px;margin-right:4px}.calw{background:none;border:0}.calab{transform:translate(-50%,-50%);text-align:center;pointer-events:none;font:600 12px/1.12 system-ui,sans-serif;color:var(--fg);text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 5px var(--surface)}.calab b{display:block;font-weight:700;font-size:10px;line-height:1.05;margin-bottom:1px}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
 .side{display:flex;flex-direction:column;gap:18px}
 .legend{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut);margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:22px;height:10px;border-radius:2px}
 .leaflet-container{font:inherit}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}.cl span{display:block;width:60px;margin:-7px 0 0 -30px;text-align:center;font:700 12px/14px system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
@@ -153,7 +153,7 @@ td:first-child{white-space:nowrap}
 <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="Keep only the permits inside the current map view: the table, chart, architects and counts follow what is visible on the map"><input type="checkbox" id="inview"> Filter by map</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
  <div class="side">
   <div id="overview">
-  <div class="card"><h2 class="wkh"><span id="wkt">By week</span><span id="wknote" hidden></span><span class="mtog" title="What the chart, the map shading and the architect ranking count"><button id="mc" class="on">Permits</button><button id="mk">Building cost</button></span></h2><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label><div id="wk"></div></div>
+  <div class="card"><h2 class="wkh"><span id="wkt">By week</span><span id="wknote" hidden></span><span class="mtog" title="What the chart, the map shading and the architect ranking count"><button id="mc" class="on">Permits</button><button id="mk">Building cost</button></span></h2><div class="wkrow"><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label></div><div id="wk"></div></div>
   <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
@@ -421,7 +421,7 @@ function render(rk){
 
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
- $('wkstats').textContent=`listed total ${money(t)}`+(!AGG&&cur.length?` · median ${money(median(cur.map(r=>r.cost||0)))}`:'');
+ $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  chips();drawCA();archs();weeks();drawPts();dotKey();table();dlUpdate();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',ar:'ar'};
@@ -551,20 +551,20 @@ function weeks(){
   if(gran=='m')while(y<y2||(y==y2&&m<=m2)){by[y+'-'+String(m).padStart(2,'0')]={n:0,c:0};if(++m>12){m=1;y++}}else if(gran=='y')for(let v=y;v<=y2;v++)by[''+v]={n:0,c:0};else for(let v=Math.floor(y/10)*10;v<=y2;v+=10)by[v+'s']={n:0,c:0};
   dom.forEach(d=>{const k=key(d);nIss[k]=(nIss[k]||0)+1})}
  weekEntries().forEach(([d,n,c])=>{const k=key(d);if(by[k]){by[k].n+=n;by[k].c+=c}});
- const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?32:22,bw=(W-L0)/Math.max(ks.length,1);
+ const ks=Object.keys(by);CHART={gran,key,ks};const val=k=>{const v=by[k][metric];return perIssue&&nIss[k]?v/nIss[k]:v},vals=ks.map(val),mx=Math.max(1,...vals),W=420,H=gran=='y'||gran=='d'?168:158,L0=58,B=gran=='y'||gran=='d'?36:24,bw=(W-L0)/Math.max(ks.length,1);
  const winKeys=new Set(),tick=metric=='n'?(v=>mx>=10?Math.round(v):mx>=3?+v.toFixed(1):+v.toFixed(2)):short;   // small averages (one architect, per issue) need decimals
  let g='';let seg=null;if(DOTC=='arch'&&!AGG){seg={};cur.forEach(r=>{const k=key(r.d);if(!by[k])return;const a=nk(arch(r)),ak=ARCHCOL[a]?a:'~o',o=seg[k]??={},e=o[ak]??={n:0,c:0};e.n++;e.c+=r.cost||0})}
  [0,.5,1].forEach(q=>{const y=H-B-(H-B-8)*q;g+=`<line x1="${L0}" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L0-4}" y="${y+4}" text-anchor="end">${tick(mx*q)}</text>`});
  const lab=(k,i)=>gran=='w'?k.slice(5).replace('-','/'):gran=='m'?MON3[+k.slice(5)-1]+(k.slice(5)=='01'||i==0?' ’'+k.slice(2,4):''):k;
  const unit={w:'issue',m:'month',y:'year',d:'decade'}[gran];
  g+=`<text transform="rotate(-90 9 ${(H-B)/2})" x="9" y="${(H-B)/2+4}" text-anchor="middle" fill="var(--mut)" font-size="11">${metric=='n'?'Permits':'Building cost'}</text>`;
- g+=`<text x="${L0-4}" y="${H-(gran=='y'||gran=='d'?20:6)}" text-anchor="end" fill="var(--mut)" font-size="10">${{w:'Week',m:'Month',y:'Year',d:'Decade'}[gran]}</text>`+((gran=='y'||gran=='d')?`<text x="${L0-4}" y="${H-7}" text-anchor="end" fill="var(--mut)" font-size="10"># issues</text>`:'');
+ g+=`<text x="${L0-4}" y="${H-(gran=='y'||gran=='d'?21:5)}" text-anchor="end" fill="var(--mut)" font-size="10">${{w:'Week',m:'Month',y:'Year',d:'Decade'}[gran]}</text>`+((gran=='y'||gran=='d')?`<text x="${L0-4}" y="${H-6}" text-anchor="end" fill="var(--mut)" font-size="10"># issues</text>`:'');
  ks.forEach((k,i)=>{const h=(H-B-8)*vals[i]/mx,x=L0+i*bw+bw*.12,n=nIss[k]||0,tip=gran=='w'?`${k}: ${by[k].n} permits, ${money(by[k].c)}`:n?`${gran=='m'?monthName(k):k}: ${by[k].n} permits, ${money(by[k].c)} · ${n} issue${n>1?'s':''} loaded${perIssue?' (bar shows the average per issue)':''}`:`${gran=='m'?monthName(k):k}: no issues loaded`;
   if(!n)g+=`<rect x="${x}" y="${H-B-6}" width="${bw*.76}" height="6" rx="2" fill="none" stroke="var(--line)" stroke-dasharray="3 2"><title>${tip}</title></rect>`;
   else if(DOTC=='arch'&&!AGG&&seg&&seg[k]){const order=[...ARCHTOP.map(t=>t.k),'~o'],tot=order.reduce((q,o)=>q+(seg[k][o]?seg[k][o][metric]:0),0)||1;let y0=H-B;order.forEach(o=>{const e=seg[k][o];if(!e||!e[metric])return;const hh=h*e[metric]/tot;y0-=hh;const nm=o=='~o'?'all others':(AN[o]||o);g+=`<rect class="bar" data-k="${k}" x="${x}" y="${y0}" width="${bw*.76}" height="${Math.max(hh,0)}" fill="${o=='~o'?OTHERC:ARCHCOL[o]}"><title>${tip} — ${esc(nm)}</title></rect>`})}
   else g+=`<rect class="bar" data-k="${k}" x="${x}" y="${H-B-h}" width="${bw*.76}" height="${Math.max(h,0)}" rx="3" fill="${DOTC=='time'?timeColor(k,i):winKeys.has(k)?css('--s2'):css('--s1')}"><title>${tip}</title></rect>`;
-  if(gran=='w'?(i%2==0||ks.length<8):(gran=='d'||(gran=='y'&&(ks.length<=14||k.endsWith('0')||k.endsWith('5')))||(gran=='m'&&(ks.length<=14||i%2==0))))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'||gran=='d'?20:6)}" text-anchor="middle">${lab(k,i)}</text>`;
-  if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-7}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
+  if(gran=='w'?(i%2==0||ks.length<8):(gran=='d'||(gran=='y'&&(ks.length<=14||k.endsWith('0')||k.endsWith('5')))||(gran=='m'&&(ks.length<=14||i%2==0))))g+=`<text x="${x+bw*.38}" y="${H-(gran=='y'||gran=='d'?21:5)}" text-anchor="middle">${lab(k,i)}</text>`;
+  if(gran=='y'||gran=='d')g+=`<text x="${x+bw*.38}" y="${H-6}" text-anchor="middle" fill="var(--mut)" font-size="10">${n}</text>`});
  $('wk').innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Permits per ${unit}">${g}</svg>`;
  $('wkt').textContent={w:'By week',m:'By month',y:'By year',d:'By decade'}[gran];
  $('wknote').textContent='';
