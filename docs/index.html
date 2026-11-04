@@ -162,7 +162,7 @@ let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('i
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
  for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
-const IMG='pages/';   // page images: a relative folder now; the Azure address (https://<account>.blob.core.windows.net/pages/) once the images are moved
+const IMG='https://chicagopermits.blob.core.windows.net/pages/';   // page images live in Azure Blob Storage (local copy: out/pages, not in the repo)
 const DETC={};
 async function loadDetail(r){if(r._det)return;const sh=DETC[r.d]??=fetch('data/d/'+r.d+'.json').then(x=>x.json());const dt=(await sh)[r.id];if(dt)Object.assign(r,dt);r._det=1}
 let SEARCH=null,SEARCHP=null;
