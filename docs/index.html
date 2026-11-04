@@ -264,7 +264,7 @@ function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('ma
  el.textContent=t;const unp=Math.max(0,TOT.n-TOT.placed);el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address and are not on the map':''}
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
- if(comm){const smp=AREAS.size?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // with areas selected their permits show as dots at any zoom
+ if(comm){const smp=(AREAS.size||$('inview').checked)?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // with areas selected their permits show as dots at any zoom
  drawDots(false)}
 function drawDots(low){
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1);let vis=placed.filter(r=>bd.contains([r.lat,r.lon]));const z=map.getZoom();let sampled='';
@@ -284,7 +284,7 @@ function drawDots(low){
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
-  if(!st.n||AREAS.has(f.n))return;shown++;
+  if(!st.n||AREAS.has(f.n)||$('inview').checked)return;shown++;
   const s0=Math.max(b.getSouth(),vb.getSouth()),n0=Math.min(b.getNorth(),vb.getNorth()),w0=Math.max(b.getWest(),vb.getWest()),e0=Math.min(b.getEast(),vb.getEast());
   if(s0>=n0||w0>=e0)return;                           // not on screen
   const sw=map.latLngToContainerPoint([s0,w0]),ne=map.latLngToContainerPoint([n0,e0]),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
@@ -294,7 +294,7 @@ function communityView(){   // community boundaries with the name and the count 
  const placed=TOT.placed;
  mapNote()}
 function drawLegendOnly(){drawCA()}
-let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('inview').checked&&$('detail').hidden)go();else if(!LEGACY&&!commMode()&&viewShards().some(k=>!LOADED.has(k)))go();else if(cur.length||commMode())drawPts()},$('inview').checked?250:120)});
+let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('inview').checked&&($('detail').hidden||Date.now()>MOVEBYCODE))go();else if(!LEGACY&&!commMode()&&viewShards().some(k=>!LOADED.has(k)))go();else if(cur.length||commMode())drawPts()},$('inview').checked?250:120)});
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
  for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
@@ -628,7 +628,8 @@ function phView(r,pin,label){
  $('ph').innerHTML=lots+nb+alt+img}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 const order=()=>cur;
-function flyTo(r){const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
+let MOVEBYCODE=0;
+function flyTo(r){MOVEBYCODE=Date.now()+3000;const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
  if(map.getZoom()>=16&&!far)map.panTo([r.lat,r.lon],{animate:true,duration:.5,easeLinearity:.4});else map.flyTo([r.lat,r.lon],z,{duration:.9})}
 const sp=id=>id<10000?id:id%10000;                                   // scan id -> page number in its PDF
 function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
