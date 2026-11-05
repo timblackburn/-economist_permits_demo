@@ -142,6 +142,7 @@ td:first-child{white-space:nowrap}
 #ph .corner .same{font-size:12px;color:var(--mut);flex-basis:100%}
 #lbox{position:fixed;inset:0;z-index:100;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:zoom-out}#lbox[hidden]{display:none}#lbox img{max-width:94vw;max-height:86vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#222}#lbcap{color:#e8e8e8;font-size:13px}#lbx{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer}.phcrop{cursor:zoom-in}
 #mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
+#mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -432,8 +433,9 @@ let ADDRIDX=null,ADDRN=-1;
 const addrKey2=r=>(r.mod||'').toLowerCase().replace(/\s+/g,' ').trim();
 function othersFor(r){const k=addrKey2(r);if(!k)return [];if(ADDRN!==D.length){ADDRIDX=new Map();for(const x of D){const kk=addrKey2(x);if(!kk)continue;let a=ADDRIDX.get(kk);if(!a)ADDRIDX.set(kk,a=[]);a.push(x)}ADDRN=D.length}
  return (ADDRIDX.get(k)||[]).filter(x=>x.id!==r.id).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)}
-function othersHTML(r){const o=othersFor(r);if(!o.length)return '';const mon=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'});
- return `<div class=others><div class=oh>${o.length==1?'1 other permit':o.length+' other permits'} at this address</div>${o.slice(0,8).map(x=>`<a class=orow data-oid="${x.id}" href="#"><span class=od>${mon(x.d)}</span><span class=ob>${esc(((x.st?x.st+'-story ':'')+(x.bld||'')).trim()||'permit')}</span><span class=oc>${x.cost!=null?money(x.cost):''}</span></a>`).join('')}${o.length>8?`<div class=mut>…and ${o.length-8} more</div>`:''}</div>`}
+function othersHTML(r){const o=othersFor(r);if(!o.length)return '';const all=[...o,r].sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:a.id-b.id),mon=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'});
+ const row=x=>{const inner=`<span class=od>${mon(x.d)}</span><span class=ob>${esc(((x.st?x.st+'-story ':'')+(x.bld||'')).trim()||'permit')}</span><span class=oc>${x.cost!=null?money(x.cost):''}</span>`;return x.id===r.id?`<div class="orow cur" title="the permit you are viewing">${inner}</div>`:`<a class=orow data-oid="${x.id}" href="#">${inner}</a>`};
+ return `<div class=others><div class=oh>${all.length} permits at this address</div>${all.slice(0,10).map(row).join('')}${all.length>10?`<div class=mut>…and ${all.length-10} more</div>`:''}</div>`}
 document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.others [data-oid]');if(!a)return;e.preventDefault();const r=D.find(x=>x.id==a.dataset.oid);if(r)show(r)});
 function render(rk){
  AGG=!rk;syncRange();syncCost();
@@ -724,13 +726,13 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  $('mt').innerHTML=`<div class=hd>
   ${r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:''}<div class=addr>${(r.chg||r.nowp||r.a9e)&&r.site?`<span class=ptd title="Printed as: ${esc(r.site)}${r.chg?' (street since renamed)':''}${r.a9e?'. Today\'s number is estimated: the 1909 renumbering guide does not list the printed number, so it was worked out from the numbers around it.':''}">${esc(r.mod||r.site)}</span>`:esc(r.mod||r.site||'Address not given')}</div>
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
+ ${othersHTML(r)}
  ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
   const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The 1909 renumbering guide does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
   const pre=r.a9&&r.a9o?`<div class=wr><span class='wl nc'>Pre-1909 address</span><span class=wv>${esc(pre1909(r))}</span></div>`:'';
   const est=(()=>{if(!r.d)return '';const d=new Date(r.d+'T12:00:00');d.setDate(d.getDate()-7);const day=d.getDate(),part=day<=10?'Early':day<=20?'Mid':'Late',mon=d.toLocaleDateString('en-US',{month:'long',year:'numeric'}).replace(/^(\w+)/,part+'-$1');   // the permit was issued a few days to a couple of weeks before the paper printed it
    return `<div class=wr><span class='wl nc'>Permit date</span><span class=wv>${esc(mon)} <span class=ptdot title="The trade papers printed each week's permits a few days to a couple of weeks after they were issued, so the month is an estimate (one week before the issue date)">(est.)</span><span class=wa>Printed in the issue of ${esc(new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}<span class=ptdot title="The permit itself was issued a few days to a couple of weeks before this date">*</span></span></span></div>`})();
   return `<div class=who><div class=wr><span class='wl nc'>Current address</span><span class=wv>${cur} ${razed}</span></div>${pre}${est}${who}</div>`})()}
- ${othersHTML(r)}
  <div id=ph></div>
  <dl class=c2>
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
