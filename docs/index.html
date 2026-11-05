@@ -236,7 +236,7 @@ const PlatLayer=L.GridLayer.extend({
  createTile:function(c,done){const cv=document.createElement('canvas'),sz=this.getTileSize();cv.width=sz.x;cv.height=sz.y;const ctx=cv.getContext('2d'),z=c.z,m=this._map;
   const o=c.scaleBy(sz),corners=[[0,0],[sz.x,0],[0,sz.y],[sz.x,sz.y]].map(([dx,dy])=>m.unproject(L.point(o.x+dx,o.y+dy),z)),sp=corners.map(toSP),mid=m.unproject(L.point(o.x+sz.x/2,o.y+sz.y/2),z);
   const resFt=(156543.03392*Math.cos(mid.lat*Math.PI/180)/Math.pow(2,z))/0.3048006096012192;                 // ground size of an output pixel, in US feet
-  let lv=0;for(let i=0;i<PLAT_RES.length;i++)if(PLAT_RES[i]<=resFt*1.15)lv=i;                                 // coarsest cached level that is not clearly coarser than the screen
+  let lv=PLAT_RES.length-1;for(let i=0;i<PLAT_RES.length;i++)if(PLAT_RES[i]<=resFt*1.15)lv=i;                                 // coarsest cached level that is not clearly coarser than the screen
   const g=PLAT_TILE*PLAT_RES[lv],xs=sp.map(p=>p[0]),ys=sp.map(p=>p[1]),
    c0=Math.floor((Math.min(...xs)-PLAT_ORIGIN[0])/g),c1=Math.floor((Math.max(...xs)-PLAT_ORIGIN[0])/g),r0=Math.floor((PLAT_ORIGIN[1]-Math.max(...ys))/g),r1=Math.floor((PLAT_ORIGIN[1]-Math.min(...ys))/g);
   let pend=0,finished=false;const fin=()=>{if(!finished&&pend==0){finished=true;done(null,cv)}};
