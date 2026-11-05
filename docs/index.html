@@ -293,7 +293,7 @@ function drawDots(low){
  })();
  vis.sort((a,b)=>(zOf(a)-zOf(b))||(radOf(b)-radOf(a))).forEach(r=>{const rad=radOf(r);
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
-   c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9?`<br><small>1909 numbering: ${esc(r.a9)}${r.a9e?' (est.)':''}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
+   c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-1909 address: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true)});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
@@ -449,6 +449,8 @@ async function findAddress(){const a=addrQ($('q').value);if(!a)return;const box=
 function qlocUpdate(){const a=addrQ($('q').value),box=$('qloc');if(!a){box.hidden=true;return}box.hidden=false;box.innerHTML='<a class=lk id="qfind">Show this address on the map (County records)</a> <span class=mut>— also works when no permit matches</span>';$('qfind').onclick=findAddress}
 /* ---- export: every permit that matches the current filters (not just the 400 rows shown), as CSV / GeoJSON / KML ---- */
 const xmlE=t=>String(t??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+/* the address as printed before the 1909 renumbering: the printed number on today's street spelling from the 1909 guide */
+const pre1909=r=>String(r.a9).replace(/^[\d\s,\-–&]+(?:(?:to|and)\s+[\d\-–]+\s*)*/,r.a9o+' ');
 const COLS=[['permit_id',r=>r.id],['issue_date',r=>r.d],['printed_page',r=>r.pg],['owner',r=>r.own],['address_today',r=>r.mod||''],['address_as_printed',r=>r.site||r.mod||''],['address_1909_numbering',r=>r.a9||''],['community_area',r=>r.can||''],['building',r=>r.bld||''],['stories',r=>r.st||''],['size_ft',r=>r.sz||''],['cost_dollars',r=>r.cost??''],['cost_is_total_for_all_buildings',r=>r.tot?'yes':''],['architect',r=>ownerOf(arch(r),r)],['contractor',r=>ownerOf(r.con||'',r)],['other_trades',r=>(r.trd||'').split('|').map(t=>{const i=t.indexOf(': ');return t.slice(0,i+2)+ownerOf(t.slice(i+2),r)}).join('; ')],['architect_from_museum_index',r=>r.are?'yes':''],['latitude',r=>r.lat??''],['longitude',r=>r.lon??''],['location_quality',r=>r.geo||''],['year_built_assessor',r=>r.yb||''],['list_region',r=>r.reg||''],['source',r=>r.pp||''],['link',r=>location.origin+location.pathname+'#open='+r.id+'&oa='+(r.ca?r.ca:(r.lat?'out':'none'))]];
 const saveBlob=(parts,type,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(parts,{type}));a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
 const csvCell=v=>{v=String(v??'');return /[",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
@@ -708,7 +710,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
   const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The 1909 renumbering guide does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>no matching address in the county data</span>${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
-  const pre=r.a9&&r.a9o?`<div class=wr><span class='wl nc'>Pre-1909 address</span><span class=wv>${esc(String(r.a9).replace(/^[\d\s,\-–&]+(?:(?:to|and)\s+[\d\-–]+\s*)*/,r.a9o+' '))}</span></div>`:'';
+  const pre=r.a9&&r.a9o?`<div class=wr><span class='wl nc'>Pre-1909 address</span><span class=wv>${esc(pre1909(r))}</span></div>`:'';
   return `<div class=who><div class=wr><span class='wl nc'>Current address</span><span class=wv>${cur} ${razed}</span></div>${pre}${who}</div>`})()}
  <div id=ph></div>
  <dl class=c2>
