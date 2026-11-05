@@ -140,6 +140,7 @@ td:first-child{white-space:nowrap}
 #filters #summary{margin:2px 0 6px;font-weight:600}#filters .chips{margin:0 0 6px;padding:0;max-height:none;overflow:visible}#filters .chips.fold{overflow:hidden}#chipmore{display:block;margin:-2px 0 8px;text-align:left;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0}
 #ph .corner{margin:8px 0;padding:6px 10px;border-left:4px solid var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface));border-radius:0 5px 5px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}#ph .corner .cl{font-weight:700;color:var(--acc);font-size:13px}#ph .corner .cl::before{content:'\2691\00a0'}
 #ph .corner .same{font-size:12px;color:var(--mut);flex-basis:100%}
+#lbox{position:fixed;inset:0;z-index:100;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:zoom-out}#lbox[hidden]{display:none}#lbox img{max-width:94vw;max-height:86vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#222}#lbcap{color:#e8e8e8;font-size:13px}#lbx{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer}.phcrop{cursor:zoom-in}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -179,6 +180,7 @@ td:first-child{white-space:nowrap}
  </div></span></div>
 <div id="tarea"><div class="wrap"><table><colgroup><col style="width:6.5%"><col style="width:4%"><col style="width:12.5%"><col style="width:18%"><col style="width:8%"><col style="width:9%"><col style="width:6%"><col style="width:6%"><col style="width:14%"><col style="width:16%"></colgroup><thead><tr><th data-k="d">Issue</th><th data-k="pg">Page</th><th data-k="own">Owner</th><th data-k="mod" title="Sorts by street name, then street number">Address</th><th data-k="can">Community area</th><th data-k="bld">Building</th><th data-k="szn" title="Size (ft); sorts by floor area (width × depth)">Size (ft)</th><th data-k="cost" class="n">Cost</th><th data-k="ar">Architect</th><th data-k="con">Contractors</th></tr></thead><tbody id="tb"></tbody></table></div><aside id="tdock" hidden aria-label="Selected property"></aside></div>
 <footer>Sources: <i>The Economist</i> (Chicago) and, for some weeks of 1913&ndash;14 and 1917&ndash;18, <i>The American Contractor</i>, for 1883&ndash;97 <i>The Real Estate and Building Journal</i>, and the Chicago History Museum&rsquo;s index of <i>The American Contractor</i> (1898&ndash;1912), scanned by Google Books and the Internet Archive &middot; Cook County GIS address points and Assessor records &middot; City of Chicago community-area boundaries &middot; &ldquo;Chicago Streets&rdquo; guide (Wm. Martin, 1948) for old street names &middot; map &copy; OpenStreetMap contributors. <span class="credit">Compiled by Tim Blackburn.</span> <span id="support"></span></footer>
+<div id="lbox" hidden role="dialog" aria-label="County assessor photo"><button type="button" id="lbx" aria-label="Close">&#10005;</button><img id="lbimg" alt="Cook County Assessor photo"><div id="lbcap"></div></div>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script>
@@ -223,7 +225,9 @@ function style(l){const n=l.feature.properties.n,sel=AREAS.has(n),sh=shadeOn();l
 /* ---- click any house (zoomed in, not on a permit dot): the County's address, PIN, assessor photo and year built, looked up live from the County's open data; nothing is stored here ---- */
 /* ---- County assessor photos: the County stamps the PIN and date in a strip along the bottom (the last ~10%); we hide that strip and let people click the photo to expand it ---- */
 const phImg=(pin,alt,extra)=>`<div class=phcrop data-open="0"><img alt="${alt}" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}" onerror="this.closest('.phcrop').replaceWith(Object.assign(document.createElement('span'),{className:'mut',textContent:'The County has no photo for this parcel.'}))"></div>`;
-document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();c.dataset.open=c.dataset.open=='1'?'0':'1';const h=c.nextElementSibling;if(h&&h.classList.contains('phhint'))h.innerHTML=c.dataset.open=='1'?'Showing the PIN and year taken. Click the photo to hide them':'Click the photo to see the PIN and year taken';window.__hp&&window.__hp()},true);
+/* the County photo opens in a lightbox: the whole picture, nothing cropped (the PIN and date strip included) */
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();const im=c.querySelector('img');if(!im)return;const lb=$('lbox');$('lbimg').src=im.src;$('lbcap').textContent=(CURR&&(CURR.mod||CURR.site))?'Cook County Assessor photo \u00b7 near '+(CURR.mod||CURR.site):'Cook County Assessor photo';lb.hidden=false;document.body.classList.add('lbopen')},true);
+function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
 let HOUSE=null;
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
 async function pickHouse(ll){
@@ -741,16 +745,16 @@ function draw(b,p){const bs=b.filter(x=>x.pdf==p),pg=$('pg');pg.dataset.z=zoomFa
  addEventListener('mouseup',e=>{if(!down)return;down=false;if(moved<6&&e.target.closest&&e.target.closest('#pg')){const p=pg(),r=p.getBoundingClientRect(),pi=p.querySelector('.pgi'),fx=(e.clientX-r.left+p.scrollLeft)/pi.offsetWidth,fy=(e.clientY-r.top+p.scrollTop)/pi.offsetHeight;
   ZOOM=!ZOOM;applyZoom(false);const z=+p.dataset.z||2.5;p.scrollLeft=fx*pi.offsetWidth-(e.clientX-r.left);p.scrollTop=fy*pi.offsetHeight-(e.clientY-r.top)}})})();
 const step=d=>{const L=order(),ix=L.indexOf(CURR),n=L[ix+d];if(ix>=0&&n)show(n)};
-m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
+m.onclick=e=>{if(e.target==m)m.style.display='none'};$('cls').onclick=()=>m.style.display='none';$('lbox').onclick=lbClose;$('prv').onclick=()=>step(-1);$('nxt').onclick=()=>step(1);
 /* touch: swipe the permit panel left / right for the next / previous permit (mostly-horizontal swipes only) */
 (()=>{let x0=0,y0=0,t0=0,on=false;const d=$('detail');
  d.addEventListener('touchstart',e=>{if(e.touches.length!=1||e.target.closest('input,select,textarea,#pg')){on=false;return}on=true;x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now()},{passive:true});
  d.addEventListener('touchend',e=>{if(!on)return;on=false;const t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.8&&Date.now()-t0<700)step(dx<0?1:-1)},{passive:true})})();
 addEventListener('keydown',e=>{const ae=document.activeElement,tg=ae.tagName;if(e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;
- if(e.key=='Escape'){if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
+ if(e.key=='Escape'){if(!$('lbox').hidden){lbClose();return}if(m.style.display=='block')m.style.display='none';else if(!$('detail').hidden)closeDetail();return}
  });
 /* capture phase, so the map (or anything else focused) never takes the arrows while the property panel is open */
-addEventListener('keydown',e=>{if(e.key!='ArrowRight'&&e.key!='ArrowLeft')return;const ae=document.activeElement,tg=ae.tagName;if($('detail').hidden||m.style.display=='block'||e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;e.preventDefault();e.stopPropagation();step(e.key=='ArrowRight'?1:-1)},true);
+addEventListener('keydown',e=>{if(e.key!='ArrowRight'&&e.key!='ArrowLeft')return;const ae=document.activeElement,tg=ae.tagName;if($('detail').hidden||!$('lbox').hidden||m.style.display=='block'||e.defaultPrevented||/SELECT|TEXTAREA/.test(tg)||(tg=='INPUT'&&!/^(checkbox|radio|button)$/.test(ae.type)))return;e.preventDefault();e.stopPropagation();step(e.key=='ArrowRight'?1:-1)},true);
 $('dback').onclick=closeDetail;
 $('r1').addEventListener('input',()=>slide(1));$('r2').addEventListener('input',()=>slide(2));
 ['r1','r2'].forEach(id=>{$(id).addEventListener('change',()=>{const v=+$(id).value;if(R.a){const sp=dn(R.b)-dn(R.a),f=fullSpan();if(V[0]<=f[0]&&V[1]>=f[1]){if(sp<=540)autoZoom()}else if(v<=4||v>=996){const c=(V[0]+V[1])/2,h=(V[1]-V[0]);V=[Math.max(f[0],c-h),Math.min(f[1],c+h)]}}syncRange()});
