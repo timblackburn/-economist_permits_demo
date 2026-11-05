@@ -137,6 +137,7 @@ td:first-child{white-space:nowrap}
 #detail .who .wr .wl{min-width:0;padding:0;display:block;font-size:12.5px;line-height:1.55;text-transform:capitalize}#detail .who .wr .wl.nc{text-transform:none}
 #detail .who .wv{display:block}#detail .who .wa{display:block;color:var(--mut);font-size:12.5px;line-height:1.35}
 @media(max-width:1180px){#tarea .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}#detail{touch-action:pan-y}}
+#filters #summary{margin:2px 0 6px;font-weight:600}#filters .chips{margin:0 0 6px;padding:0;max-height:none;overflow:visible}#filters .chips.fold{overflow:hidden}#chipmore{display:block;margin:-2px 0 8px;text-align:left;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -148,13 +149,13 @@ td:first-child{white-space:nowrap}
 <div class="layout">
 <aside class="filters card" id="filters">
  <h2>Search &amp; filter</h2>
+ <div id="summary"></div>
+ <div class="chips" id="chips"></div><button type="button" class="lk" id="chipmore" hidden></button>
  <div class="fg"><span class="fl">Search</span><span class="sgw qw"><input id="q" class="big" placeholder="owner, street, building, or an address…" autocomplete="off" aria-autocomplete="list"><span id="qhint" hidden>↵ Enter</span><div id="qsg" hidden role="listbox"></div></span><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  <div class="fg"><span class="fl">Community areas</span><span class="sgw qw"><button type="button" id="cab" class="cabtn" aria-haspopup="listbox" aria-expanded="false">All community areas</button><div id="cap" hidden><input id="cas" placeholder="find an area…" autocomplete="off" aria-label="Find a community area"><div id="cal" role="listbox" aria-multiselectable="true"></div><div class="cafoot"><a class="lk" id="cclr">clear selection</a></div></div></span></div>
  <div class="fg"><span class="fl">Dates</span><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></div>
  <div class="fg"><span class="fl">Cost</span><div class="dr"><div class="dates"><input id="c1" aria-label="Lowest cost" placeholder="any" autocomplete="off"><span class="mut">to</span><input id="c2" aria-label="Highest cost" placeholder="no limit" autocomplete="off"></div><div class="rs" id="crs"><svg id="ccov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="k1" min="0" max="18" value="0" step="1" aria-label="Lowest cost"><input type="range" id="k2" min="0" max="18" value="18" step="1" aria-label="Highest cost"></div><div class="rnote"><span id="cn" class="mut"></span></div></div></div>
- <div id="summary"></div>
- <div class="chips" id="chips"></div>
 </aside>
 <div class="card mapc"><h2>Map <span id="mapnote"></span><label class="shade" title="Keep only the permits inside the current map view: the table, chart, architects and counts follow what is visible on the map"><input type="checkbox" id="inview"> Filter by map</label></h2><div id="map"></div><div class="legend" id="legend"></div><div class="dotkey" id="dotkey"></div></div>
  <div class="side">
@@ -546,8 +547,17 @@ function chips(){toHash();qlocUpdate();const c=[];
  if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()}]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
- $('chips').innerHTML='';c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}}
+ $('chips').innerHTML='';
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
+ c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
+ foldChips()}
+/* chips show two rows; the rest sit behind "+N more" */
+let CHIPSOPEN=false;
+function foldChips(){const box=$('chips'),more=$('chipmore');box.classList.remove('fold');box.style.maxHeight='';box.classList.toggle('open',CHIPSOPEN);more.hidden=true;if(!box.children.length)return;
+ const kids=[...box.children],r0=kids[0].offsetTop,tops=[...new Set(kids.map(k=>k.offsetTop))].sort((x,y)=>x-y);
+ if(tops.length<=2){CHIPSOPEN=false;box.classList.remove('open');return}
+ const hid=kids.filter(k=>k.offsetTop>=tops[2]).length;more.hidden=false;more.textContent=CHIPSOPEN?'show fewer':'+'+hid+' more';box.style.maxHeight=CHIPSOPEN?'':(tops[2]-tops[0]-6)+'px';box.classList.toggle('fold',!CHIPSOPEN)}
+$('chipmore').onclick=()=>{CHIPSOPEN=!CHIPSOPEN;foldChips()};
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 /* round-number axis: the top of the axis and the gridlines fall on 1, 2, 2.5 or 5 times a power of ten */
 function niceScale(m){const raw=m/4,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p,max=Math.ceil(m/st-1e-9)*st,ticks=[];for(let v=0;v<=max+st/1e6;v+=st)ticks.push(+v.toFixed(6));return{max,ticks}}
