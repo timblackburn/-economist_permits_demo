@@ -221,9 +221,9 @@ const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
-const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
+const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,className:'tiles'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:21,maxNativeZoom:19,className:'tiles'}).addTo(map);
 /* ---- plat maps: the City of Chicago's 80-acre plat cache (gisapps.chicago.gov, Illinois State Plane East) re-projected on the fly onto our Web Mercator map.
    Each source tile is placed with one affine canvas transform (the two grids differ by a ~0.45-degree rotation and a scale), so edges stay smooth.
    The checkbox only shows at street level (zoom PLAT_MINZ+) and is remembered while it is hidden. ---- */
