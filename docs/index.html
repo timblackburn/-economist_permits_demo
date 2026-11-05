@@ -144,6 +144,8 @@ td:first-child{white-space:nowrap}
 #mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
 #mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
 #sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
+.platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
+:root[data-theme=dark] .plattiles{mix-blend-mode:normal}@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .plattiles{mix-blend-mode:normal}}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -186,6 +188,7 @@ td:first-child{white-space:nowrap}
 <div id="lbox" hidden role="dialog" aria-label="County assessor photo"><button type="button" id="lbx" aria-label="Close">&#10005;</button><img id="lbimg" alt="Cook County Assessor photo"><div id="lbcap"></div></div>
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/proj4/proj4.js"></script>   <!-- proj4js 2.9.2 (MIT), served from this site: re-projects the City's State Plane plat tiles -->
 <script>
 const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
@@ -221,6 +224,41 @@ const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers
 const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,className:'tiles'}).addTo(map);
+/* ---- plat maps: the City of Chicago's 80-acre plat cache (gisapps.chicago.gov, Illinois State Plane East) re-projected on the fly onto our Web Mercator map.
+   Each source tile is placed with one affine canvas transform (the two grids differ by a ~0.45-degree rotation and a scale), so edges stay smooth.
+   The checkbox only shows at street level (zoom PLAT_MINZ+) and is remembered while it is hidden. ---- */
+proj4.defs('EPSG:3435','+proj=tmerc +lat_0=36.66666666666666 +lon_0=-88.33333333333333 +k=0.999975 +x_0=300000 +y_0=0 +ellps=GRS80 +to_meter=0.3048006096012192 +no_defs');
+const PLAT_BASE='https://gisapps.chicago.gov/giscache/CachedMaps_EightyAcreCache/Layers/_alllayers/',PLAT_ORIGIN=[-17463800,19496100],PLAT_TILE=1024,
+ PLAT_RES=[694.44444444444446,347.22222222222223,173.61111111111111,104.16666666666666,69.444444444444443,34.722222222222221,17.361111111111111,10.416666666666666,6.9444444444444438,3.0381944444444442,1.0416666666666665,0.43402777777777773],
+ PLAT_MINZ=17,PLAT_EXTENT=[1116630,1813878,1205139,1952990],PLAT_LL=L.latLngBounds([[41.62,-87.95],[42.05,-87.50]]);
+const toSP=(ll)=>proj4('EPSG:4326','EPSG:3435',[ll.lng,ll.lat]),fromSP=(xy)=>{const p=proj4('EPSG:3435','EPSG:4326',xy);return L.latLng(p[1],p[0])};
+const PlatLayer=L.GridLayer.extend({
+ createTile:function(c,done){const cv=document.createElement('canvas'),sz=this.getTileSize();cv.width=sz.x;cv.height=sz.y;const ctx=cv.getContext('2d'),z=c.z,m=this._map;
+  const o=c.scaleBy(sz),corners=[[0,0],[sz.x,0],[0,sz.y],[sz.x,sz.y]].map(([dx,dy])=>m.unproject(L.point(o.x+dx,o.y+dy),z)),sp=corners.map(toSP),mid=m.unproject(L.point(o.x+sz.x/2,o.y+sz.y/2),z);
+  const resFt=(156543.03392*Math.cos(mid.lat*Math.PI/180)/Math.pow(2,z))/0.3048006096012192;                 // ground size of an output pixel, in US feet
+  let lv=0;for(let i=0;i<PLAT_RES.length;i++)if(PLAT_RES[i]<=resFt*1.15)lv=i;                                 // coarsest cached level that is not clearly coarser than the screen
+  const g=PLAT_TILE*PLAT_RES[lv],xs=sp.map(p=>p[0]),ys=sp.map(p=>p[1]),
+   c0=Math.floor((Math.min(...xs)-PLAT_ORIGIN[0])/g),c1=Math.floor((Math.max(...xs)-PLAT_ORIGIN[0])/g),r0=Math.floor((PLAT_ORIGIN[1]-Math.max(...ys))/g),r1=Math.floor((PLAT_ORIGIN[1]-Math.min(...ys))/g);
+  let pend=0,finished=false;const fin=()=>{if(!finished&&pend==0){finished=true;done(null,cv)}};
+  for(let r=r0;r<=r1;r++)for(let col=c0;col<=c1;col++){
+   const tx=PLAT_ORIGIN[0]+col*g,ty=PLAT_ORIGIN[1]-r*g;if(tx>PLAT_EXTENT[2]+g||tx+g<PLAT_EXTENT[0]-g||ty-g>PLAT_EXTENT[3]+g||ty<PLAT_EXTENT[1]-g)continue;      // outside the city's extent: no such file
+   const hex=n=>n.toString(16).padStart(8,'0'),img=new Image();pend++;
+   img.onload=()=>{                                                                                        // source pixel (u,v) -> state plane -> lon/lat -> output tile pixel, as one affine map through three corners
+    const P=(u,v)=>{const q=m.project(fromSP([tx+u/PLAT_TILE*g,ty-v/PLAT_TILE*g]),z);return [q.x-o.x,q.y-o.y]},W=img.naturalWidth,Hh=img.naturalHeight,a=P(0,0),b=P(W,0),d=P(0,Hh);
+    const e=1.2,ux=(b[0]-a[0])/W,uy=(b[1]-a[1])/W,vx=(d[0]-a[0])/Hh,vy=(d[1]-a[1])/Hh;                  // grow each source tile by ~half an output pixel on every side so neighbouring tiles overlap (no hairline seams)
+    ctx.save();ctx.transform(ux*(1+e/W),uy*(1+e/W),vx*(1+e/Hh),vy*(1+e/Hh),a[0]-e/2*(ux+vx),a[1]-e/2*(uy+vy));ctx.imageSmoothingEnabled=true;ctx.drawImage(img,0,0);ctx.restore();pend--;fin()};
+   img.onerror=()=>{pend--;fin()};img.src=PLAT_BASE+'L'+String(lv).padStart(2,'0')+'/R'+hex(r)+'/C'+hex(col)+'.png'}
+  setTimeout(fin,0);return cv}});
+let PLATON=false;try{PLATON=localStorage.getItem('platOn')=='1'}catch(e){}
+const platLayer=new PlatLayer({minZoom:PLAT_MINZ,maxZoom:21,maxNativeZoom:20,opacity:.8,className:'plattiles',bounds:PLAT_LL,attribution:'City of Chicago <a href="https://gisapps.chicago.gov/mapchicago/?config=acre" target=_blank rel=noopener>80-acre plat maps</a>'});
+const platCtl=L.control({position:'bottomleft'});
+platCtl.onAdd=()=>{const d=L.DomUtil.create('label','platctl');d.title='City of Chicago 80-acre plat maps: lot lines and numbers';d.innerHTML='<input type=checkbox id=platchk> Plat map';L.DomEvent.disableClickPropagation(d);return d};
+platCtl.addTo(map);
+function platSync(){const near=map.getZoom()>=PLAT_MINZ&&map.getBounds().intersects(PLAT_LL),el=$('platchk')&&$('platchk').parentNode;
+ if(el){el.style.display=near?'block':'none';$('platchk').checked=PLATON}
+ if(PLATON&&!map.hasLayer(platLayer))platLayer.addTo(map);else if(!PLATON&&map.hasLayer(platLayer))map.removeLayer(platLayer)}      // below PLAT_MINZ the layer draws nothing (and fetches nothing); the choice survives
+$('platchk').addEventListener('change',e=>{PLATON=e.target.checked;try{localStorage.setItem('platOn',PLATON?'1':'0')}catch(err){}platSync()});
+map.on('zoomend moveend',platSync);platSync();
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
 const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM,shadeOn=()=>commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
