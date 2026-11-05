@@ -690,7 +690,8 @@ function setMode(m){if(!canDock())m='side';if(m===MODE)return;MODE=m;DOCK=m!=='s
  if(MM)setTimeout(()=>MM&&MM.invalidateSize(),80)}
 function dock(on){setMode(on?'dock':'side')}
 addEventListener('resize',()=>{if(!canDock()){setMode('side');reserve(false)}else{reserve(!!CURR&&!$('detail').hidden);placeSoon()}});
-function keepRowInView(tr){if(!tr||!DOCK)return;const head=($('tbar')?$('tbar').offsetHeight:52)+44,r=tr.getBoundingClientRect();if(r.top<head||r.bottom>innerHeight*.85)window.scrollTo({top:scrollY+r.top-(innerHeight-head)/2-r.height/2+0*head,behavior:'auto'})}   // placed at once (overlapping smooth scrolls cancel each other); recentres when the row nears the bottom of the window
+function keepRowInView(tr){if(!tr||!DOCK)return;if(document.querySelector('.mapc').getBoundingClientRect().bottom>120)return;   // the map is still on screen: leave the page where it is
+ const head=($('tbar')?$('tbar').offsetHeight:52)+44,r=tr.getBoundingClientRect();if(r.top<head||r.bottom>innerHeight*.85)window.scrollTo({top:scrollY+r.top-(innerHeight-head)/2-r.height/2+0*head,behavior:'auto'})}   // placed at once (overlapping smooth scrolls cancel each other); recentres when the row nears the bottom of the window
 /* ---- the property panel follows the page: in the right-hand column while the map is on screen, docked beside the table once the table comes into view (and back again), so there is no jump ---- */
 let adT=0;
 function placeDetail(){adT=0;if(!CURR||$('detail').hidden||!canDock())return;const F=10,sideTop=document.querySelector('.side').getBoundingClientRect().top,tTop=$('tarea').getBoundingClientRect().top;
@@ -726,8 +727,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
  clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  reserve(true);if(!DOCK)$('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;{const ix0=cur.indexOf(r);if(ix0>=0&&Math.floor(ix0/PS)!==PAGE){PAGE=Math.floor(ix0/PS);table()}}markRow();
- if(r.lat)flyTo(r);drawPts();toHash();
- const t=$('detail').getBoundingClientRect().top;if(!DOCK&&Math.abs(t-8)>30)window.scrollTo({top:Math.max(0,t+scrollY-8),behavior:'smooth'})}
+ if(r.lat)flyTo(r);drawPts();toHash();}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
 function applyZoom(center){const pg=$('pg'),pi=pg.querySelector('.pgi');if(!pi)return;const z=+pg.dataset.z||2.5;const im=pi.querySelector('img');im.style.width=ZOOM?Math.round(pg.clientWidth*z)+'px':'100%';im.style.maxWidth='none';pi.style.width='';pg.classList.toggle('zin',ZOOM);pg.classList.toggle('zout',!ZOOM);
