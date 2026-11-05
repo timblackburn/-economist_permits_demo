@@ -141,6 +141,7 @@ td:first-child{white-space:nowrap}
 #ph .corner{margin:8px 0;padding:6px 10px;border-left:4px solid var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface));border-radius:0 5px 5px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}#ph .corner .cl{font-weight:700;color:var(--acc);font-size:13px}#ph .corner .cl::before{content:'\2691\00a0'}
 #ph .corner .same{font-size:12px;color:var(--mut);flex-basis:100%}
 #lbox{position:fixed;inset:0;z-index:100;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:zoom-out}#lbox[hidden]{display:none}#lbox img{max-width:94vw;max-height:86vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#222}#lbcap{color:#e8e8e8;font-size:13px}#lbx{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer}.phcrop{cursor:zoom-in}
+#mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -426,6 +427,14 @@ async function go(){
  render(rk)}
 /* sort key for the Address column: street name (numbered streets in numeric order), then direction, then the first street number as a number */
 const addrKey=r=>{if(r._ak!==undefined)return r._ak;const a=(r.mod||r.site||'').trim(),m=a.match(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/),num=(a.match(/^\s*(\d+)/)||[])[1],rest=a.slice(m?m[0].length:0).trim(),dm=rest.match(/^([NSEW])\.?\s+(.*)$/i),dir=dm?dm[1].toUpperCase():'',street=(dm?dm[2]:rest).toLowerCase().replace(/(\d+)(st|nd|rd|th)\b/g,(x,n)=>n.padStart(6,'0')+x.slice(n.length));return r._ak=street?street+'|'+dir+'|'+String(num||0).padStart(8,'0'):''};
+/* other permits at the same address (any year, any paper), found among the rows loaded in the page */
+let ADDRIDX=null,ADDRN=-1;
+const addrKey2=r=>(r.mod||'').toLowerCase().replace(/\s+/g,' ').trim();
+function othersFor(r){const k=addrKey2(r);if(!k)return [];if(ADDRN!==D.length){ADDRIDX=new Map();for(const x of D){const kk=addrKey2(x);if(!kk)continue;let a=ADDRIDX.get(kk);if(!a)ADDRIDX.set(kk,a=[]);a.push(x)}ADDRN=D.length}
+ return (ADDRIDX.get(k)||[]).filter(x=>x.id!==r.id).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)}
+function othersHTML(r){const o=othersFor(r);if(!o.length)return '';const mon=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',year:'numeric'});
+ return `<div class=others><div class=oh>${o.length==1?'1 other permit':o.length+' other permits'} at this address</div>${o.slice(0,8).map(x=>`<a class=orow data-oid="${x.id}" href="#"><span class=od>${mon(x.d)}</span><span class=ob>${esc(((x.st?x.st+'-story ':'')+(x.bld||'')).trim()||'permit')}</span><span class=oc>${x.cost!=null?money(x.cost):''}</span></a>`).join('')}${o.length>8?`<div class=mut>…and ${o.length-8} more</div>`:''}</div>`}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('.others [data-oid]');if(!a)return;e.preventDefault();const r=D.find(x=>x.id==a.dataset.oid);if(r)show(r)});
 function render(rk){
  AGG=!rk;syncRange();syncCost();
  PAGE=0;cur=D.filter(flt());const ck=r=>r.con||(r.trd?r.trd.split('|')[0].replace(/^[^:]*:\s*/,''):'');cur.sort((a,b)=>{const x=sk=='szn'?num(a):sk=='con'?ck(a):sk=='mod'?addrKey(a):a[sk]??'',y=sk=='szn'?num(b):sk=='con'?ck(b):sk=='mod'?addrKey(b):b[sk]??'',xe=x===''||x==null||(sk=='szn'&&!x),ye=y===''||y==null||(sk=='szn'&&!y);if(xe||ye)return xe&&ye?0:xe?1:-1;return (x>y?1:x<y?-1:0)*sd});   // blank values (no cost, no architect) always sort last
@@ -721,6 +730,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   const est=(()=>{if(!r.d)return '';const d=new Date(r.d+'T12:00:00');d.setDate(d.getDate()-7);const day=d.getDate(),part=day<=10?'Early':day<=20?'Mid':'Late',mon=d.toLocaleDateString('en-US',{month:'long',year:'numeric'}).replace(/^(\w+)/,part+'-$1');   // the permit was issued a few days to a couple of weeks before the paper printed it
    return `<div class=wr><span class='wl nc'>Permit date</span><span class=wv>${esc(mon)} <span class=ptdot title="The trade papers printed each week's permits a few days to a couple of weeks after they were issued, so the month is an estimate (one week before the issue date)">(est.)</span><span class=wa>Printed in the issue of ${esc(new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}<span class=ptdot title="The permit itself was issued a few days to a couple of weeks before this date">*</span></span></span></div>`})();
   return `<div class=who><div class=wr><span class='wl nc'>Current address</span><span class=wv>${cur} ${razed}</span></div>${pre}${est}${who}</div>`})()}
+ ${othersHTML(r)}
  <div id=ph></div>
  <dl class=c2>
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
