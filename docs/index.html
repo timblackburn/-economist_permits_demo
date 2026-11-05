@@ -143,6 +143,7 @@ td:first-child{white-space:nowrap}
 #lbox{position:fixed;inset:0;z-index:100;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:zoom-out}#lbox[hidden]{display:none}#lbox img{max-width:94vw;max-height:86vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#222}#lbcap{color:#e8e8e8;font-size:13px}#lbx{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer}.phcrop{cursor:zoom-in}
 #mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
 #mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
+#sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
 </style></head><body>
 <header>
 <button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
@@ -491,9 +492,10 @@ document.addEventListener('click',e=>{if(!e.target.closest('.dlw')){$('dlm').hid
 document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('dlm').hidden){$('dlm').hidden=true;$('dlb').setAttribute('aria-expanded','false');$('dlb').focus()}});
 /* ---- search box: autocomplete on owner / address / building from a small index (data/suggest.json, loaded when the box is first used), a half-second pause before the list filters, and Enter to search at once ---- */
 let SUGP=null,SUGD=null,qT=0,qSel=-1,qLast='';
+let CNM={},CLIST=[],CK=[],CLOADING=false;                       // contractor names for the architect box (declared here: sugLoad may run before the code that fills them)
 let ARCHREADY=false;
 function archFromSug(list){const nm={};list.forEach(([a,n])=>{const k=nk(a);AC[k]=(AC[k]||0)+n;(nm[k]??={})[a]=n});for(const k in nm)AN[k]=Object.entries(nm[k]).sort((x,y)=>y[1]-x[1])[0][0];ARCHREADY=true}
-function sugLoad(){return SUGP??=fetch('data/suggest.json').then(r=>r.json()).then(j=>{archFromSug(j.r||[]);SUGD={};for(const k of ['a','o','b']){const items=j[k].map(([t,n])=>{const l=t.toLowerCase();return{t,l,n,w:l.split(/[^a-z0-9]+/).filter(Boolean)}}),ix=new Map();
+function sugLoad(){return SUGP??=fetch('data/suggest.json').then(r=>r.json()).then(j=>{archFromSug(j.r||[]);cFromSug(j.c||[]);SUGD={};for(const k of ['a','o','b']){const items=j[k].map(([t,n])=>{const l=t.toLowerCase();return{t,l,n,w:l.split(/[^a-z0-9]+/).filter(Boolean)}}),ix=new Map();
   items.forEach((it,i)=>{const seen=new Set();it.w.forEach(w=>{const key=w.slice(0,2);if(!seen.has(key)){seen.add(key);let a=ix.get(key);if(!a)ix.set(key,a=[]);a.push(i)}})});SUGD[k]={items,ix}}}).catch(()=>{SUGD=null;SUGP=null})}
 function sugFor(q){const tokens=q.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean),ql=q.toLowerCase().trim();if(!SUGD||q.trim().length<2||!tokens.length)return[];const anchor=tokens.reduce((a,b)=>b.length>a.length?b:a);if(anchor.length<2)return[];const out=[];
  for(const [k,label] of [['a','Address'],['o','Owner'],['b','Building']]){const {items,ix}=SUGD[k],c=ix.get(anchor.slice(0,2))||[],hit=[];let scanned=0;
@@ -612,22 +614,28 @@ function weeks(){
   go()})}
 /* ---- architect suggestions: a multi-select list. Type 2+ letters; tick as many names as you like (the list stays open on the same matches) ---- */
 let sgI=-1,sgK=[],sgQ='',sgAll=[];
+/* contractors / builders / trades offered in the same box: merged spellings, filter = the contractor chip */
+function cFromSug(list){const nm={};list.forEach(([a,n])=>{const k=cn(a);CNM[k]=CNM[k]||{n:0,names:{}};CNM[k].n+=n;CNM[k].names[a]=(CNM[k].names[a]||0)+n});CLIST=Object.keys(CNM);for(const k of CLIST)CNM[k].name=Object.entries(CNM[k].names).sort((x,y)=>y[1]-x[1])[0][0]}
 function suggestShow(){const typed=nk($('ar').value),box=$('sg');if(typed.length>=2)sgQ=typed;const t=sgQ;if(t.length<2){box.hidden=true;return}
  if(!ARCHREADY&&!ALLLOADED()){box.innerHTML='<div class=mut>Loading the architect names…</div>';box.hidden=false;sugLoad().then(()=>{ARCHREADY?suggestShow():loadAll().then(suggestShow)});return}
+ if(!CLIST.length&&!CLOADING){CLOADING=true;sugLoad().then(()=>{if(CLIST.length)suggestShow()},()=>{})}          // once only: if the file had no contractors the list simply stays empty          // the contractor names come with suggest.json, even when the architects were already known from the rows
  const st=box.scrollTop,ws=k=>(' '+k).includes(' '+t);
  sgAll=Object.keys(AN).filter(k=>k.includes(t));sgAll.sort((a,b)=>(ws(b)-ws(a))||AC[b]-AC[a]||(a<b?-1:1));sgK=sgAll.slice(0,40);
  const allOn=sgAll.length>0&&sgAll.every(k=>AS.has(k));
  box.innerHTML=(sgAll.length>1?`<div class="all" data-all="1"><span><span class=ck>${allOn?'☑':'☐'}</span> All ${sgAll.length} matching “${esc(t)}”</span></div>`:'')
   +sgK.map((k,i)=>`<div data-i="${i}" class="${AS.has(k)?'sel':''}"><span><span class=ck>${AS.has(k)?'☑':'☐'}</span> ${esc(AN[k])}</span><small>${AC[k]}</small></div>`).join('')
   +(sgAll.length>40?`<div class="more" style="color:var(--mut,#777)">${sgAll.length-40} more: type more letters to narrow</div>`:'')
-  ||'<div style="color:var(--mut,#777)">no matching architect</div>';
+  ;
+ const tc=cn(sgQ);CK=CLIST.filter(k=>k.includes(tc)).sort((a,b)=>(((' '+b).includes(' '+tc))-((' '+a).includes(' '+tc)))||CNM[b].n-CNM[a].n).slice(0,12);
+ box.innerHTML+=(CK.length?`<div class="sgh">Contractors &amp; builders</div>`+CK.map((k,i)=>`<div data-ci="${i}" class="${CS.has(k)?'sel':''}"><span><span class=ck>${CS.has(k)?'☑':'☐'}</span> ${esc(CNM[k].name)}</span><small>${CNM[k].n}</small></div>`).join(''):'');
+ if(!box.innerHTML)box.innerHTML='<div style="color:var(--mut,#777)">no matching architect or contractor</div>';
  box.hidden=false;box.scrollTop=st;box.querySelectorAll('[data-i]').forEach((d,i)=>d.classList.toggle('on',i==sgI))}
 function suggestToggle(i){const k=sgK[i];if(!k)return;AS.has(k)?AS.delete(k):AS.add(k);after()}
 function suggestAll(){const on=sgAll.every(k=>AS.has(k));sgAll.forEach(k=>on?AS.delete(k):AS.add(k));after()}
 function after(){$('ar').value='';go();suggestShow()}            // the typed text would also filter the table, so clear it; the list stays pinned to sgQ
 function suggestClose(){$('sg').hidden=true;sgQ='';sgI=-1}
 function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',()=>{sgI=-1;suggestShow()});a.addEventListener('focus',suggestShow);
- box.addEventListener('mousedown',e=>{const d=e.target.closest('[data-i],[data-all]');if(!d)return;e.preventDefault();d.dataset.all?suggestAll():suggestToggle(+d.dataset.i)});
+ box.addEventListener('mousedown',e=>{const d=e.target.closest('[data-i],[data-all],[data-ci]');if(!d)return;e.preventDefault();if(d.dataset.ci!==undefined){const k=CK[+d.dataset.ci];if(k){if(CS.has(k))CS.delete(k);else{CS.add(k);CSN[k]=CNM[k].name}after()}return}d.dataset.all?suggestAll():suggestToggle(+d.dataset.i)});
  a.addEventListener('keydown',e=>{if(e.key=='Escape'){suggestClose();return}if(box.hidden||!sgK.length)return;
   if(e.key=='ArrowDown'||e.key=='ArrowUp'){e.preventDefault();sgI=(sgI+(e.key=='ArrowDown'?1:-1)+sgK.length)%sgK.length;box.querySelectorAll('[data-i]').forEach((d,i)=>d.classList.toggle('on',i==sgI));const el=box.querySelector('[data-i].on');el&&el.scrollIntoView({block:'nearest'})}
   else if(e.key=='Enter'&&sgI>=0){e.preventDefault();suggestToggle(sgI)}});
