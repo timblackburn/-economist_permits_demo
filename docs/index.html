@@ -806,7 +806,7 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
  const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),me=pts.find(p=>p.pin==pin)||(own?{lat:r.lat,lng:r.lon,label:r.mod||r.site||''}:null);
  PMM=L.map(box,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
- const c=L.latLng(r.lat,r.lon);PMM.setView(c,19,{animate:false});if(me&&!own&&!PMM.getBounds().contains([me.lat,me.lng]))PMM.fitBounds(L.latLngBounds([c,[me.lat,me.lng]]).pad(.5),{maxZoom:19,animate:false});   // stays put while the chosen building is in view
+ const c=L.latLng(r.lat,r.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
  if(me)L.circleMarker([me.lat,me.lng],{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
