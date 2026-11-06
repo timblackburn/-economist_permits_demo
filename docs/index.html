@@ -34,6 +34,7 @@ th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;backgro
 a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{text-decoration:underline}
 .all{max-height:300px;overflow:auto}.more{margin-top:6px;font-size:13px;color:var(--s1);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:13px}
 #ph{margin:8px 0}
+.pmarrow{background:none;border:0}.pmarrow svg{display:block;filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}
 /* the photo section's buttons (neighbours, this building, lots in a range, the corner house): blue outline, filled when they are the one being shown */
 #ph .pins{display:flex;flex-wrap:wrap;align-items:center;gap:6px;line-height:1.2;margin-bottom:8px}
 #ph .pins .btn{padding:6px 12px;font-size:13.5px;font-weight:600;color:var(--s1);background:color-mix(in srgb,var(--s1) 9%,var(--surface));border:1.5px solid var(--s1);border-radius:6px;min-height:34px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
@@ -809,7 +810,11 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
  const c=L.latLng(r.lat,r.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
- if(me)L.circleMarker([me.lat,me.lng],{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
+ if(me){const ll=L.latLng(me.lat,me.lng);
+  if(PMM.getBounds().contains(ll))L.circleMarker(ll,{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
+  else{   // the chosen building is off this small map: an arrow on the edge points to it
+   const sz=PMM.getSize(),ctr=L.point(sz.x/2,sz.y/2),pt=PMM.latLngToContainerPoint(ll),vx=pt.x-ctr.x,vy=pt.y-ctr.y,inset=16,t=Math.min((sz.x/2-inset)/Math.max(1e-6,Math.abs(vx)),(sz.y/2-inset)/Math.max(1e-6,Math.abs(vy))),at=PMM.containerPointToLatLng(L.point(ctr.x+vx*t,ctr.y+vy*t)),ang=Math.atan2(vy,vx)*180/Math.PI;
+   L.marker(at,{interactive:false,keyboard:false,icon:L.divIcon({className:'pmarrow',html:`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${css('--acc')}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(PMM)}}
  PMM.on('click',e=>{let best=null,bd=1e9;pts.forEach(p=>{const d=PMM.distance(e.latlng,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)});
  const pb=document.querySelector('#ph .phbox'),fit=()=>{if(!pb||!PMM)return;const h=pb.offsetHeight;if(h>60)box.style.height=h+'px';PMM.invalidateSize({animate:false})};
  fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);ro.observe(pb);ro.observe(box)}catch(e){}}
