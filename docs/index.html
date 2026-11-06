@@ -300,7 +300,9 @@ document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
 let HOUSE=null;
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
-async function pickHouse(ll){
+/* a property picked on the map: scroll so the search, map and permit panes fill the top of the window (on narrow screens, the map) */
+function paneTop(){const el=document.querySelector(innerWidth>=1181?'.layout':'.mapc');if(!el)return;const y=el.getBoundingClientRect().top+scrollY-8;if(Math.abs(scrollY-y)>6)window.scrollTo({top:Math.max(0,y),behavior:'smooth'})}
+async function pickHouse(ll){paneTop();
  if(HOUSE){map.removeLayer(HOUSE);HOUSE=null}
  HOUSE=L.circleMarker(ll,{radius:9,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(map);
  const pop=L.popup({maxWidth:250,className:'hpop',keepInView:true,autoPanPaddingTopLeft:[56,12],autoPanPaddingBottomRight:[12,12]}).setLatLng(ll).setContent('<span class=mut>Looking up the County record…</span>').openOn(map);
@@ -386,7 +388,7 @@ function drawDots(low){
  vis.sort((a,b)=>(zOf(a)-zOf(b))||(radOf(b)-radOf(a))).forEach(r=>{const rad=radOf(r);
    const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
-   c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true)});c.addTo(ptLayer)});
+   c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
