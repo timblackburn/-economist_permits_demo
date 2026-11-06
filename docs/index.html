@@ -222,6 +222,10 @@ const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
 const STYPE={av:'ave',avenue:'ave',street:'st',boul:'blvd',boulevard:'blvd',place:'pl',court:'ct',road:'rd',drive:'dr',terrace:'ter',parkway:'pkwy'};
 const streetCanon=t=>{const w=String(t||'').toLowerCase().replace(/[.,]/g,' ').split(/\s+/).filter(Boolean);if(w.length)w[w.length-1]=STYPE[w[w.length-1]]||w[w.length-1];return w.join(' ')};
+const ORDW={first:1,second:2,third:3,fourth:4,fifth:5,sixth:6,seventh:7,eighth:8,ninth:9,tenth:10,eleventh:11,twelfth:12,thirteenth:13,fourteenth:14,fifteenth:15,sixteenth:16,seventeenth:17,eighteenth:18,nineteenth:19,twentieth:20,thirtieth:30,fortieth:40,fiftieth:50,sixtieth:60,seventieth:70,eightieth:80,ninetieth:90},TENSW={twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90};
+const ordN=n=>n+(n%100>=10&&n%100<=20?'th':({1:'st',2:'nd',3:'rd'}[n%10]||'th'));
+function streetKey(t){let w=String(t||'').toLowerCase().replace(/[-.,]/g,' ').split(/\s+/).filter(Boolean);if(w.length>1&&['north','south','east','west','n','s','e','w'].includes(w[0]))w=w.slice(1);const o=[];   // same normalisation as scripts/build_street_lines.py: 'West Sixty-third st' -> '63rd st'
+ for(let i=0;i<w.length;i++){const x=w[i];if(TENSW[x]&&ORDW[w[i+1]]<10){o.push(ordN(TENSW[x]+ORDW[w[i+1]]));i++;continue}o.push(ORDW[x]?ordN(ORDW[x]):x=='saint'?'st':(STYPE[x]||x))}return o.join(' ')}
 let SQRE=null,SQK='';
 function streetHit(r){if(SQK!==SQ){SQK=SQ;SQRE=new RegExp('^[\\d\\s,\\-\u2013&]*(?:(?:and|to)\\s+[\\d\\-\u2013]+\\s*)*(?:(?:n|s|e|w|north|south|east|west)\\s+)?'+streetCanon(SQ).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')}
  return [r.mod,r.site,r.a9].some(t=>t&&SQRE.test(streetCanon(t)))}
@@ -336,7 +340,7 @@ let STFIT=false;
 function streetLine(){   // the picked street's centre line, highlighted at every zoom (the area shading or the dots sit on top of it)
  if(!STL){map.createPane('street').style.zIndex=410;STL=L.layerGroup().addTo(map)}STL.clearLayers();if(!SQ)return;
  if(!SL){SLP??=fetch('data/streets.json').then(r=>r.json()).then(j=>{SL=j;streetLine()}).catch(()=>{});return}
- const segs=SL[streetCanon(SQ)]||[];if(!segs.length)return;const all=[];
+ const k=streetKey(SQ),segs=SL[k]||SL[k.split(' ').slice(0,-1).join(' ')]||[];if(!segs.length)return;const all=[];
  segs.forEach(sg=>{L.polyline(sg,{pane:'street',color:'#fff',weight:8,opacity:.9,interactive:false}).addTo(STL);L.polyline(sg,{pane:'street',color:css('--acc')||'#c0392b',weight:4,opacity:1,interactive:false}).addTo(STL);all.push(...sg)});
  if(STFIT&&all.length){STFIT=false;map.fitBounds(L.latLngBounds(all).pad(.1))}}
 function noMapNote(){let el=$('nomap');if(!el){el=document.createElement('div');el.id='nomap';el.hidden=true;el.innerHTML='<span></span> <a href="#tarea" class=lk>See them in the table &darr;</a>';map.getContainer().appendChild(el);el.querySelector('a').onclick=e=>{e.preventDefault();$('tarea').scrollIntoView({behavior:'smooth',block:'start'})}}
