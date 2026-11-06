@@ -16,7 +16,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 .nav{display:inline-flex;gap:4px;align-items:center}.fbar input,.fbar select,.filters input,.filters select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
 .btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
 .chips{padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px;min-height:6px}
-.chip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer}.chip b{color:var(--acc);margin-left:6px}
+.chip{--c:var(--acc);background:color-mix(in srgb,var(--c) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 60%,var(--surface));border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--fg)}.chip:hover{background:color-mix(in srgb,var(--c) 28%,var(--surface))}.chip b{color:var(--c);margin-left:6px}.chip.k-place{--c:var(--s1)}.chip.k-who{--c:var(--s2)}.chip.k-clear{--c:var(--mut);background:transparent}
 #summary{padding:2px 16px 8px;color:var(--mut);font-size:13px}
 .grid{display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:12px;padding:0 16px}
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
@@ -137,7 +137,7 @@ td:first-child{white-space:nowrap}
 #detail .who .wr .wl{min-width:0;padding:0;display:block;font-size:12.5px;line-height:1.55;text-transform:capitalize}#detail .who .wr .wl.nc{text-transform:none}
 #detail .who .wv{display:block}#detail .who .wa{display:block;color:var(--mut);font-size:12.5px;line-height:1.35}
 @media(max-width:1180px){#tarea .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}#detail{touch-action:pan-y}}
-#filters #summary{margin:2px 0 6px;font-weight:600}#filters .chips{margin:0 0 6px;padding:0;max-height:none;overflow:visible}#filters .chips.fold{overflow:hidden}#chipmore{display:block;margin:-2px 0 8px;text-align:left;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0}
+#filters #summary{margin:2px 0 6px;font-weight:600}#filters #summary:empty{display:none}#filters .chips{margin:0 0 6px;padding:0;max-height:none;overflow:visible}#filters .chips.fold{overflow:hidden}#chipmore{display:block;margin:-2px 0 8px;text-align:left;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0}
 #ph .corner{margin:8px 0;padding:6px 10px;border-left:4px solid var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--surface));border-radius:0 5px 5px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}#ph .corner .cl{font-weight:700;color:var(--acc);font-size:13px}#ph .corner .cl::before{content:'\2691\00a0'}
 #ph .corner .same{font-size:12px;color:var(--mut);flex-basis:100%}
 #lbox{position:fixed;inset:0;z-index:100;background:rgba(10,12,16,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:zoom-out}#lbox[hidden]{display:none}#lbox img{max-width:94vw;max-height:86vh;object-fit:contain;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.6);background:#222}#lbcap{color:#e8e8e8;font-size:13px}#lbx{position:absolute;top:14px;right:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:6px;font-size:18px;line-height:1;padding:6px 10px;cursor:pointer}.phcrop{cursor:zoom-in}
@@ -493,6 +493,7 @@ async function go(){
  const rk=rowKeys(),dk=(!LEGACY&&!commMode())?viewShards():[];
  const want=[...new Set([...(rk||[]),...dk])].filter(k=>!LOADED.has(k));
  if(want.length){$('summary').textContent='Loading permit details…';await loadShards(want);if(tok!==GOTOK)return}
+ $('summary').textContent=''
  render(rk)}
 /* sort key for the Address column: street name (numbered streets in numeric order), then direction, then the first street number as a number */
 const addrKey=r=>{if(r._ak!==undefined)return r._ak;const a=(r.mod||r.site||'').trim(),m=a.match(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/),num=(a.match(/^\s*(\d+)/)||[])[1],rest=a.slice(m?m[0].length:0).trim(),dm=rest.match(/^([NSEW])\.?\s+(.*)$/i),dir=dm?dm[1].toUpperCase():'',street=(dm?dm[2]:rest).toLowerCase().replace(/(\d+)(st|nd|rd|th)\b/g,(x,n)=>n.padStart(6,'0')+x.slice(n.length));return r._ak=street?street+'|'+dir+'|'+String(num||0).padStart(8,'0'):''};
@@ -512,7 +513,7 @@ function render(rk){
  if(cubeOK)stat=cubeStat();else{stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0})}   // the map keeps showing every area while one is selected
 
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
- $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
+ $('summary').textContent=!SEARCH&&($('q').value||$('ar').value)?'Loading the search text…':'';
  $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
@@ -633,18 +634,18 @@ $('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});$('
 $('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
  if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('q').value)c.push(['Text: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
- [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()}]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
+ [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()},1]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
- c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
+ c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
  foldChips()}
 /* chips show two rows; the rest sit behind "+N more" */
-let CHIPSOPEN=false;
+let CHIPSOPEN=false;const CHIPROWS=5;      // chip rows shown before '+N more'
 function foldChips(){const box=$('chips'),more=$('chipmore');box.classList.remove('fold');box.style.maxHeight='';box.classList.toggle('open',CHIPSOPEN);more.hidden=true;if(!box.children.length)return;
  const kids=[...box.children],r0=kids[0].offsetTop,tops=[...new Set(kids.map(k=>k.offsetTop))].sort((x,y)=>x-y);
- if(tops.length<=2){CHIPSOPEN=false;box.classList.remove('open');return}
- const hid=kids.filter(k=>k.offsetTop>=tops[2]).length;more.hidden=false;more.textContent=CHIPSOPEN?'show fewer':'+'+hid+' more';box.style.maxHeight=CHIPSOPEN?'':(tops[2]-tops[0]-6)+'px';box.classList.toggle('fold',!CHIPSOPEN)}
+ if(tops.length<=CHIPROWS){CHIPSOPEN=false;box.classList.remove('open');return}
+ const hid=kids.filter(k=>k.offsetTop>=tops[CHIPROWS]).length;more.hidden=false;more.textContent=CHIPSOPEN?'show fewer':'+'+hid+' more';box.style.maxHeight=CHIPSOPEN?'':(tops[CHIPROWS]-tops[0]-6)+'px';box.classList.toggle('fold',!CHIPSOPEN)}
 $('chipmore').onclick=()=>{CHIPSOPEN=!CHIPSOPEN;foldChips()};
 /* ---- bars over time: weekly / monthly / yearly depending on the span selected; honors every filter except the issue window ---- */
 /* round-number axis: the top of the axis and the gridlines fall on 1, 2, 2.5 or 5 times a power of ten */
