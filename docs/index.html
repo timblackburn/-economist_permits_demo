@@ -87,8 +87,8 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 
 /* ---- solid colour bands: page header, widget headings, table header; striped rows ---- */
 header{background:var(--hd);color:#fff;border-bottom:0;margin:0 0 16px;padding:20px 20px 18px;position:relative}
-/* the banner picture: a pseudo-element at the right, as wide as the header is tall allows (the picture is 6.1 : 1) and never more than 40% of the page; it fades in from its left edge, and the title and subtitle are kept out of its way. Left out on narrow screens. */
-@media(min-width:900px){header{min-height:108px}header::before{content:"";position:absolute;right:0;top:0;bottom:0;width:min(40vw,690px);background:url(banner.jpg) right bottom/contain no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);mask-image:linear-gradient(90deg,transparent 0,#000 22%);pointer-events:none}header>*{position:relative;z-index:1}header h1,header .sub{max-width:calc(100% - min(40vw,690px) - 12px)}}
+/* the banner picture: full header height (108 px, so 658 px wide at 6.1 : 1), right-aligned on wide screens; on narrower ones it keeps its size and the right side is clipped by the window, with the title and subtitle given a fixed 740 px in front of it. It fades in from its left edge. Left out on narrow screens. */
+@media(min-width:900px){header{height:108px;box-sizing:border-box;overflow:hidden}header::before{content:"";position:absolute;left:max(740px,calc(100% - 658px));right:0;top:0;bottom:0;background:url(banner.jpg) left center/auto 100% no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 18%);mask-image:linear-gradient(90deg,transparent 0,#000 18%);pointer-events:none}header>*{position:relative;z-index:1}header h1,header .sub{max-width:max(708px,calc(100% - 650px))}}
 header h1{color:#fff}header .sub,header p{color:rgba(255,255,255,.86)}header .kick{color:#f0c9b8}header a{color:#fff}
 
 .card>h2,.filters>h2{margin:-15px -17px 14px;padding:9px 16px;background:var(--wh);color:#fff;border-radius:5px 5px 0 0;font-size:14px;font-weight:600;letter-spacing:.01em}
