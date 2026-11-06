@@ -34,7 +34,7 @@ th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;backgro
 a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{text-decoration:underline}
 .all{max-height:300px;overflow:auto}.more{margin-top:6px;font-size:13px;color:var(--s1);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:13px}
 #ph{margin:8px 0}
-.pmarrow{background:none;border:0}.pmarrow svg{display:block;filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}
+.pmov{position:absolute;pointer-events:none;z-index:600}.pmov svg{display:block;filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}.pmcomp{left:6px;top:6px}
 /* the photo section's buttons (neighbours, this building, lots in a range, the corner house): blue outline, filled when they are the one being shown */
 #ph .pins{display:flex;flex-wrap:wrap;align-items:center;gap:6px;line-height:1.2;margin-bottom:8px}
 #ph .pins .btn{padding:6px 12px;font-size:13.5px;font-weight:600;color:var(--s1);background:color-mix(in srgb,var(--s1) 9%,var(--surface));border:1.5px solid var(--s1);border-radius:6px;min-height:34px;box-shadow:0 1px 0 rgba(0,0,0,.12)}
@@ -42,7 +42,7 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph .pins .btn.on{background:var(--s1);color:#fff;cursor:default;box-shadow:none}
 #ph .pins .btn:disabled{color:var(--mut);background:var(--surface);border-color:var(--line);box-shadow:none;font-weight:400;cursor:not-allowed}
 #ph .pins.corner .cl{font-size:13px;font-weight:600;color:var(--fg)}
-#ph .pins.corner .same{flex:1 1 100%}#ph .phrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}#ph .phl{flex:1 1 240px;min-width:0}#ph .phmap{flex:1 1 150px;max-width:210px;min-width:150px;align-self:flex-start}#pmm{width:100%;height:200px;border-radius:4px;background:var(--none);cursor:pointer;overflow:hidden}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:100%;max-height:250px;width:auto;border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}#ph .phcap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ph .phcap b{color:var(--fg)}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
+#ph .pins.corner .same{flex:1 1 100%}#ph .phrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}#ph .phl{flex:1 1 240px;min-width:0}#ph .phmap{flex:1 1 150px;max-width:210px;min-width:150px;align-self:flex-start}#pmm{position:relative;width:100%;height:200px;border-radius:4px;background:var(--none);cursor:pointer;overflow:hidden}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:100%;max-height:250px;width:auto;border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}#ph .phcap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ph .phcap b{color:var(--fg)}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
 
 .mg{display:grid;grid-template-columns:minmax(320px,2fr) 3fr;gap:16px;align-items:start}.ml{position:sticky;top:64px;max-height:calc(100vh - 72px);overflow:auto;padding-right:4px}#mm{height:230px;border-radius:4px;margin:10px 0 4px;background:var(--none)}.ov{font-size:13px;margin:6px 0}@media(max-width:850px){.mg{grid-template-columns:1fr}.ml{position:static}}
 .srcbox{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:14px;font-weight:600}.srcbox span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}.srcbox em{font-style:normal;font-weight:400;color:var(--mut);font-size:12.5px}
@@ -802,22 +802,46 @@ async function nearPts(r){if(NPC[r.id])return NPC[r.id];
   rows.forEach(x=>{if(x.pin&&!by[x.pin])by[x.pin]={pin:x.pin,lat:+x.lat,lng:+x.long,label:`${x.add_number} ${x.lst_predir||''} ${tc(x.st_name)} ${tc(x.lst_type)}`.replace(/\s+/g,' ').trim()}});
   NPC[r.id]=Object.values(by)}catch(e){NPC[r.id]=[]}
  return NPC[r.id]}
+/* orientation: the map is turned so that the street is at the bottom, as if you stood in the street looking at the buildings; a small compass shows where north is.
+   The street's side is found from the County points around: the other parity of house numbers lies across the street. */
+function streetUp(r,pts){   // -> the rotation (degrees, clockwise) to apply to a north-up map
+ const num=parseInt(r.mod||r.site||''),nm=s=>String(s).replace(/^\d+\s+/,'').replace(/^[NSEW]\s+/,'').toLowerCase(),mine=nm(r.mod||r.site||'');
+ if(!isNaN(num)&&mine){const same=pts.filter(p=>nm(p.label)==mine&&!isNaN(parseInt(p.label)));
+  const A=same.filter(p=>parseInt(p.label)%2==num%2),B=same.filter(p=>parseInt(p.label)%2!=num%2);
+  if(A.length&&B.length){const mean=a=>({la:a.reduce((x,y)=>x+y.lat,0)/a.length,lo:a.reduce((x,y)=>x+y.lng,0)/a.length}),a=mean(A),b=mean(B),
+    e=(b.lo-a.lo)*Math.cos(r.lat*Math.PI/180)*111320,n=(b.la-a.la)*110574;     // from this side of the street toward the other side
+   if(Math.hypot(e,n)>3)return 90-Math.atan2(-n,e)*180/Math.PI}}
+ const g=((r.mod||r.site||'').match(/^\d+\S*\s+([NSEW])\b/)||[])[1]||'',odd=num%2==1;      // no points on the other side: the numbering rule (E-W streets: odd = south side; N-S streets: odd = east side)
+ const toward=g==='E'||g==='W'?(odd?'N':'S'):g==='N'||g==='S'?(odd?'W':'E'):null,v={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}[toward];
+ return v?90-Math.atan2(v[1],v[0])*180/Math.PI:0}
 async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;
  const pts=await nearPts(r);if(CURR!==r||$('pmm')!==box)return;
  const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),me=pts.find(p=>p.pin==pin)||(own?{lat:r.lat,lng:r.lon,label:r.mod||r.site||''}:null);
- PMM=L.map(box,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
+ const phi=streetUp(r,pts),rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+ box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
+ const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
+ PMM=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
  const c=L.latLng(r.lat,r.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
- if(me){const ll=L.latLng(me.lat,me.lng);
-  if(PMM.getBounds().contains(ll))L.circleMarker(ll,{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
-  else{   // the chosen building is off this small map: an arrow on the edge points to it
-   const sz=PMM.getSize(),ctr=L.point(sz.x/2,sz.y/2),pt=PMM.latLngToContainerPoint(ll),vx=pt.x-ctr.x,vy=pt.y-ctr.y,inset=16,t=Math.min((sz.x/2-inset)/Math.max(1e-6,Math.abs(vx)),(sz.y/2-inset)/Math.max(1e-6,Math.abs(vy))),at=PMM.containerPointToLatLng(L.point(ctr.x+vx*t,ctr.y+vy*t)),ang=Math.atan2(vy,vx)*180/Math.PI;
-   L.marker(at,{interactive:false,keyboard:false,icon:L.divIcon({className:'pmarrow',html:`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${css('--acc')}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`,iconSize:[26,26],iconAnchor:[13,13]})}).addTo(PMM)}}
- PMM.on('click',e=>{let best=null,bd=1e9;pts.forEach(p=>{const d=PMM.distance(e.latlng,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)});
- const pb=document.querySelector('#ph .phbox'),fit=()=>{if(!pb||!PMM)return;const h=pb.offsetHeight;if(h>60)box.style.height=h+'px';PMM.invalidateSize({animate:false})};
- fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);ro.observe(pb);ro.observe(box)}catch(e){}}
+ // from a point of the (rotated) inner map to the frame the viewer sees
+ let ring=null;
+ const toFrame=pt=>{const x=pt.x-S/2,y=pt.y-S/2;return {x:W/2+x*cs-y*sn,y:H/2+x*sn+y*cs}};
+ const overlay=()=>{box.querySelectorAll('.pmov').forEach(e=>e.remove());
+  if(me){const f=toFrame(PMM.latLngToContainerPoint(L.latLng(me.lat,me.lng)));
+   if(ring){PMM.removeLayer(ring);ring=null}
+   if(f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H)ring=L.circleMarker([me.lat,me.lng],{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
+   else{const vx=f.x-W/2,vy=f.y-H/2,inset=16,t=Math.min((W/2-inset)/Math.max(1e-6,Math.abs(vx)),(H/2-inset)/Math.max(1e-6,Math.abs(vy))),ang=Math.atan2(vy,vx)*180/Math.PI,a=document.createElement('div');
+    a.className='pmov pmarrow';a.style.cssText=`left:${W/2+vx*t-13}px;top:${H/2+vy*t-13}px`;a.innerHTML=`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${css('--acc')}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;a.title=me.label||'';box.append(a)}}
+  const k=document.createElement('div');k.className='pmov pmcomp';k.title='North is toward the red point';   // the compass: the red half points north
+  k.innerHTML=`<svg viewBox="0 0 34 34" width="34" height="34"><circle cx="17" cy="17" r="16" fill="rgba(255,255,255,.88)" stroke="rgba(0,0,0,.25)"/><g transform="rotate(${phi} 17 17)"><path d="M17 5L21.5 17H12.5Z" fill="#c0392b"/><path d="M17 29L21.5 17H12.5Z" fill="#8a8a8a"/></g><text x="${17+11*Math.sin(rad)}" y="${17-11*Math.cos(rad)+3}" font-size="9" font-weight="700" text-anchor="middle" fill="#222" font-family="system-ui,sans-serif">N</text></svg>`;box.append(k)};
+ overlay();
+ // clicks: undo the rotation, then take the nearest building within about 22 m
+ box.onclick=e=>{const rc=box.getBoundingClientRect(),dx=e.clientX-(rc.left+W/2),dy=e.clientY-(rc.top+H/2),x=dx*cs+dy*sn,y=-dx*sn+dy*cs,ll=PMM.containerPointToLatLng(L.point(S/2+x,S/2+y));
+  let best=null,bd=1e9;pts.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)};
+ const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,19,{animate:false});overlay()};
+ fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 const order=()=>cur;
 let MOVEBYCODE=0;
