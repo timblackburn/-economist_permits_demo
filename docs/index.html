@@ -1,15 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chicago Building Permits</title>
-<script>try{var t=localStorage.getItem("permits-theme");if(t=="light"||t=="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">   <!-- Leaflet 1.9.4, served from this site (docs/vendor/leaflet), not a third-party CDN -->
 <style>
 :root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;--selrow:#fff0c2;
 --q1:#e3eefb;--q2:#bcd6f3;--q3:#8db9ea;--q4:#5a98de;--q5:#2a78d6;--none:#ece8dd}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;--selrow:#4d4220;
---q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}}
-:root[data-theme="dark"]{--bg:#1c1a17;--surface:#25221d;--fg:#e8e3d8;--mut:#a39b8a;--line:#3a352c;--acc:#e07a5f;--s1:#3987e5;--s2:#d95926;--ring:#25221d;--hd:#15283e;--wh:#27425f;--th:#27425f;--stripe:#2b2823;--rowhover:#34475c;--selrow:#4d4220;
---q1:#1f3250;--q2:#264a7b;--q3:#2d63a8;--q4:#3987e5;--q5:#74adf3;--none:#2c2923}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
 .f{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px;align-items:center}
@@ -25,7 +20,7 @@ header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;
 #map{flex:1;min-height:440px;border-radius:4px;background:var(--none)}.mapc{display:flex;flex-direction:column}.chmnote{font-size:13px;color:var(--mut);margin:.6em 0}.chmnote a{color:var(--acc)}.wkstats{font-size:13px;color:var(--mut);margin:0 0 4px}.wknorm{display:block;font-size:13px;margin:0;cursor:pointer;text-align:right;white-space:nowrap}.wkrow{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 6px}.wkrow .wkstats{margin:0}.wknorm input{vertical-align:-2px;margin-right:4px}.calw{background:none;border:0}.calab{transform:translate(-50%,-50%);text-align:center;pointer-events:none;font:600 12px/1.12 system-ui,sans-serif;color:var(--fg);text-shadow:0 0 3px var(--surface),0 0 3px var(--surface),0 0 5px var(--surface)}.calab b{display:block;font-weight:700;font-size:10px;line-height:1.05;margin-bottom:1px}.shade{font-size:12px;font-weight:400;margin-left:10px;color:var(--mut);cursor:pointer}.shade input{vertical-align:-2px}
 .side{display:flex;flex-direction:column;gap:18px}
 .legend{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut);margin-top:6px;flex-wrap:wrap}.legend i{display:inline-block;width:22px;height:10px;border-radius:2px}
-.leaflet-container{font:inherit}html[data-eff="dark"] .tiles{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}.thbtn{float:right;margin:0 0 0 10px}.cl span{display:block;width:60px;margin:-7px 0 0 -30px;text-align:center;font:700 12px/14px system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
+.leaflet-container{font:inherit}.cl span{display:block;width:60px;margin:-7px 0 0 -30px;text-align:center;font:700 12px/14px system-ui,sans-serif;color:#fff;text-shadow:0 0 3px #000,0 0 2px #000;pointer-events:none}h2 #wkt{font-size:inherit;font-weight:inherit;color:inherit;margin-left:0}.tip b{display:block}
 svg text{fill:var(--mut);font:11px Georgia,serif}.bar{cursor:pointer}.bar:hover{opacity:.8}
 .arch{display:grid;grid-template-columns:minmax(0,1fr) 90px 54px;gap:6px;align-items:center;font-size:13px;padding:2px 0;cursor:pointer}.arch:hover{background:var(--bg)}
 .arch.sel .an{font-weight:600}.arch.sel .t i{background:var(--s2)}.arch .an{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.arch .t{height:8px;background:var(--none);border-radius:2px}.arch .t i{display:block;height:8px;background:var(--s1);border-radius:2px}.arch .v{text-align:right;color:var(--mut);font-size:12px}
@@ -92,9 +87,10 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 
 /* ---- solid colour bands: page header, widget headings, table header; striped rows ---- */
 header{background:var(--hd);color:#fff;border-bottom:0;margin:0 0 16px;padding:20px 20px 18px;position:relative}
-@media(min-width:900px){header{min-height:104px;background:linear-gradient(90deg,var(--hd) calc(100% - 440px),transparent calc(100% - 380px)),url(banner.jpg) right center/auto 100% no-repeat,var(--hd)}header h1,header .sub{max-width:calc(100% - 470px)}}   /* the banner picture sits at the right; the title and subtitle keep clear of it, and it is left out on narrow screens */
+/* the banner picture: a pseudo-element at the right, as wide as the header is tall allows (the picture is 6.1 : 1) and never more than 40% of the page; it fades in from its left edge, and the title and subtitle are kept out of its way. Left out on narrow screens. */
+@media(min-width:900px){header{min-height:108px}header::before{content:"";position:absolute;right:0;top:0;bottom:0;width:min(40vw,690px);background:url(banner.jpg) right bottom/contain no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22%);mask-image:linear-gradient(90deg,transparent 0,#000 22%);pointer-events:none}header>*{position:relative;z-index:1}header h1,header .sub{max-width:calc(100% - min(40vw,690px) - 12px)}}
 header h1{color:#fff}header .sub,header p{color:rgba(255,255,255,.86)}header .kick{color:#f0c9b8}header a{color:#fff}
-header .thbtn{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.45)}header .thbtn:hover{background:rgba(255,255,255,.22)}
+
 .card>h2,.filters>h2{margin:-15px -17px 14px;padding:9px 16px;background:var(--wh);color:#fff;border-radius:5px 5px 0 0;font-size:14px;font-weight:600;letter-spacing:.01em}
 .card>h2 span,.card>h2 label,.card>h2 small{color:rgba(255,255,255,.82)}.card>h2 label{font-weight:400}
 #detail .dbar{background:var(--wh);border-bottom:0;border-radius:5px 5px 0 0;color:#fff}#detail .dbar #pos{color:rgba(255,255,255,.85)}
@@ -151,10 +147,9 @@ td:first-child{white-space:nowrap}
 #mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
 #sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
 .platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
-:root[data-theme=dark] .plattiles{mix-blend-mode:normal}@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .plattiles{mix-blend-mode:normal}}
+
 </style></head><body>
 <header>
-<button class="btn thbtn" id="th" title="Colour theme: Auto follows your device">◐ Auto</button>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
 <p class="sub">Weekly building-permit lists from Chicago trade papers, transcribed from scans. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a></p>
 </header>
@@ -202,17 +197,6 @@ td:first-child{white-space:nowrap}
 <script>
 const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
-/* ---- theme: Auto (follows the device, live) / Light / Dark; the choice is remembered ---- */
-let pref='auto';try{pref=localStorage.getItem('permits-theme')||'auto'}catch(e){}
-if(!['auto','light','dark'].includes(pref))pref='auto';
-function applyTheme(redraw){const de=document.documentElement,sysDark=matchMedia('(prefers-color-scheme: dark)').matches;
- if(pref=='auto')de.removeAttribute('data-theme');else de.dataset.theme=pref;
- de.dataset.eff=pref=='auto'?(sysDark?'dark':'light'):pref;
- $('th').textContent={auto:'◐ Auto',light:'☀ Light',dark:'☾ Dark'}[pref];$('th').title='Colour theme: '+({auto:'following your device',light:'light',dark:'dark'}[pref])+' (click to change)';
- if(redraw&&typeof D!='undefined'&&(D.length||COUNTS)&&typeof go=='function')go()}
-$('th').onclick=()=>{pref={auto:'light',light:'dark',dark:'auto'}[pref];try{localStorage.setItem('permits-theme',pref)}catch(e){}applyTheme(true)};
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pref=='auto')applyTheme(true)});
-applyTheme(false);
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
@@ -257,7 +241,6 @@ function oldHit(r,it){if(OQK!==SQ){OQK=SQ;OQ={o:new RegExp(oldPre+esc_(it[2])+'(
 function streetHit(r){if(OSN[SQ])return oldHit(r,OSN[SQ]);if(SQK!==SQ){SQK=SQ;SQRE=new RegExp('^[\\d\\s,\\-\u2013&]*(?:(?:and|to)\\s+[\\d\\-\u2013]+\\s*)*(?:(?:n|s|e|w|north|south|east|west)\\s+)?'+streetCanon(sqBase()).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')}
  return [r.mod,r.site,r.a9,r.a9y==1914?r.a9o:null].some(t=>t&&SQRE.test(streetCanon(t)))}
 /* ---- map ---- */
-const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
 const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:21,maxNativeZoom:19,className:'tiles'}).addTo(map);
