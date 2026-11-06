@@ -80,10 +80,12 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
 .mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
 .layout{align-items:stretch}
-.sgrow{display:flex;gap:6px;align-items:stretch}.sgrow .sgw{flex:1;min-width:0}.geo{flex:none;width:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:5px}.geo.busy{opacity:.55}#me{pointer-events:none}
+#busy{position:fixed;left:0;right:0;top:0;height:3px;z-index:300;background:linear-gradient(90deg,transparent,var(--acc),transparent) no-repeat;background-size:40% 100%;animation:busybar 1.1s linear infinite}#busy[hidden]{display:none}@keyframes busybar{from{background-position:-40% 0}to{background-position:140% 0}}
+#q::placeholder{font-size:14px}
+.filters .fbox{flex:1 1 auto;display:flex;flex-direction:column}.filters .fbox>.fg{flex:1 1 auto;justify-content:center}.sgrow{display:flex;gap:6px;align-items:stretch}.sgrow .sgw{flex:1;min-width:0}.geo{flex:none;width:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:5px}.geo.busy{opacity:.55}#me{pointer-events:none}
 .chipbar{display:flex;align-items:center;gap:12px;padding:12px 20px 0;min-height:30px}.chipbar .chips{flex:0 1 auto;min-width:0;padding:0;margin:0;overflow:hidden;align-content:flex-start}.chipbar .chips:empty{display:none}#chipmore{flex:none;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0;margin:0;text-align:left}#cprompt{color:var(--fg);font-size:14px}#cprompt a{cursor:pointer}.filters{gap:14px}.filters .fbox{padding:14px 16px}
 .layout .filters{position:static;height:auto;max-height:calc(100vh - 16px);overflow:auto}                     /* the filters pane sets the height of the row... */
-.layout .mapc,.layout .side{position:static;height:0;min-height:100%;overflow:auto;box-sizing:border-box}    /* ...and the map and the right pane follow it */
+.layout .side{position:static;height:0;min-height:100%;overflow:auto;box-sizing:border-box}.layout .mapc{position:static;height:auto;min-height:100%;box-sizing:border-box}    /* ...and the map and the right pane follow it */
 .layout .mapc{overflow:hidden}.layout #detail{position:static;max-height:none;overflow:visible}
 @media(max-width:1180px){.layout{grid-template-columns:1fr}.layout .filters{max-height:none}.layout .mapc,.layout .side{height:auto;min-height:0;overflow:visible}#map{min-height:420px}}
 
@@ -156,11 +158,12 @@ td:first-child{white-space:nowrap}
 </header>
 <dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
 <div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
+<div id="busy" hidden role="progressbar" aria-label="Loading"></div>
 <div class="layout">
 <aside class="filters" id="filters">
  <section class="card fbox"><h2>Search</h2>
  <div id="summary"></div>
- <div class="fg"><div class="sgrow"><span class="sgw qw"><input id="q" class="big" aria-label="Search" placeholder="owner, street, address…" autocomplete="off" aria-autocomplete="list"><span id="qhint" hidden>↵ Enter</span><div id="qsg" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
+ <div class="fg"><span class="fl">Search</span><div class="sgrow"><span class="sgw qw"><input id="q" class="big" placeholder="owner, street, building, address…" autocomplete="off" aria-autocomplete="list"><span id="qhint" hidden>↵ Enter</span><div id="qsg" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  </section>
  <section class="card fbox"><h2>Filter</h2>
@@ -497,13 +500,13 @@ function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a
 
 function flt(skip){const B=($('inview').checked&&skip!='view')?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',co=costOn(),aq=q?addrQ(q):null;
  return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||hay(r).includes(q)||(aq&&rangeHit(r,aq)))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
+let BN=0;const busy=d=>{BN=Math.max(0,BN+d);$('busy').hidden=BN<=0};   // a thin moving bar at the top of the window while permit details or the search text load
 async function go(){
  const tok=++GOTOK;
- if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(()=>{if(tok===GOTOK)go()});
+ if(!SEARCH&&($('q').value||$('ar').value)){busy(1);ensureSearch().then(()=>{busy(-1);if(tok===GOTOK)go()},()=>busy(-1))}
  const rk=rowKeys(),dk=(!LEGACY&&!commMode())?viewShards():[];
  const want=[...new Set([...(rk||[]),...dk])].filter(k=>!LOADED.has(k));
- if(want.length){$('summary').textContent='Loading permit details…';await loadShards(want);if(tok!==GOTOK)return}
- $('summary').textContent=''
+ if(want.length){busy(1);try{await loadShards(want)}finally{busy(-1)}if(tok!==GOTOK)return}
  render(rk)}
 /* sort key for the Address column: street name (numbered streets in numeric order), then direction, then the first street number as a number */
 const addrKey=r=>{if(r._ak!==undefined)return r._ak;const a=(r.mod||r.site||'').trim(),m=a.match(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/),num=(a.match(/^\s*(\d+)/)||[])[1],rest=a.slice(m?m[0].length:0).trim(),dm=rest.match(/^([NSEW])\.?\s+(.*)$/i),dir=dm?dm[1].toUpperCase():'',street=(dm?dm[2]:rest).toLowerCase().replace(/(\d+)(st|nd|rd|th)\b/g,(x,n)=>n.padStart(6,'0')+x.slice(n.length));return r._ak=street?street+'|'+dir+'|'+String(num||0).padStart(8,'0'):''};
@@ -523,7 +526,6 @@ function render(rk){
  if(cubeOK)stat=cubeStat();else{stat={};D.filter(flt('ca')).forEach(r=>{if(!r.ca)return;const s=stat[r.ca]??={n:0,c:0};s.n++;s.c+=r.cost||0})}   // the map keeps showing every area while one is selected
 
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
- $('summary').textContent=!SEARCH&&($('q').value||$('ar').value)?'Loading the search text…':'';
  $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
  chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
