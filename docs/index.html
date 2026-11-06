@@ -204,6 +204,7 @@ $('th').onclick=()=>{pref={auto:'light',light:'dark',dark:'auto'}[pref];try{loca
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pref=='auto')applyTheme(true)});
 applyTheme(false);
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
+let SQ='',SL=null,SLP=null,STL=null;   // SQ: a street picked from the suggestions (matches the address, not the whole text)
 let COUNTS=null,DICT=null,ALLKEYS=[],LOADED=new Set(),SHP={},ALLP=null,LISTALL=false,AGG=true,TOT={n:0,placed:0},GOTOK=0;
 let PAGE=0;const PS=400;let CS=new Set(),CSN={};let R={a:null,b:null},V=null,ISSN=[],ISS=[],D=[],CA=null,cur=[],sk='mod',sd=1,metric='n',perIssue=false,F={area:null},AREAS=new Set(),CAN={};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
@@ -219,6 +220,11 @@ const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase()
 const AS=new Set(),AN={},AC={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
 const hay=r=>SEARCH?SEARCH.t.get(r.id)||'':'';
+const STYPE={av:'ave',avenue:'ave',street:'st',boul:'blvd',boulevard:'blvd',place:'pl',court:'ct',road:'rd',drive:'dr',terrace:'ter',parkway:'pkwy'};
+const streetCanon=t=>{const w=String(t||'').toLowerCase().replace(/[.,]/g,' ').split(/\s+/).filter(Boolean);if(w.length)w[w.length-1]=STYPE[w[w.length-1]]||w[w.length-1];return w.join(' ')};
+let SQRE=null,SQK='';
+function streetHit(r){if(SQK!==SQ){SQK=SQ;SQRE=new RegExp('^[\\d\\s,\\-\u2013&]*(?:(?:and|to)\\s+[\\d\\-\u2013]+\\s*)*(?:(?:n|s|e|w|north|south|east|west)\\s+)?'+streetCanon(SQ).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')}
+ return [r.mod,r.site,r.a9].some(t=>t&&SQRE.test(streetCanon(t)))}
 /* ---- map ---- */
 const dark=document.documentElement.dataset.theme=='dark'||(matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!='light');
 const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
@@ -326,6 +332,13 @@ function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('ma
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
  const unp=Math.max(0,TOT.n-TOT.placed);if(unp&&!f&&filtersOn())t+=' · '+unp.toLocaleString()+' not on map';el.textContent=t;el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''}
 function filtersOn(){return !!($('q').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||R.a||R.b||costOn())}
+let STFIT=false;
+function streetLine(){   // the picked street's centre line, highlighted at every zoom (the area shading or the dots sit on top of it)
+ if(!STL){map.createPane('street').style.zIndex=410;STL=L.layerGroup().addTo(map)}STL.clearLayers();if(!SQ)return;
+ if(!SL){SLP??=fetch('data/streets.json').then(r=>r.json()).then(j=>{SL=j;streetLine()}).catch(()=>{});return}
+ const segs=SL[streetCanon(SQ)]||[];if(!segs.length)return;const all=[];
+ segs.forEach(sg=>{L.polyline(sg,{pane:'street',color:'#fff',weight:8,opacity:.9,interactive:false}).addTo(STL);L.polyline(sg,{pane:'street',color:css('--acc')||'#c0392b',weight:4,opacity:1,interactive:false}).addTo(STL);all.push(...sg)});
+ if(STFIT&&all.length){STFIT=false;map.fitBounds(L.latLngBounds(all).pad(.1))}}
 function noMapNote(){let el=$('nomap');if(!el){el=document.createElement('div');el.id='nomap';el.hidden=true;el.innerHTML='<span></span> <a href="#tarea" class=lk>See them in the table &darr;</a>';map.getContainer().appendChild(el);el.querySelector('a').onclick=e=>{e.preventDefault();$('tarea').scrollIntoView({behavior:'smooth',block:'start'})}}
  const n=TOT.n;el.hidden=!(n>0&&TOT.placed==0);if(!el.hidden)el.firstChild.textContent=(n==1?'This permit\'s address cannot be placed on the map.':'None of these '+n.toLocaleString()+' permits can be placed on the map.')}
 function drawPts0(){ptLayer.clearLayers();
@@ -378,7 +391,7 @@ const ALLLOADED=()=>LEGACY||ALLKEYS.every(k=>LOADED.has(k));
 function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}}
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
-const rowFilters=()=>!!($('q').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
+const rowFilters=()=>!!(SQ||$('q').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL||rowFilters())return ALLKEYS;
  if($('inview').checked)return viewShards();
@@ -460,7 +473,7 @@ function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
 
 function flt(skip){const B=($('inview').checked&&skip!='view')?map.getBounds():null,W=issWin(),q=SEARCH?$('q').value.toLowerCase():'',ar=SEARCH?$('ar').value.toLowerCase():'',co=costOn(),aq=q?addrQ(q):null;
- return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!q||hay(r).includes(q)||(aq&&rangeHit(r,aq)))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||hay(r).includes(q)||(aq&&rangeHit(r,aq)))&&(!ar||(SEARCH.r.get(r.id)||'').includes(ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
 async function go(){
  const tok=++GOTOK;
  if(!SEARCH&&($('q').value||$('ar').value))ensureSearch().then(()=>{if(tok===GOTOK)go()});
@@ -488,11 +501,11 @@ function render(rk){
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
  $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
- chips();drawCA();archs();weeks();drawPts();noMapNote();dotKey();table();dlUpdate();
+ chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',ar:'ar'};
-let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');SQ=p.get('st')||'';OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
+function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 /* ---- address search: "10711 S Hoyne" also finds the permit for 10709-13 S Hoyne (any number inside a printed range, same side of the street), and can be looked up in the County's records ---- */
 const SKIPW=new Set(['st','street','ave','av','avenue','blvd','boul','boulevard','pl','place','ct','court','rd','road','dr','drive','ter','terrace','pkwy','n','s','e','w','north','south','east','west']);
 function addrQ(q){const m=(q||'').trim().toLowerCase().match(/^(\d{1,6})\s+(.+)$/);if(!m)return null;const words=m[2].replace(/[.,]/g,' ').split(/\s+/).filter(Boolean),dm=words.find(x=>['n','s','e','w','north','south','east','west'].includes(x)),name=words.filter(x=>!SKIPW.has(x));if(!name.length)return null;return{n:+m[1],name,dir:dm?dm[0].toUpperCase():''}}
@@ -545,7 +558,7 @@ function sugFor(q){const tokens=q.toLowerCase().split(/[^a-z0-9]+/).filter(Boole
 function sugShow(){const box=$('qsg'),list=sugFor($('q').value);qSel=-1;if(!list.length){box.hidden=true;box.innerHTML='';return}
  let h='',last='';list.forEach((x,i)=>{if(x.label!=last){h+=`<span class=ty>${x.label}</span>`;last=x.label}h+=`<div class=o data-i="${i}" role="option"><span>${esc(x.it.t)}</span><small>${x.it.n.toLocaleString()}</small></div>`});
  box.innerHTML=h;box._list=list;box.hidden=false;box.querySelectorAll('div.o').forEach(d=>d.onmousedown=e=>{e.preventDefault();sugPick(+d.dataset.i)})}
-function sugPick(i){const x=$('qsg')._list[i];if(!x)return;$('q').value=x.it.t;$('qsg').hidden=true;qApply()}
+function sugPick(i){const x=$('qsg')._list[i];if(!x)return;$('qsg').hidden=true;if(x.k=='s'){SQ=x.it.t;$('q').value='';STFIT=true;qApply();return}$('q').value=x.it.t;qApply()}
 function qApply(){clearTimeout(qT);qLast=$('q').value;return go()}
 function qHint(){$('qhint').hidden=!($('q').value.trim()&&document.activeElement===$('q'))}
 $('ar').addEventListener('focus',()=>sugLoad());
@@ -606,11 +619,11 @@ function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('a
 $('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});$('aclose').onclick=()=>$('about').close();
 $('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
- if($('q').value)c.push(['“'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
+ if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('q').value)c.push(['Text: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()}]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
  $('chips').innerHTML='';
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
+ if(c.length>1){const e=document.createElement('span');e.className='chip';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
  c.forEach(([t,fn])=>{const e=document.createElement('span');e.className='chip';e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
  foldChips()}
 /* chips show two rows; the rest sit behind "+N more" */
