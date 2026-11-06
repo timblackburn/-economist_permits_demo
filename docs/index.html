@@ -204,7 +204,7 @@ $('th').onclick=()=>{pref={auto:'light',light:'dark',dark:'auto'}[pref];try{loca
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(pref=='auto')applyTheme(true)});
 applyTheme(false);
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
-let SQ='',SL=null,SLP=null,STL=null;   // SQ: a street picked from the suggestions (matches the address, not the whole text)
+let SQ='',SL=null,SLP=null,STL=null,STSK='';   // SQ: a street picked from the suggestions (matches the address, not the whole text)
 let COUNTS=null,DICT=null,ALLKEYS=[],LOADED=new Set(),SHP={},ALLP=null,LISTALL=false,AGG=true,TOT={n:0,placed:0},GOTOK=0;
 let PAGE=0;const PS=400;let CS=new Set(),CSN={};let R={a:null,b:null},V=null,ISSN=[],ISS=[],D=[],CA=null,cur=[],sk='mod',sd=1,metric='n',perIssue=false,F={area:null},AREAS=new Set(),CAN={};
 const money=n=>n==null?'':'$'+Math.round(n).toLocaleString();
@@ -336,12 +336,17 @@ function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('ma
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
  const unp=Math.max(0,TOT.n-TOT.placed);if(unp&&!f&&filtersOn())t+=' · '+unp.toLocaleString()+' not on map';el.textContent=t;el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''}
 function filtersOn(){return !!($('q').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||R.a||R.b||costOn())}
+let AUTOID=null;
+function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
+ if(AGG||cur.length!=1){AUTOID=null;return}const r=cur[0];if(AUTOID===r.id||(CURR&&CURR.id===r.id&&!$('detail').hidden))return;AUTOID=r.id;dock(true);show(r)}
 let STFIT=false;
 function streetLine(){   // the picked street's centre line, highlighted at every zoom (the area shading or the dots sit on top of it)
- if(!STL){map.createPane('street').style.zIndex=410;STL=L.layerGroup().addTo(map)}STL.clearLayers();if(!SQ)return;
- if(!SL){SLP??=fetch('data/streets.json').then(r=>r.json()).then(j=>{SL=j;streetLine()}).catch(()=>{});return}
- const k=streetKey(SQ),segs=SL[k]||SL[k.split(' ').slice(0,-1).join(' ')]||[];if(!segs.length)return;const all=[];
- segs.forEach(sg=>{L.polyline(sg,{pane:'street',color:'#fff',weight:8,opacity:.9,interactive:false}).addTo(STL);L.polyline(sg,{pane:'street',color:css('--acc')||'#c0392b',weight:4,opacity:1,interactive:false}).addTo(STL);all.push(...sg)});
+ if(!STL)STL=L.layerGroup().addTo(map);if(!SQ){STL.clearLayers();STSK='';return}
+ if(!SL){SLP??=fetch('data/streets.json?v=20261106').then(r=>r.json()).then(j=>{SL=j;streetLine()}).catch(()=>{});return}
+ const k=streetKey(SQ),segs=SL[k]||SL[k.split(' ').slice(0,-1).join(' ')]||[];if(!segs.length){STL.clearLayers();STSK='';return}const all=[];
+ if(STSK!==SQ){STSK=SQ;STL.clearLayers();segs.forEach(sg=>{L.polyline(sg,{color:'#fff',weight:8,opacity:.9,interactive:false}).addTo(STL);L.polyline(sg,{color:css('--acc')||'#c0392b',weight:4,opacity:1,interactive:false}).addTo(STL)})}
+ segs.forEach(sg=>all.push(...sg));
+ STL.eachLayer(l=>l.bringToFront());ptLayer.eachLayer(l=>l.bringToFront&&l.bringToFront());   // canvas order: area shading, then the street, then the dots on top
  if(STFIT&&all.length){STFIT=false;map.fitBounds(L.latLngBounds(all).pad(.1))}}
 function noMapNote(){let el=$('nomap');if(!el){el=document.createElement('div');el.id='nomap';el.hidden=true;el.innerHTML='<span></span> <a href="#tarea" class=lk>See them in the table &darr;</a>';map.getContainer().appendChild(el);el.querySelector('a').onclick=e=>{e.preventDefault();$('tarea').scrollIntoView({behavior:'smooth',block:'start'})}}
  const n=TOT.n;el.hidden=!(n>0&&TOT.placed==0);if(!el.hidden)el.firstChild.textContent=(n==1?'This permit\'s address cannot be placed on the map.':'None of these '+n.toLocaleString()+' permits can be placed on the map.')}
@@ -505,7 +510,7 @@ function render(rk){
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('summary').textContent=`${tn.toLocaleString()} permits`+(!SEARCH&&($('q').value||$('ar').value)?' · loading the search text…':'');
  $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
- chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();
+ chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',ar:'ar'};
 let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');SQ=p.get('st')||'';OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
