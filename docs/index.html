@@ -174,7 +174,7 @@ td:first-child{white-space:nowrap}
  <div class="side">
   <div id="overview">
   <div class="card"><h2 class="wkh"><span id="wkt">By week</span><span id="wknote" hidden></span><span class="mtog" title="What the chart, the map shading and the architect ranking count"><button id="mc" class="on">Permits</button><button id="mk">Building cost</button></span></h2><div class="wkrow"><div id="wkstats" class="wkstats"></div><label class="wknorm" title="Show the average per issue instead of totals (fair when only some issues are loaded)"><input type="checkbox" id="mv"> Normalize per issue</label></div><div id="wk"></div></div>
-  <div class="card"><h2>Architects <span id="archnote"></span></h2><div id="archs"></div></div>
+  <div class="card"><h2 class="wkh"><span>Architects <span id="archnote"></span></span><span class="mtog" title="Order the list: busiest first, or alphabetical by last name (A–Z shows every architect)"><button id="asm" class="on">Most</button><button id="asa">A–Z</button></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
    <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table">↓ Table row</button><span class="dnav"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
@@ -559,7 +559,7 @@ async function doExport(f){const b=$('dlb');b.disabled=true;$('dlm').hidden=true
     saveBlob([`<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${xmlE(name)}</name><description>${xmlE(NOTE)}</description>${pm}</Document></kml>`],'application/vnd.google-earth.kml+xml',name+'.kml')}
    $('dln').textContent=`${placed.length.toLocaleString()} of ${rows.length.toLocaleString()} have a location; the rest are left out of map formats (use CSV for all).`}
  }finally{b.disabled=false;b.innerHTML=old;dlUpdate()}}
-function dlUpdate(){const n=AGG?TOT.n:cur.length;$('dlc').textContent='· '+n.toLocaleString();$('dln2').textContent=n.toLocaleString();if(!$('dln').textContent.includes('have a location')&&!$('dln').textContent.includes('Nothing'))$('dln').textContent=n>60000?'Large: preparing the file may take a moment.':''}
+function dlUpdate(){const n=AGG?TOT.n:cur.length;$('dlc').textContent='· '+n.toLocaleString();$('dln2').textContent=n.toLocaleString();if(!$('dln').textContent.includes('have a location')&&!$('dln').textContent.includes('Nothing'))$('dln').textContent=''}
 $('dlb').onclick=e=>{e.stopPropagation();doExport('csv')};
 $('dlcar').onclick=e=>{e.stopPropagation();const m=$('dlm');m.hidden=!m.hidden;$('dlcar').setAttribute('aria-expanded',String(!m.hidden));if(!m.hidden){$('dln').textContent='';dlUpdate();m.querySelector('button').focus()}};
 $('dlm').querySelectorAll('button').forEach(x=>x.onclick=()=>doExport(x.dataset.f));
@@ -733,14 +733,18 @@ function suggestInit(){const a=$('ar'),box=$('sg');a.addEventListener('input',()
  document.addEventListener('click',e=>{if(!e.target.closest('.sgw'))suggestClose()})}
 /* ---- architects in the current selection ---- */
 let showAll=false;
+let archSort='n';   // architects list: 'n' = busiest first, 'a' = A-Z by last name (shows everyone)
+const SUFX=new Set(['jr','sr','ii','iii','co','company','bros','brothers','inc','and','archt','architect','architects','const','constr','construction','building','builders','bldg']);
+function lastKey(name){const first=String(name).split(/\s+(?:&|and)\s+|,/)[0].replace(/[.]/g,'').trim(),w=first.split(/\s+/).filter(x=>/[a-z]/i.test(x)&&!SUFX.has(x.toLowerCase()));return ((w[w.length-1]||first)+' '+first).toLowerCase()}
 function archs(){const by={},nm={};let partial=false;if(AGG){const pk=archKey()||'all';((COUNTS.arch[pk]||{n:[],c:[]})[metric=='n'?'n':'c']).forEach(([a,n,c])=>{by[a]={n,c}});partial=true}else D.filter(flt('arch')).forEach(r=>{let a=arch(r);if(!a||a=='owner')return;const key=a.replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();const e=nm[key]??={sp:{},n:0,c:0};e.sp[a]=(e.sp[a]||0)+1;e.n++;e.c+=r.cost||0});
  if(!AGG)for(const e of Object.values(nm)){const name=Object.entries(e.sp).sort((x,y)=>y[1]-x[1]||(x[0]<y[0]?-1:1))[0][0];by[name]={n:e.n,c:e.c}}   // the most common spelling, whatever order the rows arrived in
- const all=Object.entries(by).sort((a,b)=>(metric=='n'?b[1].n-a[1].n||b[1].c-a[1].c:b[1].c-a[1].c||b[1].n-a[1].n)||(a[0]<b[0]?-1:a[0]>b[0]?1:0)),L1=(showAll?all:all.slice(0,10).concat(all.slice(10).filter(([k])=>AS.has(nk(k))))).sort((x,y)=>AS.has(nk(y[0]))-AS.has(nk(x[0]))),mx=Math.max(1,...L1.map(([,s])=>s[metric]));
+ const all=Object.entries(by).sort((a,b)=>(metric=='n'?b[1].n-a[1].n||b[1].c-a[1].c:b[1].c-a[1].c||b[1].n-a[1].n)||(a[0]<b[0]?-1:a[0]>b[0]?1:0)),L1=(archSort=='a'||showAll?(archSort=='a'?[...all].sort((x,y)=>lastKey(x[0])<lastKey(y[0])?-1:lastKey(x[0])>lastKey(y[0])?1:0):all):all.slice(0,10).concat(all.slice(10).filter(([k])=>AS.has(nk(k))))).sort((x,y)=>AS.has(nk(y[0]))-AS.has(nk(x[0]))),mx=Math.max(1,...L1.map(([,s])=>s[metric]));
  setArchPalette(all);$('archs').innerHTML=L1.map(([a,s])=>`<div class="arch${AS.has(nk(a))?' sel':''}" data-a="${esc(a)}" title="${esc(a)}: ${s.n} permits, ${money(s.c)}"><span class="an">${AS.has(nk(a))?'✓ ':''}${esc(a)}</span><span class="t"><i style="width:${100*s[metric]/mx}%;${archColor(a)?"background:"+archColor(a):""}"></i></span><span class="v">${metric=='n'?s.n:short(s.c)}</span></div>`).join('')||'<span style="color:var(--mut);font-size:13px">none</span>';
  if(partial)$('archs').insertAdjacentHTML('beforeend','<div class=mut style="font-size:12px;margin-top:6px">The ten busiest for this period. Pick an area or search to rank every architect.</div>');else if(all.length>10)$('archs').insertAdjacentHTML('beforeend',`<button class=more id=more>${showAll?'Show top 10':'Show all '+all.length+' architects'}</button>`);
- $('archs').classList.toggle('all',showAll);
+ $('archs').classList.toggle('all',showAll||archSort=='a');$('asm').classList.toggle('on',archSort=='n');$('asa').classList.toggle('on',archSort=='a');
  $('archnote').textContent='click to add or remove from filter';
- $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;archs()}}
+ $('archs').querySelectorAll('.arch').forEach(e=>e.onclick=()=>setArch(e.dataset.a));const mb=$('more');if(mb)mb.onclick=()=>{showAll=!showAll;if(!showAll)archSort='n';archs()}}
+$('asm').onclick=()=>{if(archSort=='n')return;archSort='n';showAll=false;archs()};$('asa').onclick=()=>{if(archSort=='a')return;archSort='a';showAll=true;archs()};
 /* ---- table + detail ---- */
 const SORTN={d:['issue date','oldest first','newest first'],pg:['page','lowest first','highest first'],own:['owner','A to Z','Z to A'],mod:['address (street name, then number)','A to Z','Z to A'],can:['community area','A to Z','Z to A'],bld:['building','A to Z','Z to A'],szn:['size (floor area, width × depth)','smallest first','largest first'],cost:['cost','lowest first','highest first'],ar:['architect','A to Z','Z to A'],con:['contractor (or first trade)','A to Z','Z to A']};
 function sortUI(){document.querySelectorAll('th[data-k]').forEach(th=>{const on=th.dataset.k==sk,nm=th.dataset.k=='szn'?'Size, by floor area (width × depth)':th.textContent.replace(/\s+/g,' ').trim();th.classList.toggle('sorted',on);th.classList.toggle('desc',on&&sd<0);th.title=(on?`Sorted by ${nm} (${sd>0?'ascending':'descending'}). Click to reverse.`:`Click to sort by ${nm}`)+(th.dataset.k=='con'?'. The main contractor or builder, then the mason, carpenter and other trades. The lists name contractors from about 1900 on; the 1880s-90s lists do not.':'')})}
