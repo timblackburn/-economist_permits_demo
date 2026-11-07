@@ -297,6 +297,7 @@ const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
+const GAPQ=new URLSearchParams(location.search).has('gap');   // TEMPORARY: ?gap=1 shows only permits placed by the street grid because the County has no address within 2 blocks (the block may be gone: expressway etc.)
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
 let SQ='',SL=null,SLP=null,STL=null,STSK='';   // SQ: a street picked from the suggestions (matches the address, not the whole text)
 let COUNTS=null,DICT=null,ALLKEYS=[],LOADED=new Set(),SHP={},ALLP=null,LISTALL=false,AGG=true,TOT={n:0,placed:0},GOTOK=0;
@@ -387,7 +388,7 @@ const phImg=(pin,alt,extra)=>`<div class=phcrop data-open="0"><img alt="${alt}" 
 /* the County photo opens in a lightbox: the whole picture, nothing cropped (the PIN and date strip included) */
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();const im=c.querySelector('img');if(!im)return;const lb=$('lbox');$('lbimg').src=im.src;$('lbcap').textContent=(CURR&&(CURR.mod||CURR.site))?'Cook County Assessor photo \u00b7 near '+(CURR.mod||CURR.site):'Cook County Assessor photo';lb.hidden=false;document.body.classList.add('lbopen')},true);
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
-let HOUSE=null;
+let HOUSE=null;const HOUSE_MINZ=17;   // clicking a property (County lookup) only works at close zoom
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
 /* a property picked on the map: scroll so the search, map and permit panes fill the top of the window (on narrow screens, the map) */
 function paneTop(){const el=document.querySelector(innerWidth>=1181?'.layout':'.mapc');if(!el)return;const y=el.getBoundingClientRect().top+scrollY-8;if(Math.abs(scrollY-y)>6)window.scrollTo({top:Math.max(0,y),behavior:'smooth'})}
@@ -414,7 +415,7 @@ let hT=0;const hCancel=()=>{clearTimeout(hT);hT=0};   // wait out a possible dou
 const inRing=(pt,ring)=>{let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if((yi>pt[1])!=(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c}return c};
 function areaAt(ll){let hit=null;const pt=[ll.lng,ll.lat];if(caLayer)caLayer.eachLayer(l=>{if(hit||!l.getBounds().contains(ll))return;const g=l.feature.geometry,polys=g.type=='Polygon'?[g.coordinates]:g.coordinates;if(polys.some(pl=>inRing(pt,pl[0])&&!pl.slice(1).some(h=>inRing(pt,h))))hit=l.feature.properties.n});return hit}
 // at building zoom: a click in an area that is not selected selects it (and loads its permits); a click in a selected area looks up the County record of the house
-map.on('click',e=>{if(commMode())return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
+map.on('click',e=>{if(commMode())return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
 async function zoomToArea(n,l){   // always land close enough to see the permit dots, centred where this area's permits are
  await loadShards([String(n)]);const pts=D.filter(flt('ca')).filter(r=>r.ca==n&&r.lat);
  if(!pts.length){map.setView(l.getBounds().getCenter(),CA_ZOOM+1);return}
@@ -473,10 +474,17 @@ function drawDots(low){
   if(DOTC=='arch'){const rk={};ARCHTOP.forEach((t,i)=>rk[t.k]=ARCHTOP.length-i);return r=>rk[nk(arch(r))]||0}   // everyone else at the bottom, the top architects above them, the busiest on top
   const cnt={};placed.forEach(r=>{const k=CHART.key(r.d);cnt[k]=(cnt[k]||0)+1});return r=>-(cnt[CHART.key(r.d)]||0)    // the period with the most dots at the bottom
  })();
- vis.sort((a,b)=>(zOf(a)-zOf(b))||(radOf(b)-radOf(a))).forEach(r=>{const rad=radOf(r);
-   const c=L.circleMarker([r.lat,r.lon],{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
+ vis.sort((a,b)=>(zOf(a)-zOf(b))||(radOf(b)-radOf(a)));
+ /* permits placed at the very same point (several addresses that fell back to one nearby County point, or one building with many permits) are staggered in a small spiral, in screen pixels, so each dot can be seen and clicked */
+ const PL=new Map();
+ if(!low){const grp=new Map();vis.forEach(r=>{const k=r.lat.toFixed(5)+','+r.lon.toFixed(5);let g=grp.get(k);if(!g)grp.set(k,g=[]);g.push(r)});
+  grp.forEach(g=>{if(g.length<2){PL.set(g[0],[g[0].lat,g[0].lon]);return}const c0=map.latLngToLayerPoint([g[0].lat,g[0].lon]),sp=17*.56;
+   g.forEach((r,i)=>{const t=i*2.39996,d=sp*Math.sqrt(i)*1.0;PL.set(r,i?map.layerPointToLatLng(L.point(c0.x+d*Math.cos(t),c0.y+d*Math.sin(t))):[r.lat,r.lon])})})}
+ const posOf=r=>PL.get(r)||[r.lat,r.lon];
+ vis.forEach(r=>{const rad=radOf(r);
+   const c=L.circleMarker(posOf(r),{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
-   c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint([q.lat,q.lon]).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
+   c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
@@ -618,7 +626,7 @@ function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
 
 function flt(skip){const B=($('inview').checked&&skip!='view')?map.getBounds():null,W=issWin(),q=$('q').value.toLowerCase().trim(),qa=$('qa').value.trim(),ar=nk($('ar').value),co=costOn(),aq=qa?addrQ(qa):null;
- return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||ownHit(r,q))&&(!qa||addrHit(r,qa,aq))&&(!ar||arHit(r,ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))}
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||ownHit(r,q))&&(!qa||addrHit(r,qa,aq))&&(!ar||arHit(r,ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))&&(!GAPQ||(r.geo||'').endsWith('grid'))}
 let BN=0;const busy=d=>{BN=Math.max(0,BN+d);$('busy').hidden=BN<=0};   // a thin moving bar at the top of the window while permit details or the search text load
 async function go(){
  const tok=++GOTOK;
