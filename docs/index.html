@@ -33,7 +33,7 @@ th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;backgro
 .hl{position:absolute;background:rgba(255,214,0,.30);mix-blend-mode:multiply;border-radius:3px;pointer-events:none}
 a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{text-decoration:underline}
 .all{max-height:300px;overflow:auto}.more{margin-top:6px;font-size:13px;color:var(--s1);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:13px}
-#pnav{float:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin:10px 12px 4px 10px;position:relative;z-index:2}#pnav .pn{display:inline-flex;align-items:center;gap:6px}#pnav .btn{padding:2px 11px;font-size:15px;line-height:1.4}#pnav #pos{color:var(--mut);font-size:12.5px;min-width:0;text-align:center}#pcan .harea{float:none;margin:0}
+#pnav{float:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin:10px 12px 4px 10px;position:relative;z-index:2}#pnav .pn{display:inline-flex;align-items:center;gap:6px}#pnav .btn{padding:3px 16px;font-size:26px;font-weight:600;line-height:1.1;min-height:40px;min-width:46px;border-radius:7px}#pnav #pos{color:var(--mut);font-size:13.5px;min-width:0;text-align:center}#pnav .pn{gap:8px}#pcan .harea{float:none;margin:0}
 #ph{margin:8px 0}
 .pmov{position:absolute;pointer-events:none;z-index:600}.pmov svg{display:block;filter:drop-shadow(0 0 2px rgba(0,0,0,.35))}.pmcomp{left:6px;top:6px}
 /* the photo section's buttons (neighbours, this building, lots in a range, the corner house): blue outline, filled when they are the one being shown */
@@ -364,10 +364,11 @@ function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar'
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
  if(AGG||cur.length!=1){AUTOID=null;return}const r=cur[0];if(AUTOID===r.id||(CURR&&CURR.id===r.id&&!$('detail').hidden))return;AUTOID=r.id;dock(false);show(r)}   // no table is shown for a single result, so the panel stays in the right-hand column
+const slLoad=()=>SLP??=fetch(DATA+'streets.json?v=20261106').then(r=>r.json()).then(j=>{SL=j}).catch(()=>{SL={}});
 let STFIT=false;
 function streetLine(){   // the picked street's centre line, highlighted at every zoom (the area shading or the dots sit on top of it)
  if(!STL)STL=L.layerGroup().addTo(map);if(!SQ){STL.clearLayers();STSK='';return}
- if(!SL){SLP??=fetch(DATA+'streets.json?v=20261106').then(r=>r.json()).then(j=>{SL=j;streetLine()}).catch(()=>{});return}
+ if(!SL){slLoad().then(()=>streetLine());return}
  if(/\(now /.test(SQ)&&!OSL){olLoad().then(()=>streetLine());return}
  const k=streetKey(sqBase()),segs=/\(now /.test(SQ)?(OSL[SQ]||[]):(SL[k]||SL[k.split(' ').slice(0,-1).join(' ')]||[]);if(!segs.length){STL.clearLayers();STSK='';return}const all=[];
  if(STSK!==SQ){STSK=SQ;STL.clearLayers();segs.forEach(sg=>{L.polyline(sg,{color:'#fff',weight:8,opacity:.9,interactive:false}).addTo(STL);L.polyline(sg,{color:css('--acc')||'#c0392b',weight:4,opacity:1,interactive:false}).addTo(STL)})}
@@ -596,7 +597,7 @@ function sugShow(id){const S=SBX[id],box=$(S.box),list=sugFor($(id).value,S.kind
  let h='',last='';list.forEach((x,i)=>{if(x.label!=last){h+=`<span class=ty>${x.label}</span>`;last=x.label}h+=`<div class=o data-i="${i}" role="option"><span>${esc(x.it.t)}</span><small>${x.it.n.toLocaleString()}</small></div>`});
  box.innerHTML=h;box._list=list;box.hidden=false;box.querySelectorAll('div.o').forEach(d=>d.onmousedown=e=>{e.preventDefault();sugPick(id,+d.dataset.i)})}
 function sugPick(id,i){const box=$(SBX[id].box),x=box._list[i];if(!x)return;box.hidden=true;if(x.k=='s'){SQ=x.it.t;$('qa').value='';STFIT=true;qApply(id);return}$(id).value=x.it.t;qApply(id)}
-function qApply(id){id=id||'q';clearTimeout(SBX[id].t);return go()}
+function qApply(id){id=id||'q';clearTimeout(SBX[id].t);const p=go();p.then(()=>paneTop());return p}   // a search was entered: scroll so the search, map and permit panes are at the top of the window
 function qHint(id){$(SBX[id].hint).hidden=!($(id).value.trim()&&document.activeElement===$(id))}
 $('ar').addEventListener('focus',()=>sugLoad());
 for(const id of ['q','qa']){const S=SBX[id],inp=$(id);
@@ -810,11 +811,23 @@ async function nearPts(r){if(NPC[r.id])return NPC[r.id];
  return NPC[r.id]}
 /* orientation: the map is turned so that the street is at the bottom, as if you stood in the street looking at the buildings; a small compass shows where north is.
    The street's side is found from the County points around: the other parity of house numbers lies across the street. */
+/* the City's centre line of the street nearest this building: its direction right here, and where the street lies from the building (null when the street is not in the file) */
+function clInfo(r,core){if(!SL)return null;const k=streetKey(core.replace(/^[NSEW]\s+/,'')),segs=SL[k]||SL[k.split(' ').slice(0,-1).join(' ')];if(!segs)return null;
+ const kx=Math.cos(r.lat*Math.PI/180)*111320,ky=110574;let best=null;
+ for(const line of segs)for(let i=0;i<line.length-1;i++){const ax=(line[i][1]-r.lon)*kx,ay=(line[i][0]-r.lat)*ky,bx=(line[i+1][1]-r.lon)*kx,by=(line[i+1][0]-r.lat)*ky,dx=bx-ax,dy=by-ay,L2=dx*dx+dy*dy;if(!L2)continue;
+  const t=Math.max(0,Math.min(1,-(ax*dx+ay*dy)/L2)),px=ax+t*dx,py=ay+t*dy,d=Math.hypot(px,py);if(!best||d<best.d)best={d,px,py,ang:Math.atan2(dy,dx)*180/Math.PI}}
+ return best&&best.d<80?best:null}
 function streetUp(r,pts){   // -> {phi: degrees to turn a north-up map clockwise, lat/lon: the middle of the view (a little toward the street)}
  const core=(r.mod||r.site||'').replace(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/,''),num=parseInt(r.mod||r.site||''),nm=s=>String(s).replace(/^\d+\s+/,'').replace(/^[NSEW]\s+/,'').toLowerCase(),mine=core.replace(/^[NSEW]\s+/,'').toLowerCase(),kx=Math.cos(r.lat*Math.PI/180)*111320,ky=110574;
  const E=lo=>(lo-r.lon)*kx,Nn=la=>(la-r.lat)*ky,phiOf=(e,n)=>(((90-Math.atan2(-n,e)*180/Math.PI)%360)+360)%360;     // turn that puts the direction (e,n) at the bottom of the screen
  const out=(phi,toward,m)=>{const c=toward?{lat:r.lat+toward[1]*m/ky,lon:r.lon+toward[0]*m/kx}:{lat:r.lat,lon:r.lon};return {phi,lat:c.lat,lon:c.lon}};
  const g=(core.match(/^([NSEW])\s/)||[])[1]||'',odd=num%2==1,rule=g==='E'||g==='W'?(odd?[0,1]:[0,-1]):g==='N'||g==='S'?(odd?[-1,0]:[1,0]):null;   // numbering rule: the direction (east, north) of the street from this building (E-W streets: odd = south side; N-S streets: odd = east side)
+const cl=clInfo(r,core);
+ if(cl){let ax=cl.ang;const off=((ax%90)+90)%90,snap=Math.min(off,90-off)<8;if(snap)ax=Math.round(ax/90)*90;
+  const pe=-Math.sin(ax*Math.PI/180),pn=Math.cos(ax*Math.PI/180);let sg=(pe*cl.px+pn*cl.py)>=0?1:-1;
+  if(cl.d<1.5&&rule)sg=(pe*rule[0]+pn*rule[1])>=0?1:-1;                  // standing on the line: use the numbering rule
+  const toward=[sg*pe,sg*pn];let phi=phiOf(toward[0],toward[1]);if(snap)phi=Math.round(phi/90)*90%360;
+  return out(phi,toward,Math.min(18,Math.max(4,cl.d*0.5+2)))}
  const same=!isNaN(num)&&mine?pts.filter(p=>nm(p.label)==mine&&!isNaN(parseInt(p.label))):[],
   A=same.filter(p=>parseInt(p.label)%2==num%2),B=same.filter(p=>parseInt(p.label)%2!=num%2),
   mean=a=>({e:a.reduce((x,y)=>x+E(y.lng),0)/a.length,n:a.reduce((x,y)=>x+Nn(y.lat),0)/a.length});
@@ -832,7 +845,7 @@ function streetUp(r,pts){   // -> {phi: degrees to turn a north-up map clockwise
  const toward=[sg*pe,sg*pn];let phi=phiOf(toward[0],toward[1]);if(Math.min(off,90-off)<8)phi=Math.round(phi/90)*90%360;
  return out(phi,toward,dist)}
 async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;
- const pts=await nearPts(r);if(CURR!==r||$('pmm')!==box)return;
+ const pts=await nearPts(r);await slLoad();if(CURR!==r||$('pmm')!==box)return;
  const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),me=pts.find(p=>p.pin==pin)||(own?{lat:r.lat,lng:r.lon,label:r.mod||r.site||''}:null);
  const so=streetUp(r,pts),phi=so.phi,rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
  box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
