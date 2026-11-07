@@ -797,7 +797,7 @@ function phView(r,pin,label){
  $('ph').innerHTML='<h3>Cook County Assessor photo</h3>'+lots+nb+alt+'<div class=phrow><div class=phl>'+imgBox+'</div>'+(r.lat&&pin!=='__loading'?'<div class=phmap><div id=pmm></div></div>':'')+'</div>'+imgCap;
  if(r.lat&&pin!=='__loading')setTimeout(()=>phMini(r,pin,label),0)}
 /* ---- a small square map beside the photo: the buildings around this one (County address points, one per parcel), the permit dots, a ring on the building whose photo is showing, its address underneath; click any building to see its photo ---- */
-let PMM=null;const NPC={};
+let PMM=null;const NPC={};const PMZ=18.5;   // the small map's zoom (19 = a couple of lots each side; 18.5 shows a little more)
 async function nearPts(r){if(NPC[r.id])return NPC[r.id];
  try{const d=.0006,q=new URLSearchParams({'$where':`lat>${r.lat-d} AND lat<${r.lat+d} AND long>${r.lon-d} AND long<${r.lon+d}`,'$limit':'250','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'});
   const rows=await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q)).json(),by={};
@@ -835,7 +835,7 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
  const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
  PMM=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
- const c=L.latLng(so.lat,so.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
+ const c=L.latLng(so.lat,so.lon);PMM.setView(c,PMZ,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
  // from a point of the (rotated) inner map to the frame the viewer sees
@@ -853,7 +853,7 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
  // clicks: undo the rotation, then take the nearest building within about 22 m
  box.onclick=e=>{const rc=box.getBoundingClientRect(),dx=e.clientX-(rc.left+W/2),dy=e.clientY-(rc.top+H/2),x=dx*cs+dy*sn,y=-dx*sn+dy*cs,ll=PMM.containerPointToLatLng(L.point(S/2+x,S/2+y));
   let best=null,bd=1e9;pts.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)};
- const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,19,{animate:false});overlay()};
+ const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,PMZ,{animate:false});overlay()};
  fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
 const order=()=>cur;
