@@ -166,7 +166,7 @@ td:first-child{white-space:nowrap}
 /* ---- the beta login: a full-screen card until the word "beta" has been typed once (remembered in this browser) ---- */
 #gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1200px 700px at 20% 10%,#2c5580 0,#1d3a5a 45%,#132a42 100%)}
 html.authed #gate{display:none}html:not(.authed) body{overflow:hidden}
-#gate::before{content:"";position:absolute;inset:0;background:url(banner.jpg) center center/min(1100px,100%) auto no-repeat;opacity:.16;pointer-events:none}
+#gate::before{content:"";position:absolute;inset:0;background:url(banner.jpg) center bottom/min(1100px,100%) auto no-repeat;opacity:.16;pointer-events:none}
 #gform{position:relative;width:min(420px,100%);background:#fbfaf7;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.45);overflow:hidden;text-align:center}
 #gform .gbody{padding:34px 32px 30px}
 #gform .gkick{font:600 12px/1 system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8a2f1d;margin:0 0 10px}
