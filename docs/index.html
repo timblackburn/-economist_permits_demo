@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chicago Building Permits</title>
+<script>try{if(localStorage.getItem('permits-beta')==='1')document.documentElement.classList.add('authed')}catch(e){}</script>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">   <!-- Leaflet 1.9.4, served from this site (docs/vendor/leaflet), not a third-party CDN -->
 <style>
 :root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;--selrow:#fff0c2;
@@ -161,7 +162,26 @@ td:first-child{white-space:nowrap}
 #sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
 .platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
 
+
+/* ---- the beta login: a full-screen card until the word "beta" has been typed once (remembered in this browser) ---- */
+#gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1200px 700px at 20% 10%,#2c5580 0,#1d3a5a 45%,#132a42 100%)}
+html.authed #gate{display:none}html:not(.authed) body{overflow:hidden}
+#gate::before{content:"";position:absolute;inset:0;background:url(banner.jpg) right bottom/min(1100px,100%) auto no-repeat;opacity:.16;pointer-events:none}
+#gform{position:relative;width:min(420px,100%);background:#fbfaf7;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.45);overflow:hidden;text-align:center}
+#gform .gtop{height:104px;background:#1d3a5a url(banner.jpg) right center/cover no-repeat}
+#gform .gbody{padding:26px 30px 30px}
+#gform .gkick{font:600 12px/1 system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#8a2f1d;margin:0 0 10px}
+#gform h1{font-size:26px;line-height:1.15;margin:0 0 8px;color:#1d3a5a}
+#gform p.gsub{margin:0 0 22px;font-size:14.5px;color:#6b6558}
+#gform input{width:100%;box-sizing:border-box;padding:12px 14px;font:inherit;font-size:17px;text-align:center;letter-spacing:.2em;border:1.5px solid #ddd6c6;border-radius:9px;background:#fff;color:#222;outline:none;transition:border-color .15s,box-shadow .15s}
+#gform input:focus{border-color:#2a78d6;box-shadow:0 0 0 4px rgba(42,120,214,.18)}
+#gform input::placeholder{letter-spacing:.02em;color:#a39b8a;font-size:15px}
+#gform button{margin-top:14px;width:100%;padding:12px;font:600 16px system-ui,-apple-system,'Segoe UI',sans-serif;color:#fff;background:#1d3a5a;border:0;border-radius:9px;cursor:pointer;transition:background .15s,transform .05s}
+#gform button:hover{background:#2c5580}#gform button:active{transform:translateY(1px)}
+#gform .gerr{min-height:20px;margin-top:10px;font-size:14px;color:#a3281a}
+#gform.bad{animation:gshake .35s}@keyframes gshake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 </style></head><body>
+<div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gtop"></div><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
 <p class="sub">Weekly building-permit lists from Chicago trade papers, transcribed from scans. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a></p>
@@ -210,6 +230,12 @@ td:first-child{white-space:nowrap}
 <script src="vendor/proj4/proj4.js"></script>   <!-- proj4js 2.9.2 (MIT), served from this site: re-projects the City's State Plane plat tiles -->
 <script>
 const $=id=>document.getElementById(id),m=$('m');
+/* the beta login: the word "beta" (any capitals), remembered in this browser; a blocked localStorage just asks again next visit */
+(()=>{const f=document.getElementById('gform'),i=document.getElementById('gpw'),e=document.getElementById('gerr');if(!f)return;if(!document.documentElement.classList.contains('authed'))setTimeout(()=>i.focus(),50);
+ f.addEventListener('submit',ev=>{ev.preventDefault();if(i.value.trim().toLowerCase()==='beta'){try{localStorage.setItem('permits-beta','1')}catch(x){}document.documentElement.classList.add('authed');i.value='';e.textContent=''}
+  else{e.textContent='That is not the password. Please try again.';f.classList.remove('bad');void f.offsetWidth;f.classList.add('bad');i.select()}});
+ i.addEventListener('input',()=>{e.textContent=''})})();
+
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
