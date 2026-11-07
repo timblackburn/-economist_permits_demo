@@ -596,8 +596,8 @@ function sugFor(q,kinds){const tokens=q.toLowerCase().split(/[^a-z0-9]+/).filter
 function sugShow(id){const S=SBX[id],box=$(S.box),list=sugFor($(id).value,S.kinds);S.sel=-1;if(!list.length){box.hidden=true;box.innerHTML='';return}
  let h='',last='';list.forEach((x,i)=>{if(x.label!=last){h+=`<span class=ty>${x.label}</span>`;last=x.label}h+=`<div class=o data-i="${i}" role="option"><span>${esc(x.it.t)}</span><small>${x.it.n.toLocaleString()}</small></div>`});
  box.innerHTML=h;box._list=list;box.hidden=false;box.querySelectorAll('div.o').forEach(d=>d.onmousedown=e=>{e.preventDefault();sugPick(id,+d.dataset.i)})}
-function sugPick(id,i){const box=$(SBX[id].box),x=box._list[i];if(!x)return;box.hidden=true;if(x.k=='s'){SQ=x.it.t;$('qa').value='';STFIT=true;qApply(id);return}$(id).value=x.it.t;qApply(id)}
-function qApply(id){id=id||'q';clearTimeout(SBX[id].t);const p=go();p.then(()=>paneTop());return p}   // a search was entered: scroll so the search, map and permit panes are at the top of the window
+function sugPick(id,i){const box=$(SBX[id].box),x=box._list[i];if(!x)return;box.hidden=true;if(x.k=='s'){SQ=x.it.t;$('qa').value='';STFIT=true;qApply(id,true);return}$(id).value=x.it.t;qApply(id,true)}
+function qApply(id,scroll){id=id||'q';clearTimeout(SBX[id].t);const p=go();if(scroll)p.then(()=>paneTop());return p}   // scroll=true only when the user commits a search (Enter, or picking a suggestion): the refresh while typing must not move the page under the suggestion list
 function qHint(id){$(SBX[id].hint).hidden=!($(id).value.trim()&&document.activeElement===$(id))}
 $('ar').addEventListener('focus',()=>sugLoad());
 for(const id of ['q','qa']){const S=SBX[id],inp=$(id);
@@ -606,7 +606,7 @@ for(const id of ['q','qa']){const S=SBX[id],inp=$(id);
  inp.addEventListener('input',()=>{qHint(id);clearTimeout(S.t);S.t=setTimeout(()=>qApply(id),500);if(SUGD)sugShow(id)});
  inp.addEventListener('keydown',e=>{const box=$(S.box),opts=[...box.querySelectorAll('div.o')];
   if(e.key=='ArrowDown'||e.key=='ArrowUp'){if(!opts.length)return;e.preventDefault();S.sel=(S.sel+(e.key=='ArrowDown'?1:-1)+opts.length)%opts.length;opts.forEach((d,i)=>d.classList.toggle('on',i==S.sel));opts[S.sel].scrollIntoView({block:'nearest'})}
-  else if(e.key=='Enter'){if(S.sel>=0&&!box.hidden){e.preventDefault();sugPick(id,+opts[S.sel].dataset.i)}else{box.hidden=true;qApply(id).then(()=>{if(id=='qa'&&addrQ($('qa').value)&&!cur.length)findAddress()})}}
+  else if(e.key=='Enter'){if(S.sel>=0&&!box.hidden){e.preventDefault();sugPick(id,+opts[S.sel].dataset.i)}else{box.hidden=true;qApply(id,true).then(()=>{if(id=='qa'&&addrQ($('qa').value)&&!cur.length)findAddress()})}}
   else if(e.key=='Escape'){box.hidden=true}})}
 /* ---- "use my location": the search box centres the map on you and lists the permits around you; the community-area box selects the area you are in. The position stays in the browser. ---- */
 let ME=null;
