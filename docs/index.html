@@ -437,7 +437,7 @@ function drawCA(){
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
 let lastComm=null;
 /* ---- the note in the map heading: how many permits are in the results; with "Filter by map" on, how many of them are inside the map view ---- */
-function allIgnoringView(){let all=null;const rowLevel=!!($('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
+function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
 function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
@@ -543,7 +543,7 @@ const ALLLOADED=()=>LEGACY||ALLKEYS.every(k=>LOADED.has(k));
 function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}}
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
-const rowFilters=()=>!!(SQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
+const rowFilters=()=>!!(GAPQ||SQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL)return ALLKEYS;
  if(rowFilters())return needAreas()||ALLKEYS;
