@@ -806,25 +806,36 @@ async function nearPts(r){if(NPC[r.id])return NPC[r.id];
  return NPC[r.id]}
 /* orientation: the map is turned so that the street is at the bottom, as if you stood in the street looking at the buildings; a small compass shows where north is.
    The street's side is found from the County points around: the other parity of house numbers lies across the street. */
-function streetUp(r,pts){   // -> the rotation (degrees, clockwise) to apply to a north-up map
- const num=parseInt(r.mod||r.site||''),nm=s=>String(s).replace(/^\d+\s+/,'').replace(/^[NSEW]\s+/,'').toLowerCase(),mine=nm(r.mod||r.site||'');
+function streetUp(r,pts){   // -> {phi: degrees to turn a north-up map clockwise, lat/lon: the middle of the view (a little toward the street)}
+ const core=(r.mod||r.site||'').replace(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/,''),num=parseInt(r.mod||r.site||''),nm=s=>String(s).replace(/^\d+\s+/,'').replace(/^[NSEW]\s+/,'').toLowerCase(),mine=core.replace(/^[NSEW]\s+/,'').toLowerCase(),kx=Math.cos(r.lat*Math.PI/180)*111320,ky=110574;
+ const E=(lo)=>(lo-r.lon)*kx,Nn=(la)=>(la-r.lat)*ky,out=(phi,toward,m)=>{const c=toward?{lat:r.lat+toward[1]*m/ky,lon:r.lon+toward[0]*m/kx}:{lat:r.lat,lon:r.lon};return {phi,lat:c.lat,lon:c.lon}};
+ const phiOf=(e,n)=>90-Math.atan2(-n,e)*180/Math.PI;     // turn that puts the direction (e,n) at the bottom of the screen
  if(!isNaN(num)&&mine){const same=pts.filter(p=>nm(p.label)==mine&&!isNaN(parseInt(p.label)));
   const A=same.filter(p=>parseInt(p.label)%2==num%2),B=same.filter(p=>parseInt(p.label)%2!=num%2);
-  if(A.length&&B.length){const mean=a=>({la:a.reduce((x,y)=>x+y.lat,0)/a.length,lo:a.reduce((x,y)=>x+y.lng,0)/a.length}),a=mean(A),b=mean(B),
-    e=(b.lo-a.lo)*Math.cos(r.lat*Math.PI/180)*111320,n=(b.la-a.la)*110574;     // from this side of the street toward the other side
-   if(Math.hypot(e,n)>3)return 90-Math.atan2(-n,e)*180/Math.PI}}
- const g=((r.mod||r.site||'').match(/^\d+\S*\s+([NSEW])\b/)||[])[1]||'',odd=num%2==1;      // no points on the other side: the numbering rule (E-W streets: odd = south side; N-S streets: odd = east side)
- const toward=g==='E'||g==='W'?(odd?'N':'S'):g==='N'||g==='S'?(odd?'W':'E'):null,v={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}[toward];
- return v?90-Math.atan2(v[1],v[0])*180/Math.PI:0}
+  if(A.length&&B.length){const mean=a=>({e:a.reduce((x,y)=>x+E(y.lng),0)/a.length,n:a.reduce((x,y)=>x+Nn(y.lat),0)/a.length}),a=mean(A),b=mean(B),de=b.e-a.e,dn=b.n-a.n;
+   if(Math.hypot(de,dn)>3){
+    // the street's line: the main axis of all the points on it; a straight street gives a thin cloud, a curving one a fat cloud
+    const P=same.map(p=>({e:E(p.lng),n:Nn(p.lat)})),me=P.reduce((x,y)=>x+y.e,0)/P.length,mn=P.reduce((x,y)=>x+y.n,0)/P.length;
+    let sxx=0,syy=0,sxy=0;P.forEach(q=>{const x=q.e-me,y=q.n-mn;sxx+=x*x;syy+=y*y;sxy+=x*y});
+    const th=0.5*Math.atan2(2*sxy,sxx-syy),tr=sxx+syy,det=sxx*syy-sxy*sxy,disc=Math.sqrt(Math.max(0,tr*tr/4-det)),l1=tr/2+disc,l2=tr/2-disc;
+    let toward=[de,dn],straight=P.length>=4&&l2/Math.max(l1,1e-6)<0.1;
+    if(straight){let ax=th*180/Math.PI;const off=((ax%90)+90)%90,near=Math.min(off,90-off)<8;if(near)ax=Math.round(ax/90)*90;   // within 8 degrees of north-south or east-west: exactly so
+     const pe=-Math.sin(ax*Math.PI/180),pn=Math.cos(ax*Math.PI/180),sg=(pe*de+pn*dn)>=0?1:-1;toward=[sg*pe,sg*pn];
+     let phi=phiOf(toward[0],toward[1]);if(near)phi=Math.round(phi/90)*90;phi=((phi%360)+360)%360;
+     const d=Math.hypot(de,dn)/2;return out(phi,toward,Math.min(18,Math.max(4,d*0.5+4)))}      // the view's middle sits between the building and the street's middle
+    const L2=Math.hypot(de,dn);return out(((phiOf(de,dn))%360+360)%360,[de/L2,dn/L2],Math.min(18,Math.max(4,L2/4+4)))}}}
+ const g=(core.match(/^([NSEW])\s/)||[])[1]||'',odd=num%2==1;      // no points on the other side: the numbering rule (E-W streets: odd = south side; N-S streets: odd = east side)
+ const t=g==='E'||g==='W'?(odd?'N':'S'):g==='N'||g==='S'?(odd?'W':'E'):null,v={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]}[t];
+ return v?out(((phiOf(v[0],-v[1])%360)+360)%360,[v[0],-v[1]],8):out(0,null,0)}
 async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;
  const pts=await nearPts(r);if(CURR!==r||$('pmm')!==box)return;
  const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),me=pts.find(p=>p.pin==pin)||(own?{lat:r.lat,lng:r.lon,label:r.mod||r.site||''}:null);
- const phi=streetUp(r,pts),rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+ const so=streetUp(r,pts),phi=so.phi,rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
  box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
  const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
  PMM=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
- const c=L.latLng(r.lat,r.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
+ const c=L.latLng(so.lat,so.lon);PMM.setView(c,19,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
  // from a point of the (rotated) inner map to the frame the viewer sees
