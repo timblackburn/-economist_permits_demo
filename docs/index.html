@@ -892,11 +892,19 @@ function keepRowInView(tr){if(!tr||!DOCK)return;if(document.querySelector('.mapc
 /* ---- the property panel follows the page: in the right-hand column while the map is on screen, docked beside the table once the table comes into view (and back again), so there is no jump ---- */
 let adT=0;
 function placeDetail(){adT=0;if(!CURR||$('detail').hidden||!canDock())return;const F=10,sideTop=document.querySelector('.side').getBoundingClientRect().top,tTop=$('tarea').getBoundingClientRect().top;
- const noTable=$('tarea').hidden,m=sideTop>=F-1?'side':(noTable||tTop>F)?'float':'dock';setMode(m);const b=$('dtable');if(b)b.hidden=!document.querySelector('#tb tr.sel')||DOCK}
+ const noTable=$('tarea').hidden,m=sideTop>=F-1?'side':(noTable||tTop>F)?'float':'dock';setMode(m);updTableBtn()}
 const placeSoon=()=>{if(!adT)adT=setTimeout(placeDetail,30)};
 window.addEventListener('scroll',placeSoon,{passive:true});
-function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr){tr.classList.add('sel');keepRowInView(tr)}}const b=$('dtable');if(b)b.hidden=!tr||DOCK}
-$('dtable').onclick=()=>{const tr=$('tb').querySelector('tr.sel');if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})};
+function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr){tr.classList.add('sel');keepRowInView(tr)}}updTableBtn()}
+/* the "Table row" button: shown whenever the open permit has a row in the table, unless that row is already on screen (below the frozen bar); it can jump to another page of the table */
+function updTableBtn(){const b=$('dtable');if(!b)return;const k=(CURR&&!AGG&&!$('tarea').hidden)?cur.findIndex(r=>r.id===CURR.id):-1;
+ if(k<0){b.hidden=true;return}
+ const tr=k>=PAGE*PS&&k<PAGE*PS+PS?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;
+ if(!tr){b.hidden=false;return}                                   // its row is on another page of the table
+ const r=tr.getBoundingClientRect(),top=($('tbar')?$('tbar').offsetHeight:52)+44;b.hidden=r.bottom>top&&r.top<innerHeight-8}
+$('dtable').onclick=()=>{const k=CURR?cur.findIndex(r=>r.id===CURR.id):-1;if(k<0)return;const pg=Math.floor(k/PS);if(pg!==PAGE){PAGE=pg;table()}
+ setTimeout(()=>{const tr=$('tb').querySelector(`tr.r[data-k="${k}"]`);if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})},60)};
+window.addEventListener('scroll',()=>{if(CURR&&!$('detail').hidden)updTableBtn()},{passive:true});window.addEventListener('resize',()=>updTableBtn());
 function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pcan').innerHTML=r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:'';$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
@@ -924,7 +932,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  <p class=rawtxt>${esc(r.text)}</p>`}
  ${r.chm?r.chm.map(c=>`<h3>The American Contractor index &middot; Page ${esc(c[3]||'?')} &middot; ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><p class=chmnote>The Museum&rsquo;s index also lists a permit at this address${c[0]?' (owner '+esc(c[0])+(c[1]?'; architect '+esc(c[1]):'')+')':c[1]?' (architect '+esc(c[1])+')':''}. The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`).join(''):''}`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
- clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
+ updTableBtn();clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  reserve(true);if(!DOCK)$('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;{const ix0=cur.indexOf(r);if(ix0>=0&&Math.floor(ix0/PS)!==PAGE){PAGE=Math.floor(ix0/PS);table()}}markRow();
  if(r.lat)flyTo(r);drawPts();toHash();}
 let ZOOM=true,CURRP=null;
