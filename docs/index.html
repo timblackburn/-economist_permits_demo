@@ -319,7 +319,7 @@ const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim
 const num=r=>{let t=0;for(const m of (r.sz||'').matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
 const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-const nk=a=>(a||'').replace(/[.,]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+const nk=a=>{a=a||'';if(/[a-z]/.test(a))a=a.replace(/(^|[\s.])([A-Z]{2,3})(?=[\s.,]|$)/g,(m,p,t)=>p+t.split('').join(' '));return a.replace(/[.,]/g,' ').replace(/\s+/g,' ').trim().toLowerCase()};   // one key for "A.G. Lund", "A. G. Lund", "A G Lund" and "AG Lund" (initials run together are split; all-capital names are left alone)
 const AS=new Set(),AN={},AC={};
 const setArch=(a)=>{const k=nk(a);AN[k]??=a;AS.has(k)?AS.delete(k):AS.add(k);$('ar').value='';m.style.display='none';go();document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})};
 const arHit=(r,q)=>nk(arch(r)).includes(q)||rowNames(r).some(x=>x.includes(q));      // the Architect or builder text box: the typed text is inside the architect's or a contractor's or trade's name
