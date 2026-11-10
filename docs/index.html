@@ -388,7 +388,7 @@ $('platchk').addEventListener('change',e=>{PLATON=e.target.checked;try{localStor
 map.on('zoomend moveend',platSync);platSync();
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
-const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM-($('inview').checked?1:0),shadeOn=()=>commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
+let DOTHOLD=false;const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM-(DOTHOLD&&$('inview').checked?1:0),shadeOn=()=>commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
 function style(l){const n=l.feature.properties.n,sel=AREAS.has(n),sh=shadeOn(),dim=sh&&AREAS.size&&!sel;l.setStyle({weight:sel?3.5:(sh?1:1.4),color:sel?css('--acc'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:sel&&sh?css('--acc'):caColor(n),fillOpacity:sel&&sh?.35:dim?.14:sh?.38:(sel?.08:0)})}
 /* ---- click any house (zoomed in, not on a permit dot): the County's address, PIN, assessor photo and year built, looked up live from the County's open data; nothing is stored here ---- */
 /* ---- County assessor photos: the County stamps the PIN and date in a strip along the bottom (the last ~10%); we hide that strip and let people click the photo to expand it ---- */
@@ -471,7 +471,7 @@ function noMapNote(){let el=$('nomap');if(!el){el=document.createElement('div');
  const n=TOT.n;el.hidden=!(n>0&&TOT.placed==0);if(!el.hidden)el.firstChild.textContent=(n==1?'This permit\'s address cannot be placed on the map.':'None of these '+n.toLocaleString()+' permits can be placed on the map.')}
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
- if(comm){const smp=$('inview').checked?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // community-area view: counts only, selected areas are just outlined; their permits go to the table
+ if(comm){communityView();return}   // community-area view: counts only, selected areas are just outlined; their permits go to the table
  drawDots(false)}
 function drawDots(low){
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1);let vis=placed.filter(r=>bd.contains([r.lat,r.lon]));const z=map.getZoom();let sampled='';
@@ -498,7 +498,7 @@ function drawDots(low){
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
-  if(!st.n||$('inview').checked)return;shown++;
+  if(!st.n)return;shown++;
   const s0=Math.max(b.getSouth(),vb.getSouth()),n0=Math.min(b.getNorth(),vb.getNorth()),w0=Math.max(b.getWest(),vb.getWest()),e0=Math.min(b.getEast(),vb.getEast());
   if(s0>=n0||w0>=e0)return;                           // not on screen
   const sw=map.latLngToContainerPoint([s0,w0]),ne=map.latLngToContainerPoint([n0,e0]),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
@@ -1014,7 +1014,7 @@ let MOVEBYCODE=0;
 let PREVC=commMode();
 map.doubleClickZoom.disable();   // double-click: in the community-area view go in to where the dots show, centred there, with Filter by map on; closer in, zoom in one level as usual
 map.on('dblclick',e=>{if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
-map.on('zoomend',()=>{const now=commMode();if(PREVC&&!now&&AREAS.size&&Date.now()-AREAT>4000&&Date.now()>MOVEBYCODE){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;go()}
+map.on('zoomend',()=>{const now=commMode();if(map.getZoom()>CA_ZOOM)DOTHOLD=true;else if(now)DOTHOLD=false;if(PREVC&&!now&&AREAS.size&&Date.now()-AREAT>4000&&Date.now()>MOVEBYCODE){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;go()}
  else if(!PREVC&&now&&$('inview').checked&&Date.now()>MOVEBYCODE){$('inview').checked=false;go()}   // back out to the community-area counts: they cover the whole city again
  PREVC=now});
 function flyTo(r){MOVEBYCODE=Date.now()+3000;const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
