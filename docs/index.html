@@ -471,7 +471,7 @@ function noMapNote(){let el=$('nomap');if(!el){el=document.createElement('div');
  const n=TOT.n;el.hidden=!(n>0&&TOT.placed==0);if(!el.hidden)el.firstChild.textContent=(n==1?'This permit\'s address cannot be placed on the map.':'None of these '+n.toLocaleString()+' permits can be placed on the map.')}
 function drawPts0(){ptLayer.clearLayers();
  const comm=commMode();if(comm!==lastComm){lastComm=comm;caLayer&&caLayer.eachLayer(style);drawLegendOnly()}
- if(comm){const smp=(AREAS.size||$('inview').checked)?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // with areas selected their permits show as dots at any zoom
+ if(comm){const smp=$('inview').checked?drawDots(true):'';communityView();if(smp)$('mapnote').textContent+=smp;return}   // community-area view: counts only, selected areas are just outlined; their permits go to the table
  drawDots(false)}
 function drawDots(low){
  const placed=cur.filter(r=>r.lat),bd=map.getBounds().pad(.1);let vis=placed.filter(r=>bd.contains([r.lat,r.lon]));const z=map.getZoom();let sampled='';
@@ -498,7 +498,7 @@ function drawDots(low){
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
  let shown=0;const vb=map.getBounds();
  caLayer.eachLayer(l=>{const f=l.feature.properties,st=stat[f.n]||{n:0,c:0},b=l.getBounds();
-  if(!st.n||AREAS.has(f.n)||$('inview').checked)return;shown++;
+  if(!st.n||$('inview').checked)return;shown++;
   const s0=Math.max(b.getSouth(),vb.getSouth()),n0=Math.min(b.getNorth(),vb.getNorth()),w0=Math.max(b.getWest(),vb.getWest()),e0=Math.min(b.getEast(),vb.getEast());
   if(s0>=n0||w0>=e0)return;                           // not on screen
   const sw=map.latLngToContainerPoint([s0,w0]),ne=map.latLngToContainerPoint([n0,e0]),w=Math.abs(ne.x-sw.x),h=Math.abs(sw.y-ne.y);
