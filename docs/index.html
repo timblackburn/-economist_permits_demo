@@ -162,6 +162,11 @@ td:first-child{white-space:nowrap}
 #mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
 #mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
 #sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
+.maptools a{display:flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--fg);background:var(--surface)}.maptools a.on{background:var(--s1);color:#fff}.maptools a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.maptools a.hid{display:none}
+.measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:13px/1.4 system-ui,sans-serif;width:250px;margin-bottom:22px;margin-right:10px}.measpanel .mh{display:flex;gap:6px;align-items:center;margin-bottom:6px}.measpanel .mh b{margin-right:auto}.measpanel button{font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.measpanel #measout{min-height:2.7em}.measpanel #measout big{font-size:17px;font-weight:700;display:block}.measpanel .mact{display:flex;gap:6px;margin-top:6px}.measpanel .mhint{color:var(--mut);font-size:11.5px;margin-top:6px}
+.measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive{cursor:crosshair!important}
+.mvert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #e8260c;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
+.mseg span{display:block;transform:translate(-50%,-50%);background:rgba(255,255,255,.93);color:#222;border:1px solid #777;border-radius:3px;padding:0 4px;font:600 11px/16px system-ui,sans-serif;white-space:nowrap;pointer-events:none}
 .platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
 
 
@@ -245,6 +250,8 @@ html.mob #ttray.det :is(#tsum,#tbar,#tarea){display:none!important}
 html.mob #detail .dbar{position:sticky;top:0;z-index:4;touch-action:none}html.mob #detail .dbar .dtitle{display:none}html.mob #dtable{display:none!important}
 html.mob #dback{font-weight:600}
 html.mob .filters .shade{display:none!important}
+.filters .fsep{border:0;border-top:1px solid var(--line);margin:0;align-self:stretch}
+@media(min-width:1181px){.layout #map{min-height:160px}}      /* one filters card sets the row height; the map takes whatever it leaves */
 </style></head><body>
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
@@ -256,13 +263,12 @@ html.mob .filters .shade{display:none!important}
 <div id="busy" hidden role="progressbar" aria-label="Loading"></div>
 <div class="layout">
 <aside class="filters" id="filters">
- <section class="card fbox"><h2>Search</h2>
+ <section class="card fbox"><h2>Search &amp; filter</h2>
  <div id="summary"></div>
  <div class="fg"><span class="fl">Address or street</span><div class="sgrow"><span class="sgw qw"><input id="qa" class="big" placeholder="1925 W Madison, or a street name…" autocomplete="off" aria-autocomplete="list"><span id="qahint" class="qhint" hidden>↵ Enter</span><div id="qasg" class="qsug" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
  <div class="fg"><span class="fl">Owner or building</span><span class="sgw qw"><input id="q" class="big" placeholder="owner or building name…" autocomplete="off" aria-autocomplete="list"><span id="qhint" class="qhint" hidden>↵ Enter</span><div id="qsg" class="qsug" hidden role="listbox"></div></span></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
- </section>
- <section class="card fbox"><h2>Filter</h2>
+ <hr class="fsep" id="fsep">
  <div class="fg"><span class="fl">Community areas</span><div class="sgrow"><span class="sgw qw"><button type="button" id="cab" class="cabtn" aria-haspopup="listbox" aria-expanded="false">All community areas</button><div id="cap" hidden><input id="cas" placeholder="find an area…" autocomplete="off" aria-label="Find a community area"><div id="cal" role="listbox" aria-multiselectable="true"></div><div class="cafoot"><a class="lk" id="cclr">clear selection</a></div></div></span><button type="button" class="btn geo" id="geoca" aria-label="Find the community area I am in" title="Select the community area I am in (uses your location)"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div></div>
  <div class="fg"><span class="fl">Dates</span><div class="dr"><div class="dates"><input id="d1" aria-label="From date" placeholder="From" autocomplete="off"><span class="mut">to</span><input id="d2" aria-label="To date" placeholder="To" autocomplete="off"></div><div class="rs" id="rs"><svg id="cov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="r1" min="0" max="1000" value="0" aria-label="Start of date range"><input type="range" id="r2" min="0" max="1000" value="1000" aria-label="End of date range"></div><div class="rnote"><span id="rn" class="mut"></span><button class="lnk" id="rz" hidden>zoom out</button></div></div></div>
  <div class="frow"><div class="fg fcost"><span class="fl">Cost</span><div class="dr"><div class="dates"><input id="c1" aria-label="Lowest cost" placeholder="any" autocomplete="off"><span class="mut">to</span><input id="c2" aria-label="Highest cost" placeholder="no limit" autocomplete="off"></div><div class="rs" id="crs"><svg id="ccov" viewBox="0 0 1000 12" preserveAspectRatio="none" aria-hidden="true"></svg><input type="range" id="k1" min="0" max="18" value="0" step="1" aria-label="Lowest cost"><input type="range" id="k2" min="0" max="18" value="18" step="1" aria-label="Highest cost"></div><div class="rnote"><span id="cn" class="mut"></span></div></div></div>
@@ -294,6 +300,7 @@ html.mob .filters .shade{display:none!important}
 <div id="m"><div class="bar"><div class="in"><b id="mttl"></b><span class="hint">click the page to zoom &middot; drag to move &middot; Esc to close</span><button class="btn close" id="cls">Close &#10005;</button></div></div><div class="c"><p id="pb"></p><div id="pg"></div></div></div>
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="vendor/proj4/proj4.js"></script>   <!-- proj4js 2.9.2 (MIT), served from this site: re-projects the City's State Plane plat tiles -->
+<script src="vendor/pmtiles/pmtiles.js"></script>   <!-- PMTiles 3.2.1 (BSD-3), served from this site: reads the aerial-photo tile archive on blob storage by HTTP range requests -->
 <script>
 const $=id=>document.getElementById(id),m=$('m');
 /* the beta login: the word "beta" (any capitals), remembered in this browser; a blocked localStorage just asks again next visit */
@@ -377,7 +384,7 @@ const PlatLayer=L.GridLayer.extend({
    img.onerror=()=>{pend--;fin()};img.src=PLAT_BASE+'L'+String(lv).padStart(2,'0')+'/R'+hex(r)+'/C'+hex(col)+'.png'}
   setTimeout(fin,0);return cv}});
 let PLATON=false;try{PLATON=localStorage.getItem('platOn')=='1'}catch(e){}
-const platLayer=new PlatLayer({minZoom:PLAT_MINZ,maxZoom:21,maxNativeZoom:20,opacity:.8,className:'plattiles',bounds:PLAT_LL,attribution:'City of Chicago <a href="https://gisapps.chicago.gov/mapchicago/?config=acre" target=_blank rel=noopener>80-acre plat maps</a>'});
+const platLayer=new PlatLayer({zIndex:3,minZoom:PLAT_MINZ,maxZoom:21,maxNativeZoom:20,opacity:.8,className:'plattiles',bounds:PLAT_LL,attribution:'City of Chicago <a href="https://gisapps.chicago.gov/mapchicago/?config=acre" target=_blank rel=noopener>80-acre plat maps</a>'});
 const platCtl=L.control({position:'bottomleft'});
 platCtl.onAdd=()=>{const d=L.DomUtil.create('label','platctl');d.title='City of Chicago 80-acre plat maps: lot lines and numbers';d.innerHTML='<input type=checkbox id=platchk> Plat map';L.DomEvent.disableClickPropagation(d);return d};
 platCtl.addTo(map);
@@ -386,6 +393,87 @@ function platSync(){const near=map.getZoom()>=PLAT_MINZ&&map.getBounds().interse
  if(PLATON&&!map.hasLayer(platLayer))platLayer.addTo(map);else if(!PLATON&&map.hasLayer(platLayer))map.removeLayer(platLayer)}      // below PLAT_MINZ the layer draws nothing (and fetches nothing); the choice survives
 $('platchk').addEventListener('change',e=>{PLATON=e.target.checked;try{localStorage.setItem('platOn',PLATON?'1':'0')}catch(err){}platSync()});
 map.on('zoomend moveend',platSync);platSync();
+/* ---- satellite view: Cook County 2024 orthophotos (6-inch, leaf-off), cut into a PMTiles file on our blob storage and read with HTTP range requests.
+   Set AERIAL_URL to that file's public URL (the host must allow Range requests and CORS); ?aerial=<url> overrides it for testing. The button is hidden while it is empty.
+   Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
+const AERIAL_URL=(new URLSearchParams(location.search)).get('aerial')||'',
+ AERIAL_LL=L.latLngBounds([[41.6759,-87.7397],[41.7357,-87.6331]]),AERIAL_MINZ=13,AERIAL_NATIVE=20;
+const AerialLayer=L.GridLayer.extend({
+ initialize(url,o){L.GridLayer.prototype.initialize.call(this,o);this._pm=new pmtiles.PMTiles(url)},
+ createTile(c,done){
+  const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
+  const k=Math.max(0,c.z-AERIAL_NATIVE),z=c.z-k,x=c.x>>k,y=c.y>>k;
+  this._pm.getZxy(z,x,y).then(r=>{
+   if(!r)return done(null,t);
+   const u=URL.createObjectURL(new Blob([r.data],{type:'image/jpeg'})),img=new Image();
+   img.onload=()=>{const w=256/(1<<k);t.getContext('2d').drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);done(null,t)};
+   img.onerror=()=>{URL.revokeObjectURL(u);done(null,t)};img.src=u}).catch(()=>done(null,t));
+  return t}});
+let AERON=false;try{AERON=localStorage.getItem('aerialOn')=='1'}catch(e){}
+const aerLayer=AERIAL_URL?new AerialLayer(AERIAL_URL,{minZoom:AERIAL_MINZ,maxZoom:21,bounds:AERIAL_LL,zIndex:2,attribution:'Imagery © <a href="https://maps.cookcountyil.gov/imagery-tile-downloader/" target=_blank rel=noopener>Cook County GIS</a>, 2024'}):null;
+const ICON_SAT='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
+ ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
+const toolCtl=L.control({position:'topleft'});
+toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
+ d.innerHTML='<a href="#" id=aerbtn role=button class=hid title="Satellite view: Cook County 2024 aerial photos (leaf-off)" aria-label="Satellite view">'+ICON_SAT+'</a>'
+  +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>';
+ L.DomEvent.disableClickPropagation(d);return d};
+toolCtl.addTo(map);
+function aerSync(){const b=$('aerbtn');if(!b)return;
+ const near=!!aerLayer&&map.getZoom()>=AERIAL_MINZ&&map.getBounds().intersects(AERIAL_LL);
+ b.classList.toggle('hid',!near);b.classList.toggle('on',AERON);b.setAttribute('aria-pressed',AERON);
+ if(aerLayer){if(AERON&&!map.hasLayer(aerLayer))aerLayer.addTo(map);else if(!AERON&&map.hasLayer(aerLayer))map.removeLayer(aerLayer)}}
+$('aerbtn').addEventListener('click',e=>{e.preventDefault();AERON=!AERON;try{localStorage.setItem('aerialOn',AERON?'1':'0')}catch(err){}aerSync()});
+map.on('zoomend moveend',aerSync);aerSync();
+
+/* ---- measuring: click corners to get side lengths and the total (Distance) or the enclosed area (Area). Planar maths in Illinois State Plane East feet (EPSG:3435), so no map distortion;
+   drag a corner to adjust it, Backspace removes the last one, Esc closes the tool. ---- */
+const MEAS={on:false,mode:'len',pts:[],g:null,v:null,rnd:null};
+const fmtFt=f=>f<1000?(f<100?f.toFixed(1):f.toFixed(0))+' ft':(f/5280).toFixed(2)+' mi',fmtN=(v,d)=>v.toLocaleString('en-US',{maximumFractionDigits:d});
+function measCalc(){const sp=MEAS.pts.map(toSP),n=sp.length,seg=[];
+ for(let i=0;i<n-1;i++)seg.push([i,i+1,Math.hypot(sp[i+1][0]-sp[i][0],sp[i+1][1]-sp[i][1])]);
+ const closed=MEAS.mode=='area'&&n>=3;if(closed)seg.push([n-1,0,Math.hypot(sp[0][0]-sp[n-1][0],sp[0][1]-sp[n-1][1])]);
+ let area=0;if(closed){for(let i=0;i<n;i++){const a=sp[i],b=sp[(i+1)%n];area+=a[0]*b[1]-b[0]*a[1]}area=Math.abs(area)/2}
+ return{seg,len:seg.reduce((t,s)=>t+s[2],0),area,closed,n}}
+function measDraw(verts=true){                                  // lines + labels are rebuilt every time; the draggable corners only when corners are added/removed
+ MEAS.g.clearLayers();const c=measCalc(),P=MEAS.pts,o={renderer:MEAS.rnd,interactive:false};
+ if(c.n>1){const ll=c.closed?[...P,P[0]]:P;
+  MEAS.g.addLayer(L.polyline(ll,{...o,color:'#fff',weight:6,opacity:.9}));
+  if(c.closed)MEAS.g.addLayer(L.polygon(P,{...o,stroke:false,fillColor:'#e8260c',fillOpacity:.18}));
+  MEAS.g.addLayer(L.polyline(ll,{...o,color:'#e8260c',weight:2.5}))}
+ for(const [a,b,ft] of c.seg){const pa=map.latLngToContainerPoint(P[a]),pb=map.latLngToContainerPoint(P[b]);
+  if(pa.distanceTo(pb)<46)continue;                              // too short on screen to label without clutter
+  MEAS.g.addLayer(L.marker([(P[a].lat+P[b].lat)/2,(P[a].lng+P[b].lng)/2],{interactive:false,keyboard:false,icon:L.divIcon({className:'mseg',iconSize:[0,0],html:'<span>'+fmtFt(ft)+'</span>'})}))}
+ if(verts){MEAS.v.clearLayers();
+  P.forEach((ll,i)=>{const m=L.marker(ll,{draggable:true,keyboard:false,icon:L.divIcon({className:'mvert',iconSize:[14,14]})});
+   m.on('drag',e=>{P[i]=e.target.getLatLng();measDraw(false)});MEAS.v.addLayer(m)})}
+ measOut(c)}
+function measOut(c){const el=$('measout');if(!el)return;const m=v=>fmtN(v*0.3048006,v*0.3048006<100?1:0)+' m';
+ if(MEAS.mode=='len')el.innerHTML=c.n<2?'Click the map to place the first point.':'<big>'+fmtFt(c.len)+'</big>'+fmtN(c.len,1)+' ft · '+m(c.len)+(c.n>2?'<br>'+(c.n-1)+' segments':'');
+ else el.innerHTML=!c.closed?(c.n?'Click at least 3 corners.':'Click the corners of the area.'):'<big>'+fmtN(c.area,0)+' sq ft</big>'+fmtN(c.area/43560,3)+' acres · '+fmtN(c.area*0.09290304,0)+' m²<br>Perimeter '+fmtN(c.len,1)+' ft'}
+function measMode(m){MEAS.mode=m;document.querySelectorAll('.measpanel [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m==m));measDraw()}
+const measCtl=L.control({position:'bottomright'});
+measCtl.onAdd=()=>{const d=L.DomUtil.create('div','measpanel');
+ d.innerHTML='<div class=mh><b>Measure</b><button data-m=len>Distance</button><button data-m=area>Area</button></div><div id=measout></div>'
+  +'<div class=mact><button id=measundo>Undo</button><button id=measclr>Clear</button><button id=measx style="margin-left:auto">Done</button></div>'
+  +'<div class=mhint>Tip: for a building, click its corners. Drag a corner to adjust.</div>';
+ L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
+function measOn(on){
+ if(on===MEAS.on)return;MEAS.on=on;
+ if(on){if(!MEAS.g){MEAS.rnd=L.svg({padding:.5});MEAS.g=L.layerGroup();MEAS.v=L.layerGroup()}MEAS.g.addTo(map);MEAS.v.addTo(map);measCtl.addTo(map);map.getContainer().classList.add('measuring');
+  document.querySelectorAll('.measpanel [data-m]').forEach(b=>b.onclick=()=>measMode(b.dataset.m));
+  $('measundo').onclick=()=>{MEAS.pts.pop();measDraw()};$('measclr').onclick=()=>{MEAS.pts=[];measDraw()};$('measx').onclick=()=>measOn(false);
+  measMode(MEAS.mode);if(typeof hCancel=='function')hCancel()}
+ else{map.removeLayer(MEAS.g);map.removeLayer(MEAS.v);map.removeControl(measCtl);map.getContainer().classList.remove('measuring');MEAS.pts=[]}
+ $('measbtn').classList.toggle('on',on);$('measbtn').setAttribute('aria-pressed',on)}
+$('measbtn').addEventListener('click',e=>{e.preventDefault();measOn(!MEAS.on)});
+map.on('click',e=>{if(!MEAS.on)return;const P=MEAS.pts,l=P[P.length-1];
+ if(l&&map.latLngToContainerPoint(l).distanceTo(e.containerPoint)<5)return;   // the second click of a double-click
+ P.push(e.latlng);measDraw()});
+map.on('zoomend',()=>{if(MEAS.on)measDraw()});
+document.addEventListener('keydown',e=>{if(!MEAS.on||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName))return;
+ if(e.key=='Escape')measOn(false);else if(e.key=='Backspace'||((e.ctrlKey||e.metaKey)&&e.key=='z')){e.preventDefault();MEAS.pts.pop();measDraw()}});
+
 let caLayer=null,ptLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
 let DOTHOLD=false;const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM-(DOTHOLD&&$('inview').checked?1:0),shadeOn=()=>commMode();   // zoom 12 and out: community areas with counts; closer: individual buildings
@@ -432,7 +520,7 @@ let hT=0;const hCancel=()=>{clearTimeout(hT);hT=0};   // wait out a possible dou
 const inRing=(pt,ring)=>{let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if((yi>pt[1])!=(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c}return c};
 function areaAt(ll){let hit=null;const pt=[ll.lng,ll.lat];if(caLayer)caLayer.eachLayer(l=>{if(hit||!l.getBounds().contains(ll))return;const g=l.feature.geometry,polys=g.type=='Polygon'?[g.coordinates]:g.coordinates;if(polys.some(pl=>inRing(pt,pl[0])&&!pl.slice(1).some(h=>inRing(pt,h))))hit=l.feature.properties.n});return hit}
 // at building zoom: a click in an area that is not selected selects it (and loads its permits); a click in a selected area looks up the County record of the house
-map.on('click',e=>{if(commMode())return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
+map.on('click',e=>{if(commMode()||MEAS.on)return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
 async function zoomToArea(n,l){   // always land close enough to see the permit dots, centred where this area's permits are
  await loadShards([String(n)]);const pts=D.filter(flt('ca')).filter(r=>r.ca==n&&r.lat);
  if(!pts.length){map.setView(l.getBounds().getCenter(),CA_ZOOM+1);return}
@@ -501,7 +589,7 @@ function drawDots(low){
  vis.forEach(r=>{const rad=radOf(r);
    const c=L.circleMarker(posOf(r),{radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
-   c.on('click',e=>{L.DomEvent.stop(e);const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
+   c.on('click',e=>{L.DomEvent.stop(e);if(MEAS.on)return;const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
@@ -1022,7 +1110,7 @@ let MOVEBYCODE=0;
    Not done within 4 s of choosing an area or while the map is flying to a permit. Zooming back out to the community-area view turns Filter by map off. */
 let PREVC=commMode();
 map.doubleClickZoom.disable();   // double-click: in the community-area view go in to where the dots show, centred there, with Filter by map on; closer in, zoom in one level as usual
-map.on('dblclick',e=>{if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
+map.on('dblclick',e=>{if(MEAS.on)return;if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
 map.on('zoomend',()=>{const now=commMode();if(map.getZoom()>CA_ZOOM)DOTHOLD=true;else if(now)DOTHOLD=false;if(PREVC&&!now&&AREAS.size&&Date.now()-AREAT>4000&&Date.now()>MOVEBYCODE){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;go()}
  else if(!PREVC&&now&&$('inview').checked&&Date.now()>MOVEBYCODE){$('inview').checked=false;go()}   // back out to the community-area counts: they cover the whole city again
  PREVC=now});
@@ -1072,19 +1160,17 @@ $('dtable').onclick=()=>{const k=CURR?cur.findIndex(r=>r.id===CURR.id):-1;if(k<0
 window.addEventListener('scroll',()=>{if(CURR&&!$('detail').hidden)updTableBtn()},{passive:true});window.addEventListener('resize',()=>updTableBtn());
 function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 const placeNote=r=>{const m=String(r.gm||'').replace('renamed:',''),nb=r.nb||{},near=[...(nb.lo||[]).slice(0,1),...(nb.hi||[]).slice(0,1)].map(x=>x[2]),nm=near.map(x=>'<b>'+esc(x)+'</b>').join(' and ');
- /* what the reader sees: where the pin went and why, in a sentence; the working (renumbering, renamed streets, the grid rule) is in the hover */
- const where=({interpolated:near.length>1?`No County address matches this number, so the pin is placed between its nearest neighbours on the street, ${nm}.`:'No County address matches this number, so the pin is placed between the nearest County addresses on the street.',
-  nearest:near.length?`No County address matches this number, so the pin is at the closest one on the street, ${nm}.`:'No County address matches this number, so the pin is at the closest one on the street.',
-  grid:'No County address lies within two blocks of this number, so the pin follows the street grid. The block may since have been cleared (expressway, rail yard, park).',
-  'street-approximate':'Only the street could be matched, so the pin sits somewhere along it.'})[m]||(near.length?`Nearest County addresses on this street: ${nm}.`:'');
- const sys=r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide',tip=[];
- if(r.site)tip.push(`The permit printed the address as "${r.site}".`);
- if(r.a9&&r.a9o)tip.push(`That number was converted to ${r.a9} with the ${sys}${r.a9e?', and estimated from the numbers around it because the guide does not list it':''}.`);
- if(r.chg&&r.mod)tip.push(`The street has since been renamed; today it is ${r.mod}.`);
- if(m=='grid')tip.push('Placed by the street grid: Chicago numbers run about 800 to the mile, so the number gives a distance along the street.');
- else if(m=='interpolated')tip.push('Placed by spacing: the pin is set between the two neighbouring County addresses in proportion to the house numbers.');
- else if(m=='nearest')tip.push('Placed at the County address point with the closest number.');
- return where+(tip.length?` <span class=ptdot tabindex=0 title="${esc(tip.join('\n'))}">How was this placed?</span>`:'')};
+ /* one short line on the page; the working (renumbering, renamed streets, how the pin was set) is in the hover */
+ const where=({interpolated:near.length>1?`Pin placed between ${nm}`:'Pin placed between the nearest County addresses',nearest:near.length?`Pin at the nearest County address, ${nm}`:'Pin at the nearest County address',
+  grid:'No County address within 2 blocks; pin follows the street grid','street-approximate':'Only the street matched; pin placed along it'})[m]||(near.length?`Nearest County addresses: ${nm}`:'');
+ const sys=r.a9y==1914?'1914 Morgan Park mapping':r.a9y?'1911 Loop guide':'1909 renumbering guide',tip=[];
+ if(r.site)tip.push(`Printed as "${r.site}".`);
+ if(r.a9&&r.a9o)tip.push(`Converted to ${r.a9} (${sys}${r.a9e?', estimated':''}).`);
+ if(r.chg&&r.mod)tip.push(`Street renamed; now ${r.mod}.`);
+ if(m=='grid')tip.push('Numbers run about 800 to the mile.');
+ else if(m=='interpolated')tip.push('Spaced between the neighbours by house number.');
+ else if(m=='nearest')tip.push('Closest number in the County data.');
+ return where+(tip.length?` <span class=ptdot tabindex=0 title="${esc(tip.join('\n'))}">&#9432;</span>`:'')};
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pcan').innerHTML=r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:'';$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
@@ -1097,7 +1183,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${othersHTML(r)}
  ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
-  const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The '+(r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide')+' does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>No exact match in County address records</span>${r.lat?`<span class=wa>${placeNote(r)}</span>`:''}${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
+  const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The '+(r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide')+' does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>No exact County match</span>${r.lat?`<span class=wa>${placeNote(r)}</span>`:''}${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
   const pre=r.a9&&r.a9o?`<div class=wr><span class='wl nc'>Pre-${r.a9y||1909} address</span><span class=wv>${esc(pre1909(r))}${r.chg?`<span class=wa>the street has since been renamed</span>`:''}</span></div>`:'';
   const prn=(r.chg&&r.site&&!(r.a9&&r.a9o))?`<div class=wr><span class='wl nc'>Printed address</span><span class=wv>${esc(r.site)}<span class=wa>the street has since been renamed</span></span></div>`:'';
   const est=(()=>{if(!r.d)return '';const d=new Date(r.d+'T12:00:00');d.setDate(d.getDate()-7);const day=d.getDate(),part=day<=10?'Early':day<=20?'Mid':'Late',mon=d.toLocaleDateString('en-US',{month:'long',year:'numeric'}).replace(/^(\w+)/,part+'-$1');   // the permit was issued a few days to a couple of weeks before the paper printed it
@@ -1179,7 +1265,7 @@ LEGACY?legacyBoot():boot();
  $('mchips').appendChild($('chipbar'));if(qfg){qfg.hidden=true;if($('qloc'))$('mchips').appendChild($('qloc'))}document.body.appendChild($('geoq'));
  /* filter sheet */
  const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
- const fb=document.querySelector('.mapc .shade');if(fb){const box=fl.querySelectorAll('.fbox')[1];box.insertBefore(fb,box.children[1])}
+ const fb=document.querySelector('.mapc .shade');if(fb){$('fsep').after(fb)}
  const fopen=on=>{root.classList.toggle('fopen',on);if(!on&&document.activeElement&&document.activeElement.blur)document.activeElement.blur()};
  $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});
  fl.addEventListener('click',e=>{if(e.target.closest('.qsug [data-i],#sg [data-i]'))setTimeout(()=>{fopen(false);setT('half')},200)});
