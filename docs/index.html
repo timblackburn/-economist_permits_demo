@@ -162,7 +162,10 @@ td:first-child{white-space:nowrap}
 #mt .others{margin:8px 0 4px;padding:6px 10px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}#mt .others .oh{font-weight:700;font-size:12.5px;margin-bottom:3px}#mt .orow{display:grid;grid-template-columns:70px 1fr auto;gap:8px;padding:2px 0;font-size:13px;color:var(--fg);text-decoration:none;border-top:1px solid var(--line)}#mt .orow:first-of-type{border-top:0}#mt .orow:hover{background:var(--rowhover)}#mt .orow .od,#mt .orow .oc{color:var(--mut)}
 #mt .orow.cur{background:color-mix(in srgb,var(--acc) 16%,var(--surface));font-weight:600;cursor:default}
 #sg .sgh{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:6px 8px 2px;border-top:1px solid var(--line);margin-top:4px}
+.calbl{position:absolute;left:0;top:0;width:1px;height:1px;overflow:visible;pointer-events:none}.calbl text{font:600 11px system-ui,sans-serif;letter-spacing:.04em;fill:var(--fg);stroke:var(--surface);stroke-width:3px;paint-order:stroke;stroke-linejoin:round;opacity:.9}
+#map.mfocus:focus,#map.mfocus:focus-visible{outline:none}   /* clicking the map focuses it (Leaflet's keyboard panning) and the browser's focus ring then showed along its top and bottom edges; hidden after a mouse press only, back as soon as a key is pressed */
 .maptools a{display:flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--fg);background:var(--surface)}.maptools a.on{background:var(--s1);color:#fff}.maptools a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.maptools a.hid{display:none}
+#map.leaflet-container.aer-on{background:#3a3a30}
 .measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:13px/1.4 system-ui,sans-serif;width:250px;margin-bottom:22px;margin-right:10px}.measpanel .mh{display:flex;gap:6px;align-items:center;margin-bottom:6px}.measpanel .mh b{margin-right:auto}.measpanel button{font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.measpanel #measout{min-height:2.7em}.measpanel #measout big{font-size:17px;font-weight:700;display:block}.measpanel .mact{display:flex;gap:6px;margin-top:6px}.measpanel .mhint{color:var(--mut);font-size:11.5px;margin-top:6px}
 .measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive{cursor:crosshair!important}
 .mvert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #e8260c;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
@@ -252,6 +255,9 @@ html.mob #dback{font-weight:600}
 html.mob .filters .shade{display:none!important}
 .filters .fsep{border:0;border-top:1px solid var(--line);margin:0;align-self:stretch}
 @media(min-width:1181px){.layout #map{min-height:160px}}      /* one filters card sets the row height; the map takes whatever it leaves */
+.sgw .xclr{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--mut);font-size:19px;line-height:1;cursor:pointer;display:none}
+.sgw input:not(:placeholder-shown)~.xclr{display:flex;align-items:center;justify-content:center}.sgw .xclr:hover{color:var(--fg);background:var(--line)}
+.qw .big,#ar{padding-right:30px}#mpill #qa{padding-right:30px}
 </style></head><body>
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
@@ -265,8 +271,8 @@ html.mob .filters .shade{display:none!important}
 <aside class="filters" id="filters">
  <section class="card fbox"><h2>Search &amp; filter</h2>
  <div id="summary"></div>
- <div class="fg"><span class="fl">Address or street</span><div class="sgrow"><span class="sgw qw"><input id="qa" class="big" placeholder="1925 W Madison, or a street name…" autocomplete="off" aria-autocomplete="list"><span id="qahint" class="qhint" hidden>↵ Enter</span><div id="qasg" class="qsug" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
- <div class="fg"><span class="fl">Owner or building</span><span class="sgw qw"><input id="q" class="big" placeholder="owner or building name…" autocomplete="off" aria-autocomplete="list"><span id="qhint" class="qhint" hidden>↵ Enter</span><div id="qsg" class="qsug" hidden role="listbox"></div></span></div>
+ <div class="fg"><span class="fl">Address or street</span><div class="sgrow"><span class="sgw qw"><input id="qa" class="big" placeholder="1925 W Madison, or a street name…" autocomplete="off" aria-autocomplete="list"><div id="qasg" class="qsug" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
+ <div class="fg"><span class="fl">Owner or building</span><span class="sgw qw"><input id="q" class="big" placeholder="owner or building name…" autocomplete="off" aria-autocomplete="list"><div id="qsg" class="qsug" hidden role="listbox"></div></span></div>
  <div class="fg"><span class="fl">Architect or builder</span><span class="sgw"><input id="ar" placeholder="start typing a name…" autocomplete="off"><div id="sg" hidden></div></span></div>
  <hr class="fsep" id="fsep">
  <div class="fg"><span class="fl">Community areas</span><div class="sgrow"><span class="sgw qw"><button type="button" id="cab" class="cabtn" aria-haspopup="listbox" aria-expanded="false">All community areas</button><div id="cap" hidden><input id="cas" placeholder="find an area…" autocomplete="off" aria-label="Find a community area"><div id="cal" role="listbox" aria-multiselectable="true"></div><div class="cafoot"><a class="lk" id="cclr">clear selection</a></div></div></span><button type="button" class="btn geo" id="geoca" aria-label="Find the community area I am in" title="Select the community area I am in (uses your location)"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div></div>
@@ -396,7 +402,7 @@ map.on('zoomend moveend',platSync);platSync();
 /* ---- satellite view: Cook County 2024 orthophotos (6-inch, leaf-off), cut into a PMTiles file on our blob storage and read with HTTP range requests.
    Set AERIAL_URL to that file's public URL (the host must allow Range requests and CORS); ?aerial=<url> overrides it for testing. The button is hidden while it is empty.
    Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
-const AERIAL_URL=(new URLSearchParams(location.search)).get('aerial')||'',
+const AERIAL_URL=(new URLSearchParams(location.search)).get('aerial')||'https://chicagopermits.blob.core.windows.net/aerial/aerial_2024.pmtiles',
  AERIAL_LL=L.latLngBounds([[41.6759,-87.7397],[41.7357,-87.6331]]),AERIAL_MINZ=13,AERIAL_NATIVE=20;
 const AerialLayer=L.GridLayer.extend({
  initialize(url,o){L.GridLayer.prototype.initialize.call(this,o);this._pm=new pmtiles.PMTiles(url)},
@@ -405,7 +411,7 @@ const AerialLayer=L.GridLayer.extend({
   const k=Math.max(0,c.z-AERIAL_NATIVE),z=c.z-k,x=c.x>>k,y=c.y>>k;
   this._pm.getZxy(z,x,y).then(r=>{
    if(!r)return done(null,t);
-   const u=URL.createObjectURL(new Blob([r.data],{type:'image/jpeg'})),img=new Image();
+   const u=URL.createObjectURL(new Blob([r.data],{type:new Uint8Array(r.data)[0]==0xFF?'image/jpeg':'image/webp'})),img=new Image();   // fully covered tiles are JPEG, tiles at the edge of the imagery are WebP with transparency
    img.onload=()=>{const w=256/(1<<k);t.getContext('2d').drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);done(null,t)};
    img.onerror=()=>{URL.revokeObjectURL(u);done(null,t)};img.src=u}).catch(()=>done(null,t));
   return t}});
@@ -425,6 +431,8 @@ function aerSync(){const b=$('aerbtn');if(!b)return;
  if(aerLayer){if(AERON&&!map.hasLayer(aerLayer))aerLayer.addTo(map);else if(!AERON&&map.hasLayer(aerLayer))map.removeLayer(aerLayer)}}
 $('aerbtn').addEventListener('click',e=>{e.preventDefault();AERON=!AERON;try{localStorage.setItem('aerialOn',AERON?'1':'0')}catch(err){}aerSync()});
 map.on('zoomend moveend',aerSync);aerSync();
+if(aerLayer){aerLayer.on('add',()=>map.getContainer().classList.add('aer-on'));aerLayer.on('remove',()=>map.getContainer().classList.remove('aer-on'))}   // dark ground under the photos: the hairline gaps between tiles (fractional screen scales) then show dark, not white
+{const mel=map.getContainer();mel.addEventListener('pointerdown',()=>mel.classList.add('mfocus'),true);addEventListener('keydown',()=>mel.classList.remove('mfocus'),true)}
 
 /* ---- measuring: click corners to get side lengths and the total (Distance) or the enclosed area (Area). Planar maths in Illinois State Plane East feet (EPSG:3435), so no map distortion;
    drag a corner to adjust it, Backspace removes the last one, Esc closes the tool. ---- */
@@ -518,6 +526,43 @@ async function pickHouse(ll){paneTop();
  }catch(e){pop.setContent('<span class=mut>The County lookup did not answer. Try again in a moment.</span>')}}
 let hT=0;const hCancel=()=>{clearTimeout(hT);hT=0};   // wait out a possible double-click (which zooms) before looking a house up
 const inRing=(pt,ring)=>{let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const [xi,yi]=ring[i],[xj,yj]=ring[j];if((yi>pt[1])!=(yj>pt[1])&&pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi)c=!c}return c};
+/* ---- zoomed in, each community area's name runs along its outline, just inside it. Per area, the straightest stretch of the outline that is on screen and long enough for the name is used;
+   the name reads left-to-right (never upside down) and is pushed to whichever side of the line is the inside. Redrawn on every move; hidden while a zoom animates. ---- */
+const CALBL={svg:null,raf:0,rings:null,fs:11,ctx:document.createElement('canvas').getContext('2d')};
+function caRings(){if(CALBL.rings)return CALBL.rings;
+ return CALBL.rings=CA.features.map(f=>{const polys=f.geometry.type=='Polygon'?[f.geometry.coordinates]:f.geometry.coordinates;let best=null,ba=-1;
+  for(const q of polys){const r=q[0],xs=r.map(c=>c[0]),ys=r.map(c=>c[1]),a=(Math.max(...xs)-Math.min(...xs))*(Math.max(...ys)-Math.min(...ys));if(a>ba){ba=a;best=r}}   // the biggest piece of the area
+  const ll=best.map(c=>L.latLng(c[1],c[0]));ll.pop();return{name:f.properties.name,ll,bb:L.latLngBounds(ll)}})}
+function pipPx(pt,P){let ins=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a.y>pt.y)!=(b.y>pt.y)&&pt.x<(b.x-a.x)*(pt.y-a.y)/(b.y-a.y)+a.x)ins=!ins}return ins}
+function caLabels(){CALBL.raf=0;
+ const svg=CALBL.svg||(CALBL.svg=(()=>{const pn=map.createPane('calpane');pn.style.zIndex=250;pn.style.pointerEvents='none';const e=document.createElementNS('http://www.w3.org/2000/svg','svg');e.setAttribute('class','calbl');pn.appendChild(e);return e})());
+ svg.innerHTML='';
+ if(typeof CA==='undefined'||!CA||!caLayer||!map.hasLayer(caLayer)||commMode())return;
+ const sz=map.getSize(),vb=map.getBounds().pad(.05),fs=CALBL.fs,inset=fs+8,cx=sz.x/2,cy=sz.y/2;let out='';
+ const off=map._getMapPanePos();CALBL.ctx.font='600 '+fs+'px system-ui,sans-serif';
+ caRings().forEach((a,ai)=>{
+  if(!a.bb.intersects(vb))return;
+  const P=a.ll.map(l=>map.latLngToContainerPoint(l)),n=P.length,vis=P.map(q=>q.x>inset&&q.x<sz.x-inset&&q.y>inset&&q.y<sz.y-inset);
+  const W=CALBL.ctx.measureText(a.name).width+a.name.length*.04*fs+8,runs=[];
+  let s0=vis.indexOf(false);if(s0<0){runs.push(P.concat([P[0]]))}                           // whole outline on screen
+  else{let run=null;for(let k=1;k<=n;k++){const i=(s0+k)%n;if(vis[i]){(run||(run=[])).push(P[i])}else if(run){runs.push(run);run=null}}if(run)runs.push(run)}
+  let best=null;
+  for(const run of runs){const cum=[0];for(let i=1;i<run.length;i++)cum.push(cum[i-1]+run[i].distanceTo(run[i-1]));const tot=cum[cum.length-1];if(tot<W*1.1)continue;
+   const at=d=>{let i=1;while(i<cum.length-1&&cum[i]<d)i++;const t=(d-cum[i-1])/((cum[i]-cum[i-1])||1);return L.point(run[i-1].x+(run[i].x-run[i-1].x)*t,run[i-1].y+(run[i].y-run[i-1].y)*t)};
+   for(let st=0;st<=tot-W;st+=Math.max(6,W/8)){const pts=[at(st)];for(let i=1;i<run.length-1;i++)if(cum[i]>st&&cum[i]<st+W)pts.push(run[i]);pts.push(at(st+W));
+    let turn=0;for(let i=2;i<pts.length;i++){const u=pts[i-1].subtract(pts[i-2]),v=pts[i].subtract(pts[i-1]);if(u.x*u.x+u.y*u.y<4||v.x*v.x+v.y*v.y<4)continue;turn+=Math.abs(Math.atan2(u.x*v.y-u.y*v.x,u.x*v.x+u.y*v.y))}
+    const m=at(st+W/2),score=turn+Math.hypot(m.x-cx,m.y-cy)/4000;if(!best||score<best.score)best={score,pts}}}
+  if(!best)return;
+  let pts=best.pts;if(pts[pts.length-1].x<pts[0].x)pts=pts.slice().reverse();               // read left to right
+  const cu=[0];for(let i=1;i<pts.length;i++)cu.push(cu[i-1]+pts[i].distanceTo(pts[i-1]));const tl=cu[cu.length-1];
+  const ptAt=d=>{d=Math.max(0,Math.min(tl,d));let i=1;while(i<cu.length-1&&cu[i]<d)i++;const t=(d-cu[i-1])/((cu[i]-cu[i-1])||1);return L.point(pts[i-1].x+(pts[i].x-pts[i-1].x)*t,pts[i-1].y+(pts[i].y-pts[i-1].y)*t)};
+  let votes=0;for(const f of [.2,.35,.5,.65,.8]){const c0=ptAt(tl*f),v=ptAt(tl*f+6).subtract(ptAt(tl*f-6)),vl=Math.hypot(v.x,v.y)||1;   // which side is the inside? ask at five places along the stretch, with a local direction each
+   votes+=pipPx(L.point(c0.x+v.y/vl*5,c0.y-v.x/vl*5),P)?1:-1}                              // glyph "up" points to the left of travel
+  const dy=votes>0?-4:Math.round(fs*.85+4);                                               // inside on the left: sit on the line; otherwise hang the text on the other side of it
+  out+=`<path id="calp${ai}" fill="none" d="M${pts.map(q=>(q.x-off.x).toFixed(1)+' '+(q.y-off.y).toFixed(1)).join('L')}"/><text dy="${dy}"><textPath href="#calp${ai}" startOffset="50%" text-anchor="middle">${esc(a.name)}</textPath></text>`});
+ svg.innerHTML=out}
+const caLblSoon=()=>{if(!CALBL.raf)CALBL.raf=requestAnimationFrame(caLabels)};
+map.on('move zoomend viewreset resize layeradd',caLblSoon);map.on('zoomstart',()=>{if(CALBL.svg)CALBL.svg.innerHTML=''});
 function areaAt(ll){let hit=null;const pt=[ll.lng,ll.lat];if(caLayer)caLayer.eachLayer(l=>{if(hit||!l.getBounds().contains(ll))return;const g=l.feature.geometry,polys=g.type=='Polygon'?[g.coordinates]:g.coordinates;if(polys.some(pl=>inRing(pt,pl[0])&&!pl.slice(1).some(h=>inRing(pt,h))))hit=l.feature.properties.n});return hit}
 // at building zoom: a click in an area that is not selected selects it (and loads its permits); a click in a selected area looks up the County record of the house
 map.on('click',e=>{if(commMode()||MEAS.on)return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
@@ -531,7 +576,7 @@ function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
   l.on('click',()=>{if(!commMode())return;const n=f.properties.n,pick=!AREAS.has(n);pick?AREAS.add(n):AREAS.delete(n);caLabel();if($('cap'))caList();go()});
   l.on('mouseover',()=>l.setStyle({weight:2.5,color:css('--fg')}));l.on('mouseout',()=>style(l));
-  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}`},{sticky:true,className:'tip'})}}).addTo(map);ptLayer.addTo(map);map.fitBounds(caLayer.getBounds())}
+  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}`},{sticky:true,className:'tip'});l.on('tooltipopen',()=>{if(!commMode())l.closeTooltip()})}}).addTo(map);ptLayer.addTo(map);map.fitBounds(caLayer.getBounds())}
  const vals=Object.values(stat).map(s=>s[metric]).filter(v=>v>0).sort((a,b)=>a-b);
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
@@ -829,11 +874,15 @@ function sugShow(id){const S=SBX[id],box=$(S.box),list=sugFor($(id).value,S.kind
  box.innerHTML=h;box._list=list;box.hidden=false;box.querySelectorAll('div.o').forEach(d=>d.onmousedown=e=>{e.preventDefault();sugPick(id,+d.dataset.i)})}
 function sugPick(id,i){const box=$(SBX[id].box),x=box._list[i];if(!x)return;box.hidden=true;if(x.k=='s'){SQ=x.it.t;$('qa').value='';STFIT=true;qApply(id,true);return}$(id).value=x.it.t;qApply(id,true)}
 function qApply(id,scroll){id=id||'q';clearTimeout(SBX[id].t);const p=go();if(scroll)p.then(()=>paneTop());return p}   // scroll=true only when the user commits a search (Enter, or picking a suggestion): the refresh while typing must not move the page under the suggestion list
-function qHint(id){$(SBX[id].hint).hidden=!($(id).value.trim()&&document.activeElement===$(id))}
+function qHint(){}   // (the "Enter" hint that used to show beside the typed text was removed)
 $('ar').addEventListener('focus',()=>sugLoad('r'));
+/* a small x at the right of each search box: shown (by CSS, :placeholder-shown) only while it holds text; it clears the text and re-applies the filter */
+for(const id of ['qa','q','ar']){const inp=$(id),b=document.createElement('button');b.type='button';b.className='xclr';b.setAttribute('aria-label','Clear this search');b.title='Clear';b.textContent='\u00d7';inp.after(b);
+ b.addEventListener('mousedown',e=>e.preventDefault());
+ b.onclick=()=>{inp.value='';const S=SBX[id];if(S){clearTimeout(S.t);$(S.box).hidden=true;qHint(id)}else $('sg').hidden=true;go();inp.focus()}}
 for(const id of ['q','qa']){const S=SBX[id],inp=$(id);
  inp.addEventListener('focus',()=>{sugLoad(id=='qa'?'a':'o').then(()=>{if(document.activeElement===inp)sugShow(id)});qHint(id)});
- inp.addEventListener('blur',()=>{setTimeout(()=>{$(S.box).hidden=true;$(S.hint).hidden=true},120)});
+ inp.addEventListener('blur',()=>{setTimeout(()=>{$(S.box).hidden=true},120)});
  inp.addEventListener('input',()=>{qHint(id);clearTimeout(S.t);S.t=setTimeout(()=>qApply(id),500);if(SUGD)sugShow(id)});
  inp.addEventListener('keydown',e=>{const box=$(S.box),opts=[...box.querySelectorAll('div.o')];
   if(e.key=='ArrowDown'||e.key=='ArrowUp'){if(!opts.length)return;e.preventDefault();S.sel=(S.sel+(e.key=='ArrowDown'?1:-1)+opts.length)%opts.length;opts.forEach((d,i)=>d.classList.toggle('on',i==S.sel));opts[S.sel].scrollIntoView({block:'nearest'})}
@@ -1005,7 +1054,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt='';$('pgr').innerHTML=(!AGG&&n>PS)?pagerHTML():'';el.innerHTML=(AGG?'':n>PS?`Showing <b>${(PAGE*PS+1).toLocaleString()}&ndash;${Math.min(n,PAGE*PS+PS).toLocaleString()}</b> of <b>${n.toLocaleString()}</b> permits`:`Showing all <b>${n.toLocaleString()}</b> permits`)+(()=>{if(AGG||!$('inview').checked)return '';const all=allIgnoringView();return all!=null&&all>n?` &middot; <span class=mut>${(all-n).toLocaleString()} more outside the map view</span>`:''})()+srt}
 function table(){tnote();tbh();stuckBar();setTimeout(markRow,0);const single=!AGG&&cur.length==1&&!!($('qa').value.trim()||$('q').value.trim());   // an address or owner search that finds exactly one permit: its panel opens by itself, so no chips or table
  $('tarea').hidden=AGG||single;
- if(AGG){$('tb').innerHTML='';const none=!$('chips').children.length;$('cprompt').innerHTML=none?'':`<b>${TOT.n.toLocaleString()}</b> permits match: add a search, area or street to list them here.`;$('tbar').hidden=none;document.querySelector('.dlw').hidden=none;placeSoon();return}
+ if(AGG){$('tb').innerHTML='';const none=!$('chips').children.length;$('cprompt').innerHTML=none?'':`<b>${TOT.n.toLocaleString()}</b> permits match: add a search, area or street to list them here.`;$('tbar').hidden=none;document.querySelector('.dlw').hidden=[...$('chips').children].every(c=>/^Confidence:/.test(c.textContent));placeSoon();return}   // no download while nothing but confidence is filtered (that is still the whole file); the chip itself stays
  $('cprompt').textContent='';$('tbar').hidden=single;document.querySelector('.dlw').hidden=false;if(single){$('tb').innerHTML='';return}
  $('tb').innerHTML=cur.slice(PAGE*PS,PAGE*PS+PS).map((r,k0)=>{const k=PAGE*PS+k0;return `<tr class="r" data-k="${k}"><td>${r.d}${r.lat?'':'<span class=nopin title="Not on the map: this permit\'s address could not be placed">&#9676; no pin</span>'}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?(OWNERISH.test(arch(r))?esc(ownerOf(arch(r),r)):`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`):''}</td><td class="crew">${r.con?`<div class=con>${OWNERISH.test(r.con)?esc(ownerOf(r.con,r)):`<a class=lk data-c="${esc(r.con)}">${esc(r.con)}</a>`}</div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': '),nm=t.slice(i+2);return `<div class=trade><span>${esc(t.slice(0,i))}</span> ${OWNERISH.test(nm)?esc(ownerOf(nm,r)):`<a class=lk data-c="${esc(nm)}">${esc(nm)}</a>`}</div>`}).join(''):''}</td></tr>`}).join('')+(cur.length>PS?`<tr class="pgrow"><td colspan=10>${pagerHTML()}</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>{dock(true);show(cur[+e.dataset.k])});$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();dock(true);show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();a.dataset.c!=null?pickPerson('c',a.dataset.c):pickPerson('a',a.dataset.a)})}
@@ -1077,15 +1126,20 @@ const cl=clInfo(r,core);
  return out(phi,toward,dist)}
 async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;
  const pts=await nearPts(r);await slLoad();if(CURR!==r||$('pmm')!==box)return;
+ const own0=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),pe0=(r.pins||[]).find(x=>x[1]==pin&&x[3]),m0=own0&&pe0?{lat:pe0[3],lng:pe0[4],label:pe0[2]||''}:null;
+ /* a permit whose buildings stand in separate places (more than FARM m apart): the view is built around the cluster of the building shown (its own street, its own turn), not the permit's first point; the other clusters get a chip to jump to */
+ const FARM=60,kxm=Math.cos(r.lat*Math.PI/180)*111320,kym=110574,dm=(a,b)=>Math.hypot((a.lon-b.lon)*kxm,(a.lat-b.lat)*kym);
+ let rr=r,ptsF=pts;
+ if(m0&&dm({lat:m0.lat,lon:m0.lng},r)>FARM){rr=Object.assign({},r,{lat:m0.lat,lon:m0.lng,mod:m0.label,site:m0.label,pin:pin,id:r.id+'@'+pin,cl:1});ptsF=await nearPts(rr);await slLoad();if(CURR!==r||$('pmm')!==box)return}
  const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),pe_=(r.pins||[]).find(x=>x[1]==pin&&x[3]),me=pts.find(p=>p.pin==pin)||(own?{lat:pe_?pe_[3]:r.lat,lng:pe_?pe_[4]:r.lon,label:(pe_&&pe_[2])||r.mod||r.site||''}:null);
- const so=streetUp(r,pts),phi=so.phi,rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
+ const so=streetUp(rr,ptsF),phi=so.phi,rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
  box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
  const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
  PMM=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
  const c=L.latLng(so.lat,so.lon);PMM.setView(c,PMZ,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
- pts.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
- D.forEach(x=>{if(x.lat&&Math.abs(x.lat-r.lat)<.0006&&Math.abs(x.lon-r.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
+ ptsF.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
+ D.forEach(x=>{if(x.lat&&Math.abs(x.lat-rr.lat)<.0006&&Math.abs(x.lon-rr.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
  // from a point of the (rotated) inner map to the frame the viewer sees
  let ring=null;
  const toFrame=pt=>{const x=pt.x-S/2,y=pt.y-S/2;return {x:W/2+x*cs-y*sn,y:H/2+x*sn+y*cs}};
@@ -1098,9 +1152,13 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
   const k=document.createElement('div');k.className='pmov pmcomp';k.title='North';   // just an arrow: it points north on this turned map
   k.innerHTML=`<svg viewBox="0 0 34 34" width="30" height="30"><g transform="rotate(${phi} 17 17)"><path d="M17 5L24 28L17 22.5L10 28Z" fill="#c0392b" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke"/></g><text x="${17+13.5*Math.sin(rad)}" y="${17-13.5*Math.cos(rad)+3.2}" font-size="10" font-weight="700" text-anchor="middle" fill="#222" stroke="#fff" stroke-width="2.4" paint-order="stroke" font-family="system-ui,sans-serif">N</text></svg>`;box.append(k)};
  overlay();
+ {const all=[{lat:r.lat,lon:r.lon,pin:r.pin,label:r.mod||r.site||''},...(r.pins||[]).filter(x=>x[3]).map(x=>({lat:x[3],lon:x[4],pin:x[1],label:x[2]||''}))],seen=[];
+  all.forEach(b=>{if(!b.pin||dm(b,rr)<=FARM||seen.some(q=>dm(q,b)<=FARM))return;seen.push(b);
+   const d=Math.round(dm(b,rr)/10)*10,bt=document.createElement('div');bt.className='pmchip';bt.style.cssText='position:absolute;left:4px;right:4px;bottom:'+(4+(seen.length-1)*20)+'px;z-index:800;font:11px/1.3 system-ui,sans-serif;padding:1px 5px;border-radius:3px;background:rgba(255,255,255,.85);color:#222;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+   bt.textContent='Same permit, '+d+' m away: '+b.label.replace(/^(\d+)[\d\-–]*/,'$1').replace(/\s+(Ave|Avenue|St|Street|Pl|Place)$/i,'');box.append(bt)})}
  // clicks: undo the rotation, then take the nearest building within about 22 m
  box.onclick=e=>{const rc=box.getBoundingClientRect(),dx=e.clientX-(rc.left+W/2),dy=e.clientY-(rc.top+H/2),x=dx*cs+dy*sn,y=-dx*sn+dy*cs,ll=PMM.containerPointToLatLng(L.point(S/2+x,S/2+y));
-  let best=null,bd=1e9;pts.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)};
+  let best=null,bd=1e9;ptsF.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)};
  const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,PMZ,{animate:false});overlay()};
  fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
@@ -1132,14 +1190,25 @@ function panePos(){if(document.body.classList.contains('paneopen'))document.body
 window.addEventListener('scroll',panePos,{passive:true});
 function fitPane(){panePos();const on=document.body.classList.contains('paneopen'),sd=document.querySelector('.side').getBoundingClientRect(),mp=document.querySelector('.mapc').getBoundingClientRect();
  document.body.style.setProperty('--px',sd.left+'px');document.body.style.setProperty('--pw',sd.width+'px');
- for(const id of ['tbar','tarea']){const e=$(id);e.style.marginRight='';if(on){const pr=e.parentElement.getBoundingClientRect().right,over=e.getBoundingClientRect().right-mp.right;e.style.marginRight=Math.max(0,over)+'px'}}}
+ for(const id of ['tbar','tarea']){const e=$(id);e.style.marginRight='';if(on&&!e.hidden){const pr=e.parentElement.getBoundingClientRect().right,over=e.getBoundingClientRect().right-mp.right;e.style.marginRight=Math.max(0,over)+'px'}}}
 function reserve(on){on=!!on&&canDock();document.body.classList.toggle('paneopen',on);$('tarea').classList.toggle('docked',on);$('tdock').hidden=!on;fitPane()}
 function setMode(m){if(!canDock())m='side';if(m===MODE)return;MODE=m;DOCK=m!=='side';const d=$('detail'),side=document.querySelector('.side');
  if(m==='dock'){$('tdock').appendChild(d);d.classList.remove('floating');$('overview').hidden=false}
  else{if(d.parentNode!==side)side.appendChild(d);d.classList.toggle('floating',m==='float');$('overview').hidden=!!CURR}
  if(MM)setTimeout(()=>MM&&MM.invalidateSize(),80)}
 function dock(on){setMode(on?'dock':'side')}
+/* the open property panel has its own scroll: when the page itself reaches its very bottom, bring the panel to its bottom too (once per arrival, so you can still scroll the panel back up) */
+let ATBOT=false;
+function panelScroller(){const d=$('detail');if(!d||d.hidden||!d.offsetHeight)return null;
+ for(const el of [d,$('tdock'),document.querySelector('.side')]){if(!el||!el.offsetHeight)continue;const oy=getComputedStyle(el).overflowY;if((oy=='auto'||oy=='scroll')&&el.scrollHeight>el.clientHeight+4)return el}return null}
+addEventListener('scroll',()=>{const bot=innerHeight+scrollY>=document.documentElement.scrollHeight-3;
+ if(bot&&!ATBOT){const el=panelScroller();if(el&&el.scrollTop+el.clientHeight<el.scrollHeight-4)el.scrollTo({top:el.scrollHeight,behavior:'smooth'})}ATBOT=bot},{passive:true});
 addEventListener('resize',()=>{if(!canDock()){setMode('side');reserve(false)}else{reserve(!!CURR&&!$('detail').hidden);placeSoon()}});
+/* the table's right margin (it stops where the map card ends, beside the open panel) is measured, so it must be re-measured whenever the table or its bar is shown/hidden or the layout width changes:
+   otherwise a table that appears after the panel opened (e.g. after a refresh, when the data arrives later) is left at full width under the panel */
+{let fq=0;const refit=()=>{if(fq)return;fq=requestAnimationFrame(()=>{fq=0;if(document.body.classList.contains('paneopen'))fitPane()})};
+ for(const id of ['tarea','tbar'])new MutationObserver(refit).observe($(id),{attributes:true,attributeFilter:['hidden']});
+ new ResizeObserver(refit).observe(document.querySelector('.mapc'));new ResizeObserver(refit).observe(document.body)}
 function keepRowInView(tr){if(!tr||!DOCK)return;if(document.querySelector('.mapc').getBoundingClientRect().bottom>120)return;   // the map is still on screen: leave the page where it is
  const head=($('tbar')?$('tbar').offsetHeight:52)+44,r=tr.getBoundingClientRect();if(r.top<head||r.bottom>innerHeight*.85)window.scrollTo({top:scrollY+r.top-(innerHeight-head)/2-r.height/2+0*head,behavior:'auto'})}   // placed at once (overlapping smooth scrolls cancel each other); recentres when the row nears the bottom of the window
 /* ---- the property panel follows the page: in the right-hand column while the map is on screen, docked beside the table once the table comes into view (and back again), so there is no jump ---- */
