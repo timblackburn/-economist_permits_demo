@@ -166,7 +166,12 @@ td:first-child{white-space:nowrap}
 #map.mfocus:focus,#map.mfocus:focus-visible{outline:none}   /* clicking the map focuses it (Leaflet's keyboard panning) and the browser's focus ring then showed along its top and bottom edges; hidden after a mouse press only, back as soon as a key is pressed */
 .maptools a{display:flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--fg);background:var(--surface)}.maptools a.on{background:var(--s1);color:#fff}.maptools a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.maptools a.hid{display:none}
 #map.leaflet-container.aer-on{background:#3a3a30}
-.measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:13px/1.4 system-ui,sans-serif;width:250px;margin-bottom:22px;margin-right:10px}.measpanel .mh{display:flex;gap:6px;align-items:center;margin-bottom:6px}.measpanel .mh b{margin-right:auto}.measpanel button{font:inherit;font-size:12.5px;padding:3px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.measpanel #measout{min-height:2.7em}.measpanel #measout big{font-size:17px;font-weight:700;display:block}.measpanel .mact{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.measpanel .mseglist{max-height:210px;overflow:auto;margin-bottom:4px}.measpanel .mrow{display:flex;gap:8px;align-items:baseline;padding:1px 0;border-bottom:1px solid var(--line)}.measpanel .mrow span{width:1.6em;color:var(--mut);font-size:11.5px}.measpanel .mrow b{font-size:15px}.measpanel .mrow i{margin-left:auto;font-style:normal;color:var(--mut);font-size:12px}.measpanel .mtot{margin-top:4px;color:var(--mut)}.measpanel .mtot b{color:var(--fg)}.measpanel .mhint{color:var(--mut);font-size:11.5px;margin-top:6px}
+.measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.25 system-ui,sans-serif;width:178px;margin-bottom:22px;margin-right:10px}.measpanel button{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;white-space:nowrap}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}
+.measpanel .mh{display:flex;gap:4px;margin-bottom:4px}.measpanel .mh button{flex:1}
+.measpanel #measout{margin-bottom:4px}.measpanel .mhelp{color:var(--mut);font-size:11.5px}
+.measpanel .mseglist{max-height:180px;overflow:auto}.measpanel .mrow{display:flex;gap:6px;align-items:baseline;padding:0 1px;border-bottom:1px solid var(--line)}.measpanel .mrow span{width:1.2em;color:var(--mut);font-size:10.5px}.measpanel .mrow b{font-size:14.5px}.measpanel .mrow i{margin-left:auto;font-style:normal;color:var(--mut);font-size:11px}
+.measpanel .mtot{margin-top:3px;color:var(--mut);font-size:11.5px}.measpanel .mtot b{color:var(--fg);font-size:13px}
+.measpanel .mact{display:flex;gap:4px}.measpanel .mact button{flex:1;padding:1px 2px}
 .measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive{cursor:crosshair!important}
 .mvert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #ffd400;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 .mseg span{display:block;width:max-content;transform:translate(-50%,-50%);background:#111;color:#ffe45c;border:1.5px solid #fff;border-radius:4px;padding:1px 6px;font:700 14px/18px system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;pointer-events:none}
@@ -461,14 +466,14 @@ function measDraw(verts=true){                                  // lines + label
  measOut(c)}
 function measOut(c){const el=$('measout');if(!el)return;const mt=v=>{const x=v*0.3048006;return fmtN(x,x<100?1:0)+' m'};
  const segs=c.seg.length?'<div class=mseglist>'+c.seg.map((s,k)=>'<div class=mrow><span>'+(k+1)+'</span><b>'+fmtN(s[2],1)+' ft</b><i>'+mt(s[2])+'</i></div>').join('')+'</div>':'';   // each side first: it is what the measuring is for
- if(MEAS.mode=='len')el.innerHTML=c.n<2?'Click the map to place the first point.':segs+(c.n>2?'<div class=mtot>Total <b>'+fmtFt(c.len)+'</b> · '+mt(c.len)+'</div>':'');
- else el.innerHTML=!c.closed?(c.n?'Click at least 3 corners.':'Click the corners of the area.')+segs:segs+'<div class=mtot>Area <b>'+fmtN(c.area,0)+' sq ft</b> · '+fmtN(c.area/43560,3)+' acres · '+fmtN(c.area*0.09290304,0)+' m²<br>Perimeter '+fmtN(c.len,1)+' ft</div>'}
+ if(MEAS.mode=='len')el.innerHTML=c.n<2?'<div class=mhelp>Click the map to start.</div>':segs+(c.n>2?'<div class=mtot>Total <b>'+fmtFt(c.len)+'</b> · '+mt(c.len)+'</div>':'');
+ else el.innerHTML=!c.closed?'<div class=mhelp>'+(c.n?'Click at least 3 corners.':'Click the corners.')+'</div>'+segs:segs+'<div class=mtot><b>'+fmtN(c.area,0)+' sq ft</b> · '+fmtN(c.area/43560,2)+' ac<br>Perimeter '+fmtN(c.len,0)+' ft</div>'}
 function measMode(m){MEAS.mode=m;document.querySelectorAll('.measpanel [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m==m));measDraw()}
 const measCtl=L.control({position:'bottomright'});
 measCtl.onAdd=()=>{const d=L.DomUtil.create('div','measpanel');
- d.innerHTML='<div class=mh><b>Measure</b><button data-m=len>Distance (D)</button><button data-m=area>Area (A)</button></div><div id=measout></div>'
-  +'<div class=mact><button id=measundo>Undo (Backspace)</button><button id=measclr>Clear (C)</button><button id=measx style="margin-left:auto">Done (Esc)</button></div>'
-  +'<div class=mhint>Tip: for a building, click its corners. Drag a corner to adjust.</div>';
+ d.innerHTML='<div class=mh><button data-m=len>Distance (D)</button><button data-m=area>Area (A)</button></div><div id=measout></div>'
+  +'<div class=mact><button id=measundo title="Undo the last point (Backspace)">Undo (⌫)</button><button id=measclr>Clear (C)</button><button id=measx>Done (Esc)</button></div>'
+  ;d.title='Click a building\'s corners; drag a corner to adjust.';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
 function measOn(on){
  if(on===MEAS.on)return;MEAS.on=on;
