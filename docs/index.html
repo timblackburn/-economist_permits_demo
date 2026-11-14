@@ -455,14 +455,20 @@ function measDraw(verts=true){                                  // lines + label
   if(c.closed)MEAS.g.addLayer(L.polygon(P,{...o,stroke:false,fillColor:'#ffd400',fillOpacity:.14}));
   MEAS.g.addLayer(L.polyline(ll,{...o,color:'#ffd400',weight:4}))}
  const cp=P.map(q=>map.latLngToContainerPoint(q)),mid=cp.reduce((t,q)=>[t[0]+q.x/cp.length,t[1]+q.y/cp.length],[0,0]);
- for(const [a,b,ft] of c.seg){const pa=cp[a],pb=cp[b],len=pa.distanceTo(pb);
-  if(len<40)continue;                                            // too short on screen to label without clutter (it is still in the panel list)
-  let nx=-(pb.y-pa.y)/len,ny=(pb.x-pa.x)/len;const mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;if(c.n>2&&(mx-mid[0])*nx+(my-mid[1])*ny<0){nx=-nx;ny=-ny}else if(c.n<=2&&ny>0){nx=-nx;ny=-ny}   // the label sits beside its side, on the outside, so the line stays visible
+ const label=(la,lb,pa,pb,ft,n)=>{const len=pa.distanceTo(pb);
+  if(len<40)return;                                              // too short on screen to label without clutter (it is still in the panel list)
+  let nx=-(pb.y-pa.y)/len,ny=(pb.x-pa.x)/len;const mx=(pa.x+pb.x)/2,my=(pa.y+pb.y)/2;if(n>2&&(mx-mid[0])*nx+(my-mid[1])*ny<0){nx=-nx;ny=-ny}else if(n<=2&&ny>0){nx=-nx;ny=-ny}   // the label sits beside its side, on the outside, so the line stays visible
   const ox=Math.round(nx*15),oy=Math.round(ny*13);
-  MEAS.g.addLayer(L.marker([(P[a].lat+P[b].lat)/2,(P[a].lng+P[b].lng)/2],{interactive:false,keyboard:false,icon:L.divIcon({className:'mseg',iconSize:[0,0],html:'<span style="transform:translate(calc(-50% + '+ox+'px),calc(-50% + '+oy+'px))">'+fmtN(ft,1)+' ft</span>'})}))}
+  MEAS.g.addLayer(L.marker([(la.lat+lb.lat)/2,(la.lng+lb.lng)/2],{interactive:false,keyboard:false,icon:L.divIcon({className:'mseg',iconSize:[0,0],html:'<span style="transform:translate(calc(-50% + '+ox+'px),calc(-50% + '+oy+'px))">'+fmtN(ft,1)+' ft</span>'})}))};
+ for(const [a,b,ft] of c.seg)label(P[a],P[b],cp[a],cp[b],ft,c.n);
+ // the next side while the pointer moves: a dashed line from the last point to the pointer, with its length
+ if(MEAS.cur&&P.length&&!MEAS.drag){const last=P[P.length-1],pl=cp[cp.length-1],pc=map.latLngToContainerPoint(MEAS.cur);
+  if(pl.distanceTo(pc)>4){const a=toSP(last),b=toSP(MEAS.cur),ft=Math.hypot(b[0]-a[0],b[1]-a[1]);
+   MEAS.g.addLayer(L.polyline([last,MEAS.cur],{...o,color:'#000',weight:7,opacity:.6}));MEAS.g.addLayer(L.polyline([last,MEAS.cur],{...o,color:'#ffd400',weight:3,dashArray:'7 6'}));
+   label(last,MEAS.cur,pl,pc,ft,2)}}
  if(verts){MEAS.v.clearLayers();
   P.forEach((ll,i)=>{const m=L.marker(ll,{draggable:true,keyboard:false,icon:L.divIcon({className:'mvert',iconSize:[14,14]})});
-   m.on('drag',e=>{P[i]=e.target.getLatLng();measDraw(false)});MEAS.v.addLayer(m)})}
+   m.on('dragstart',()=>{MEAS.drag=true});m.on('dragend',()=>{MEAS.drag=false});m.on('drag',e=>{P[i]=e.target.getLatLng();measDraw(false)});MEAS.v.addLayer(m)})}
  measOut(c)}
 function measOut(c){const el=$('measout');if(!el)return;const mt=v=>{const x=v*0.3048006;return fmtN(x,x<100?1:0)+' m'};
  const segs=c.seg.length?'<div class=mseglist>'+c.seg.map((s,k)=>'<div class=mrow><span>'+(k+1)+'</span><b>'+fmtN(s[2],1)+' ft</b><i>'+mt(s[2])+'</i></div>').join('')+'</div>':'';   // each side first: it is what the measuring is for
@@ -481,13 +487,15 @@ function measOn(on){
   document.querySelectorAll('.measpanel [data-m]').forEach(b=>b.onclick=()=>measMode(b.dataset.m));
   $('measundo').onclick=()=>{MEAS.pts.pop();measDraw()};$('measclr').onclick=()=>{MEAS.pts=[];measDraw()};$('measx').onclick=()=>measOn(false);
   measMode(MEAS.mode);if(typeof hCancel=='function')hCancel()}
- else{map.removeLayer(MEAS.g);map.removeLayer(MEAS.v);map.removeControl(measCtl);map.getContainer().classList.remove('measuring');MEAS.pts=[]}
+ else{MEAS.cur=null;map.removeLayer(MEAS.g);map.removeLayer(MEAS.v);map.removeControl(measCtl);map.getContainer().classList.remove('measuring');MEAS.pts=[]}
  $('measbtn').classList.toggle('on',on);$('measbtn').setAttribute('aria-pressed',on)}
 $('measbtn').addEventListener('click',e=>{e.preventDefault();measOn(!MEAS.on)});
 map.on('click',e=>{if(!MEAS.on)return;const P=MEAS.pts,l=P[P.length-1];
  if(l&&map.latLngToContainerPoint(l).distanceTo(e.containerPoint)<5)return;   // the second click of a double-click
  P.push(e.latlng);measDraw()});
 map.on('zoomend',()=>{if(MEAS.on)measDraw()});
+let MRAF=0;map.on('mousemove',e=>{if(!MEAS.on)return;MEAS.cur=e.latlng;if(!MRAF)MRAF=requestAnimationFrame(()=>{MRAF=0;if(MEAS.on)measDraw(false)})});
+map.getContainer().addEventListener('mouseleave',()=>{if(MEAS.on){MEAS.cur=null;measDraw(false)}});
 document.addEventListener('keydown',e=>{if(!MEAS.on||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName))return;
  if(e.ctrlKey||e.metaKey||e.altKey){if(!((e.ctrlKey||e.metaKey)&&e.key=='z'))return}
  else if(e.key=='d'||e.key=='D'){measMode('len');return}else if(e.key=='a'||e.key=='A'){measMode('area');return}else if(e.key=='c'||e.key=='C'){MEAS.pts=[];measDraw();return}
