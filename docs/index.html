@@ -392,7 +392,16 @@ let DOTHOLD=false;const CA_ZOOM=14,commMode=()=>map.getZoom()<=CA_ZOOM-(DOTHOLD&
 function style(l){const n=l.feature.properties.n,sel=AREAS.has(n),sh=shadeOn(),dim=sh&&AREAS.size&&!sel;l.setStyle({weight:sel?3.5:(sh?1:1.4),color:sel?css('--acc'):(sh?css('--surface'):css('--mut')),opacity:sel?1:(sh?1:.6),fillColor:sel&&sh?css('--acc'):caColor(n),fillOpacity:sel&&sh?.35:dim?.14:sh?.38:(sel?.08:0)})}
 /* ---- click any house (zoomed in, not on a permit dot): the County's address, PIN, assessor photo and year built, looked up live from the County's open data; nothing is stored here ---- */
 /* ---- County assessor photos: the County stamps the PIN and date in a strip along the bottom (the last ~10%); we hide that strip and let people click the photo to expand it ---- */
-const phImg=(pin,alt,extra)=>`<div class=phcrop data-open="0"><img alt="${alt}" referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${pin}" onerror="this.closest('.phcrop').replaceWith(Object.assign(document.createElement('span'),{className:'mut',textContent:'The County has no photo for this parcel.'}))"></div>`;
+/* A condo building's own parcel (PIN ...0000) has no County photo; the photos hang on its unit PINs. The County answers with a 259x194 "Image Not Available" picture (HTTP 200, so no error fires): on that, or on an error, try ONE unit PIN from data/photopins.json (built by scripts/build_photo_pins.py), then give up. No retries. */
+let PPP,PPM=null;const ppLoad=()=>PPP??=fetch(DATA+'photopins.json').then(r=>r.json()).catch(()=>({})).then(o=>PPM=o);
+(window.requestIdleCallback||setTimeout)(ppLoad);      /* once the map is in hand, a condo building's photo is requested by its unit PIN straight away: all 40 building PINs sampled were placeholders, so asking for the building's own photo first only costs a ~0.5 MB placeholder */
+const JC=new Map();     /* one County open-data answer per URL per visit; a failure is forgotten (not retried) so the next click may ask again */
+const cj=u=>{let p=JC.get(u);if(!p){p=fetch(u).then(r=>{if(!r.ok)throw 0;return r.json()});JC.set(u,p);p.catch(()=>JC.delete(u))}return p};
+const phNone=im=>{const c=im.closest('.phcrop');if(c)c.replaceWith(Object.assign(document.createElement('span'),{className:'mut',textContent:'The County has no photo for this parcel.'}))};
+const phFail=async im=>{if(im.dataset.fb)return phNone(im);im.dataset.fb='1';const u=(await ppLoad())[im.dataset.pin];if(u)im.src='https://maps.cookcountyil.gov/groundphotos/'+u;else phNone(im)};
+const phLoad=im=>{if(im.naturalWidth===259&&im.naturalHeight===194)phFail(im)};
+window.phFail=phFail;window.phLoad=phLoad;
+const phImg=(pin,alt,extra)=>{const u=PPM&&PPM[pin];return `<div class=phcrop data-open="0"><img alt="${alt}" data-pin="${pin}"${u?' data-fb="1"':''} referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${u||pin}" onload="phLoad(this)" onerror="phFail(this)"></div>`};
 /* the County photo opens in a lightbox: the whole picture, nothing cropped (the PIN and date strip included) */
 document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();const im=c.querySelector('img');if(!im)return;const lb=$('lbox');$('lbimg').src=im.src;$('lbcap').textContent=(CURR&&(CURR.mod||CURR.site))?'Cook County Assessor photo \u00b7 near '+(CURR.mod||CURR.site):'Cook County Assessor photo';lb.hidden=false;document.body.classList.add('lbopen')},true);
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
@@ -406,8 +415,8 @@ async function pickHouse(ll){paneTop();
  const pop=L.popup({maxWidth:250,className:'hpop',keepInView:true,autoPanPaddingTopLeft:[56,12],autoPanPaddingBottomRight:[12,12]}).setLatLng(ll).setContent('<span class=mut>Looking up the County record…</span>').openOn(map);
  pop.on('remove',()=>{if(HOUSE){map.removeLayer(HOUSE);HOUSE=null}});
  try{
-  const d=.0006,q=new URLSearchParams({'$where':`lat>${ll.lat-d} AND lat<${ll.lat+d} AND long>${ll.lng-d} AND long<${ll.lng+d}`,'$limit':'80','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'});
-  const rows=await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q)).json();
+  const d=.0006,g=.0002,cy=Math.round(ll.lat/g)*g,cx=Math.round(ll.lng/g)*g,q=new URLSearchParams({'$where':`lat>${cy-d} AND lat<${cy+d} AND long>${cx-d} AND long<${cx+d}`,'$limit':'80','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'});
+  const rows=await cj('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q);
   const kx=Math.cos(ll.lat*Math.PI/180)*111320,ky=110574,dist=(r,at)=>Math.hypot((+r.long-at.lng)*kx,(+r.lat-at.lat)*ky),nameOf=r=>`${r.add_number} ${r.lst_predir||''} ${tc(r.st_name)} ${tc(r.lst_type)}`.replace(/\s+/g,' ').trim();
   const byPin={};rows.forEach(r=>{const m=dist(r,ll);if(m<=45&&(!byPin[r.pin]||m<byPin[r.pin].m))byPin[r.pin]={r,m}});
   const list=Object.values(byPin).sort((a,b)=>a.m-b.m);
@@ -415,8 +424,8 @@ async function pickHouse(ll){paneTop();
   const view=(i)=>{const best=list[i].r,bd=list[i].m,pin=best.pin,at=L.latLng(+best.lat,+best.long);
    if(HOUSE)HOUSE.setLatLng(at);
    window.__hp=()=>pop.update();
-   pop.setContent(`<b>${esc(nameOf(best))}</b><br><span class=mut>PIN ${pinD(pin)}${i==0&&bd>=3?' · '+Math.round(bd)+' m from where you clicked':''}</span><div class=hph>${phImg(pin,'County assessor photo','window.__hp&&window.__hp()')}</div><div id=hyb class=mut></div>`);
-   fetch('https://datacatalog.cookcountyil.gov/resource/x54s-btds.json?'+new URLSearchParams({'$select':'char_yrblt,year','$where':`pin='${pin}'`,'$order':'year DESC','$limit':'1'})).then(r=>r.json()).then(j=>{const y=j[0]&&j[0].char_yrblt,e=document.getElementById('hyb');if(y&&e){e.textContent='Year built (Assessor, a hint not a fact): '+Math.round(+y);pop.update()}}).catch(()=>{})};
+   pop.setContent(`<b>${esc(nameOf(best))}</b><br><span class=mut>PIN ${pinD(pin)}${i==0&&bd>=3?' · '+Math.round(bd)+' m from where you clicked':''}</span><div class=hph>${phImg(pin,'County assessor photo','window.__hp&&window.__hp()')}</div>`);
+  };
   view(0);
  }catch(e){pop.setContent('<span class=mut>The County lookup did not answer. Try again in a moment.</span>')}}
 let hT=0;const hCancel=()=>{clearTimeout(hT);hT=0};   // wait out a possible double-click (which zooms) before looking a house up
@@ -678,7 +687,7 @@ function rangeHit(r,a){const txt=[r.site,r.mod,r.a9].filter(Boolean).join(' | ')
  return [r.site,r.mod,r.a9].some(t=>{const sp=numSpan(t);return sp&&(sp.out.includes(a.n)||(sp.range&&a.n>=sp.out[0]&&a.n<=sp.out[1]&&a.n%2==sp.out[0]%2))})}
 async function findAddress(){const a=addrQ($('qa').value);if(!a)return;const box=$('qloc');box.hidden=true;
  try{const nm=a.name.join(' ').toUpperCase().replace(/'/g,"''"),where=`add_number='${a.n}' AND upper(st_name) like '${nm}%'`+(a.dir?` AND lst_predir='${a.dir}'`:'');
-  const rows=await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+new URLSearchParams({'$where':where,'$limit':'5','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'}))).json();
+  const rows=await cj('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+new URLSearchParams({'$where':where,'$limit':'5','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'}));
   if(!rows.length){box.hidden=false;box.textContent='Could not find that address.';return}
   const r=rows[0],ll=L.latLng(+r.lat,+r.long);map.setView(ll,18);setTimeout(()=>pickHouse(ll),400);}catch(e){box.hidden=false;box.textContent='Could not look up that address just now. Try again in a moment.'}}
 function qlocUpdate(){const box=$('qloc');if(box)box.hidden=true}
@@ -1062,11 +1071,20 @@ $('dtable').onclick=()=>{const k=CURR?cur.findIndex(r=>r.id===CURR.id):-1;if(k<0
  setTimeout(()=>{const tr=$('tb').querySelector(`tr.r[data-k="${k}"]`);if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})},60)};
 window.addEventListener('scroll',()=>{if(CURR&&!$('detail').hidden)updTableBtn()},{passive:true});window.addEventListener('resize',()=>updTableBtn());
 function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
-const placeNote=r=>{const m=String(r.gm||'').replace('renamed:',''),nb=r.nb||{},near=[...(nb.lo||[]).slice(0,1),...(nb.hi||[]).slice(0,1)].map(x=>x[2]);
- const sys=r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide';
- const ren=r.a9&&r.a9o?`The printed number (${esc(r.site||'')}) was converted to ${esc(r.a9)} with the ${sys}${r.a9e?' (estimated from the numbers around it)':''}${r.chg&&r.mod?'; the street has since been renamed (today: '+esc(r.mod)+')':''}. `:(r.site?(r.chg&&r.mod?`Printed as ${esc(r.site)}; the street has since been renamed (today: ${esc(r.mod)}). `:`Looked up as ${esc(r.site)}. `):'');
- const how={grid:`No County address lies within 2 blocks, so the pin is placed by the street grid (800 numbers to the mile); the block may have been cleared (expressway, rail yard, park).`,interpolated:'The pin is placed between the nearest County addresses on the street.',nearest:'The pin is at the nearest County address on the street.','street-approximate':'Only the street was found; the pin is placed along it.'}[m]||'';
- return ren+how+(near.length?` Nearest County addresses on this street: ${near.map(esc).join(' and ')}.`:'')};
+const placeNote=r=>{const m=String(r.gm||'').replace('renamed:',''),nb=r.nb||{},near=[...(nb.lo||[]).slice(0,1),...(nb.hi||[]).slice(0,1)].map(x=>x[2]),nm=near.map(x=>'<b>'+esc(x)+'</b>').join(' and ');
+ /* what the reader sees: where the pin went and why, in a sentence; the working (renumbering, renamed streets, the grid rule) is in the hover */
+ const where=({interpolated:near.length>1?`No County address matches this number, so the pin is placed between its nearest neighbours on the street, ${nm}.`:'No County address matches this number, so the pin is placed between the nearest County addresses on the street.',
+  nearest:near.length?`No County address matches this number, so the pin is at the closest one on the street, ${nm}.`:'No County address matches this number, so the pin is at the closest one on the street.',
+  grid:'No County address lies within two blocks of this number, so the pin follows the street grid. The block may since have been cleared (expressway, rail yard, park).',
+  'street-approximate':'Only the street could be matched, so the pin sits somewhere along it.'})[m]||(near.length?`Nearest County addresses on this street: ${nm}.`:'');
+ const sys=r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide',tip=[];
+ if(r.site)tip.push(`The permit printed the address as "${r.site}".`);
+ if(r.a9&&r.a9o)tip.push(`That number was converted to ${r.a9} with the ${sys}${r.a9e?', and estimated from the numbers around it because the guide does not list it':''}.`);
+ if(r.chg&&r.mod)tip.push(`The street has since been renamed; today it is ${r.mod}.`);
+ if(m=='grid')tip.push('Placed by the street grid: Chicago numbers run about 800 to the mile, so the number gives a distance along the street.');
+ else if(m=='interpolated')tip.push('Placed by spacing: the pin is set between the two neighbouring County addresses in proportion to the house numbers.');
+ else if(m=='nearest')tip.push('Placed at the County address point with the closest number.');
+ return where+(tip.length?` <span class=ptdot tabindex=0 title="${esc(tip.join('\n'))}">How was this placed?</span>`:'')};
 async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pcan').innerHTML=r.can?`<span class=harea title="Community area">${esc(r.can)}</span>`:'';$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1;const b=r.boxes;
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
@@ -1079,7 +1097,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
   <div class=facts>${facts||'<span class=mut>No building details</span>'}${r.inc?' <span class=flag>(amount may be cut off)</span>':''}</div></div>
  ${othersHTML(r)}
  ${(()=>{const razed=r.ext=='newer'?`<span class=razed tabindex=0 title="County Assessor records date the building now at this address to ${esc(r.yb)}, after this permit. The original may have been demolished, rebuilt or moved.">&#9888;</span>`:'';
-  const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The '+(r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide')+' does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>no matching address in the county data</span>${r.lat?`<span class=wa>${placeNote(r)}</span>`:''}${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
+  const cur=r.now&&r.a9e?`<span class=mut>possibly</span> <b class=ptdot title="${esc('The '+(r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide')+' does not list the printed number, so today\'s numbers were worked out from the numbers around it. These are the county addresses that fall in that estimated range.')}">${esc(r.now)}</b>`:r.now?esc(r.now):`<span class=mut>No exact match in County address records</span>${r.lat?`<span class=wa>${placeNote(r)}</span>`:''}${r.alt?` &mdash; possibly <b class=ptdot title="${esc('The corner house on the cross street, '+r.alt[2]+' m from where this address falls. Corner houses were sometimes renumbered onto the other street.')}">${esc(r.alt[0])}</b>`:''}`;
   const pre=r.a9&&r.a9o?`<div class=wr><span class='wl nc'>Pre-${r.a9y||1909} address</span><span class=wv>${esc(pre1909(r))}${r.chg?`<span class=wa>the street has since been renamed</span>`:''}</span></div>`:'';
   const prn=(r.chg&&r.site&&!(r.a9&&r.a9o))?`<div class=wr><span class='wl nc'>Printed address</span><span class=wv>${esc(r.site)}<span class=wa>the street has since been renamed</span></span></div>`:'';
   const est=(()=>{if(!r.d)return '';const d=new Date(r.d+'T12:00:00');d.setDate(d.getDate()-7);const day=d.getDate(),part=day<=10?'Early':day<=20?'Mid':'Late',mon=d.toLocaleDateString('en-US',{month:'long',year:'numeric'}).replace(/^(\w+)/,part+'-$1');   // the permit was issued a few days to a couple of weeks before the paper printed it
