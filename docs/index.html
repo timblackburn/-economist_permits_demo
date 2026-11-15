@@ -51,7 +51,7 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 .srcbox{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:14px;font-size:14px;font-weight:600}.srcbox span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}.srcbox em{font-style:normal;font-weight:400;color:var(--mut);font-size:12.5px}
 .mut{color:var(--mut)}.sep{color:var(--mut)}.hd .addr{font-size:21px;font-weight:700;line-height:1.2}.hd .owner{font-size:15px;margin-top:3px}.hd .facts{margin-top:8px;font-size:14.5px}
 .bds{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.bd{border:1px solid var(--line);border-radius:12px;padding:1px 10px;font-size:13px;background:var(--bg)}.bd.ok{border-color:var(--s1);color:var(--s1)}.bd.mut{color:var(--mut)}
-#mt h3{margin:16px 0 6px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:3px}
+#mt h3{margin:16px 0 11px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-bottom:1.5px solid color-mix(in srgb,var(--mut) 42%,var(--surface));padding-bottom:3px}   /* section headings: the strongest rule in the panel */
 dl.c2{display:grid;grid-template-columns:104px 1fr;gap:3px 12px;margin:4px 0;font-size:14px}dl.c2 dt{color:var(--mut);text-transform:none}dl.c2 dt::first-letter{text-transform:uppercase}dl.c2 dd{margin:0}dl.src{font-size:13px}
 details.raw{margin-top:10px;font-size:13px}details.raw summary{cursor:pointer;color:var(--mut)}details.raw p{margin:6px 0 0;color:var(--mut)}
 dl.pub{padding-bottom:8px;border-bottom:1px solid var(--line);margin-bottom:10px}dl.pub dd{font-weight:600}
@@ -65,20 +65,20 @@ header h1{font-size:26px;line-height:1.15;margin:0 0 4px}header .sub{font-size:1
 #reset{padding:2px 10px;font-size:13px;margin-left:4px}#summary{font-size:14px;color:var(--fg)}
 footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px solid var(--line);margin-top:6px}
 @media(min-width:1181px){footer{padding-left:20px;padding-right:calc(clamp(440px,34vw,560px) + 40px)}}   /* the sources text runs only under the Search/Filter and Map panels (the right-hand column is clamp(440px,34vw,560px) plus its gap and the page padding) */
-[hidden]{display:none!important}#overview{display:flex;flex-direction:column;gap:18px}
+[hidden]{display:none!important}#overview{display:flex;flex-direction:column;gap:18px}#wk svg{display:block}#overview>.card:first-child{padding-bottom:6px}#archs{padding-left:8px;padding-right:8px;box-sizing:border-box}
 #detail{padding:0;overflow:auto}@media(min-width:900px){#detail{position:sticky;top:8px;max-height:calc(100vh - 16px)}}
 #detail .dbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}.dnav{display:flex;align-items:center;gap:4px}#detail #mt{padding:12px 14px 16px}#pos{color:var(--mut);font-size:12.5px;min-width:80px;text-align:center}
 .crop{overflow:hidden;border:1px solid var(--line);border-radius:4px;background:#fff;margin:6px 0 4px;position:relative}.crop img{display:block;max-width:none}.crop .hl{display:none}
 .tbar #tnote{margin-right:auto;color:var(--fg);font-size:13px}.tbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:flex-end;padding:16px 20px 8px;font-size:13px}.dlw{position:relative}.dlsplit{display:inline-flex}.dlbtn{font-size:13px;font-weight:600;padding:6px 12px;display:inline-flex;align-items:center;gap:7px;border-radius:6px 0 0 6px}.dlbtn .xl{flex:none}.dlcaret{padding:6px 9px;border-radius:0 6px 6px 0;margin-left:-1px;display:inline-flex;align-items:center}#dlm{position:absolute;right:0;top:calc(100% + 6px);z-index:70;width:290px;background:var(--surface,#fff);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.22);padding:6px}#dlm .dlh{padding:6px 10px 8px;font-size:12px;color:var(--mut);border-bottom:1px solid var(--line);margin-bottom:4px}#dlm button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:8px 10px;cursor:pointer;color:var(--fg);font:inherit;font-size:13px}#dlm button:hover,#dlm button:focus-visible{background:var(--bg);outline:none}#dlm button small{display:block;color:var(--mut);font-size:12px;margin-top:2px;line-height:1.35}#dlm .rec{float:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--acc);font-weight:600;margin-top:2px}.phcrop{overflow:hidden;cursor:zoom-in;position:relative;border-radius:4px;width:100%;aspect-ratio:2560/1724;background:var(--none)}.phcrop[data-open='1']{cursor:zoom-out;aspect-ratio:2560/1920}.phcrop img{width:100%;height:auto;display:block;max-width:100%}.phhint{font-size:12px;margin-top:3px;color:var(--mut)}#ph .phbox.cropped{height:auto;display:block;background:none}#ph .phbox.cropped img{width:100%;height:auto;object-fit:unset}.hnear{margin-top:6px;font-size:12.5px;line-height:1.5}.hph{margin:6px 0;width:230px;min-height:60px}.hph img{width:100%;border-radius:4px;display:block}.hpop .leaflet-popup-content{margin:10px 12px}.phbox{display:flex;align-items:center;justify-content:center;width:100%;max-width:360px;height:270px;background:var(--none);border-radius:4px;overflow:hidden;font-size:13px}#ph .phbox img{width:100%;height:100%;max-width:none;max-height:none;object-fit:contain;border-radius:0}.phcap{display:block;margin-top:3px}.phcap:empty{display:none}#ph .pins{min-height:2.2em}.who{margin:8px 0 4px;font-size:14px;line-height:1.45}.who .wl{display:inline-block;min-width:76px;color:var(--mut);text-transform:capitalize}#ph{min-height:60px}.okt{color:var(--s1);font-weight:600}dl.c2{grid-template-columns:96px 1fr}#m .c{max-width:1100px}#m #mttl{font-size:15px}#m #pb{margin:0 0 8px}
 /* ---- three columns on a desktop: search & filters | map | permit detail ---- */
-.layout{display:grid;grid-template-columns:clamp(320px,24vw,400px) minmax(0,1fr) clamp(440px,34vw,560px);gap:20px;padding:14px 20px 0;align-items:start}
+.layout{display:grid;grid-template-columns:clamp(300px,21vw,344px) minmax(0,1fr) clamp(440px,34vw,560px);gap:20px;padding:14px 20px 0;align-items:start}
 .filters{position:sticky;top:8px;max-height:calc(100vh - 16px);overflow:auto;display:flex;flex-direction:column;gap:18px}
 .filters .fg{gap:6px}.filters .card,.layout .card{padding:14px 16px}.filters .narrow{margin-top:4px}.filters input,.filters select{width:100%;box-sizing:border-box}.filters .big{font-size:16px;padding:7px 9px}
 .filters .fr{display:grid;grid-template-columns:1fr 1fr;gap:6px}.filters .fr.nav{grid-template-columns:auto 1fr auto}.filters .fr.nav #span{grid-column:1/-1}
 .filters .fr .btn{width:auto}#reg,#ca{grid-column:1/-1}.filters .seg{display:inline-flex}.filters .chips{padding:0;min-height:0;max-height:92px;overflow-y:auto;scrollbar-width:thin;align-content:flex-start}.cabtn{width:100%;text-align:left;padding:6px 26px 6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px;cursor:pointer;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cabtn::after{content:'▾';position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--mut)}#cap{position:absolute;z-index:65;top:100%;left:0;width:100%;margin-top:2px;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.25);padding:6px}#cap input{width:100%;box-sizing:border-box;margin-bottom:4px}#cal{max-height:280px;overflow:auto}#cal label{display:flex;gap:8px;align-items:center;padding:4px 6px;cursor:pointer;font-size:13px;border-radius:4px}#cal label:hover,#cal label.on{background:var(--bg)}#cal small{margin-left:auto;color:var(--mut)}#cal input{width:auto;margin:0}.cafoot{padding:6px 6px 2px;font-size:12px;border-top:1px solid var(--line);margin-top:4px}.quiet{margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut);display:flex;gap:6px;align-items:baseline}.qb{background:none;border:0;padding:0;font:inherit;color:var(--mut);cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}.qb:hover{color:var(--fg)}.qb.on{color:var(--fg);font-weight:600;text-decoration:none;cursor:default}.quiet .dot{opacity:.6}
 .filters #summary{padding:0;font-size:13.5px;color:var(--fg)}
 .narrow{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600;border-top:1px solid var(--line);padding-top:10px}
-.frow{display:flex;gap:30px;align-items:flex-start}.fcost{flex:1 1 0;min-width:0;max-width:56%}.fconf{flex:1 1 0;min-width:0;padding-left:8px}.cfb{display:flex;flex-direction:column;gap:5px;padding-top:2px}.cfo{align-self:flex-start;border:2px solid transparent;border-radius:9px;background:none;color:var(--fg);font:inherit;font-size:14px;padding:2px 11px;cursor:pointer}.cfo.on{border-color:var(--acc);font-weight:600}@media (max-width:420px){.frow{flex-wrap:wrap}.fcost{max-width:none;flex-basis:100%}}
+.frow{display:flex;gap:22px;align-items:flex-start}.fcost{flex:1 1 0;min-width:0}.fconf{flex:0 0 auto;padding-left:0}.cfb{display:flex;flex-direction:column;gap:5px;padding-top:2px}.cfo{align-self:flex-start;border:2px solid transparent;border-radius:9px;background:none;color:var(--fg);font:inherit;font-size:14px;padding:2px 11px;cursor:pointer}.cfo.on{border-color:var(--acc);font-weight:600}@media (max-width:420px){.frow{flex-wrap:wrap}.fcost{max-width:none;flex-basis:100%}}
 .dr{padding:2px 0 0}.dates{display:flex;align-items:center;gap:6px}.dates input{flex:1;min-width:0;padding:5px 7px;font-size:13px;border:1px solid var(--line);border-radius:5px;background:var(--surface,#fff);color:var(--fg);text-align:center}
 .rs{position:relative;height:34px;margin:8px 7px 2px}.rs svg{position:absolute;left:0;top:0;width:100%;height:12px;border-radius:3px;background:var(--bg)}
 .rs input[type=range]{position:absolute;left:-7px;top:6px;width:calc(100% + 14px);margin:0;height:24px;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
@@ -143,16 +143,20 @@ td:first-child{white-space:nowrap}
 .card>h2.wkh{display:flex;align-items:center;gap:8px}.mtog{margin-left:auto;display:inline-flex;border:1px solid rgba(255,255,255,.6);border-radius:5px;overflow:hidden}.mtog button{background:transparent;border:0;color:#fff;font:inherit;font-size:12px;padding:2px 10px;cursor:pointer}.mtog button+button{border-left:1px solid rgba(255,255,255,.6)}.mtog button.on{background:#fff;color:var(--wh);font-weight:600;cursor:default}.mtog button:not(.on):hover{background:rgba(255,255,255,.18)}
 @media(min-width:1181px){.paneopen #detail{position:fixed!important;top:var(--pt,0px)!important;bottom:0;left:var(--px);width:var(--pw);height:auto;max-height:none!important;overflow:auto!important;margin:0;z-index:36;border-radius:0}
  .paneopen #tdock{display:contents}.paneopen #tarea.docked{display:block;padding-right:0}}
+/* smooth glide: the open panel starts level with the top of the right-hand column and settles at the top of the window. The browser ties that movement to the scroll itself (a scroll-driven animation, --pt0 = the column's distance from the top of the page), so it no longer trails the page by a frame the way the script-set top (--pt) did; browsers without it keep the --pt fallback above */
+@supports (animation-timeline:scroll()){@media(min-width:1181px){.paneopen:not(.panejs) #detail{top:0!important;bottom:auto;height:100vh;animation:panein linear both;animation-timeline:scroll(root);animation-range:0px var(--pt0,0px)}}}
+@keyframes panein{from{transform:translateY(var(--pt0,0px))}to{transform:translateY(0)}}   /* movement only (the browser's compositor does it, no layout per frame); the panel is the full window height, so at the top of the page its lowest part is below the window edge and slides into view as you scroll */
 #detail .dbar .dtitle{font-weight:600;font-size:15px;margin-right:auto;letter-spacing:.2px}
 #detail .dbar .btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff}#detail .dbar .btn:hover:not(:disabled){background:rgba(255,255,255,.28)}#detail .dbar .btn:disabled{opacity:.4;cursor:default}#detail .dbar #dback{margin-left:8px}#detail .dbar #dtable{margin-right:8px}
-#detail .harea{float:right;margin:2px 0 4px 10px;padding:1px 9px;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--mut);white-space:nowrap}
+#detail .harea{float:right;margin:2px 0 4px 10px;padding:0;font-size:12px;color:var(--mut);white-space:nowrap}
 #detail .ptd{border-bottom:1px dashed var(--mut);cursor:help}#detail .ptdot{border-bottom:1px dotted var(--fg);cursor:help;font-weight:600}#detail .razed{color:#b8860b;cursor:help;margin-left:2px}
 #detail .who .wl{min-width:128px;padding-right:6px;box-sizing:border-box}#detail .who .wl.nc{text-transform:none}
 @media(min-width:1181px){.paneopen #tarea .wrap{padding-right:0}.paneopen #tbar{padding-right:0}}
 .pgb{padding:2px 10px;font-size:15px;line-height:1.3}.pgn{margin:0 4px}
 #detail .rawtxt{margin:6px 0 0;font-size:13px;color:var(--mut)}#crops{cursor:zoom-in}
-#detail .who .wr{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:10px;padding:4px 0;border-top:1px solid var(--line)}#detail .who .wr:first-child{border-top:0}
+#detail .who .wr{display:grid;grid-template-columns:96px minmax(0,1fr);column-gap:10px;padding:4px 0;border-top:1px solid color-mix(in srgb,var(--mut) 30%,var(--surface))}#detail .who .wr:first-child{border-top:0}   /* the facts at the top: thin and lighter than the section headings below */
 #detail .who .wr .wl{min-width:0;padding:0;display:block;font-size:12.5px;line-height:1.55;text-transform:capitalize}#detail .who .wr .wl.nc{text-transform:none}
+#detail .who .wr.w4{grid-template-columns:96px minmax(0,1fr) 96px minmax(0,1fr)}@media(max-width:420px){#detail .who .wr.w4{grid-template-columns:96px minmax(0,1fr)}}
 #detail .who .wv{display:block}#detail .who .wa{display:block;color:var(--mut);font-size:12.5px;line-height:1.35}
 @media(max-width:1180px){#tarea .wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}#detail{touch-action:pan-y}}
 #filters #summary{margin:2px 0 6px;font-weight:600}#filters #summary:empty{display:none}#filters .chips{margin:0 0 6px;padding:0;max-height:none;overflow:visible}#filters .chips.fold{overflow:hidden}#chipmore{display:block;margin:-2px 0 8px;text-align:left;font-size:12.5px;background:none;border:0;cursor:pointer;color:var(--acc);padding:0}
@@ -220,7 +224,7 @@ html.mob #mchips #chipbar{padding:0;min-height:0}
 html.mob #mchips .chips{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:6px;padding:2px 0 4px!important}
 html.mob #mchips .chips::-webkit-scrollbar{display:none}
 html.mob #mchips .chip{flex:0 0 auto;box-shadow:0 1px 4px rgba(0,0,0,.3)}
-html.mob #mchips #chipmore,html.mob #mchips #cprompt,html.mob #mchips #totop{display:none!important}
+html.mob #mchips .fsw,html.mob #mchips #chipmore,html.mob #mchips #cprompt,html.mob #mchips #totop{display:none!important}
 html.mob #geoq{position:fixed!important;z-index:900;right:10px;bottom:calc(var(--mtb,64px) + 14px);width:44px;height:44px;border-radius:50%!important;background:#fff!important;box-shadow:0 2px 8px rgba(0,0,0,.35)!important;border:0!important;padding:0!important;display:grid;place-items:center;transition:bottom .25s}
 /* filters: a full-height sheet */
 html.mob .layout .filters{position:fixed!important;inset:0;z-index:1500;max-height:none!important;height:auto!important;overflow:auto!important;background:var(--bg);margin:0!important;padding:0 0 calc(30px + env(safe-area-inset-bottom));transform:translateY(105%);visibility:hidden;transition:transform .28s,visibility 0s .28s}
@@ -255,10 +259,29 @@ html.mob #tarea thead th{position:sticky;top:0;z-index:2;background:var(--hd,#2b
 html.mob #detail{position:static!important;flex:1 1 auto;min-height:0;width:auto!important;max-height:none!important;height:auto!important;margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 html.mob #detail[hidden]{display:none!important}
 html.mob #ttray.det :is(#tsum,#tbar,#tarea){display:none!important}
-html.mob #detail .dbar{position:sticky;top:0;z-index:4;touch-action:none}html.mob #detail .dbar .dtitle{display:none}html.mob #dtable{display:none!important}
+html.mob #detail .dbar{position:sticky;top:0;z-index:4;touch-action:none}html.mob #detail .dbar .dtitle{display:none}html.mob #dtable,html.mob #dmap{display:none!important}
 html.mob #dback{font-weight:600}
+/* saved filter sets + lock: small pills at the end of the filter chips (or, with no filters but saved sets, in the filters card) */
+.fsw{display:inline-flex;align-items:center;gap:6px;flex:none}.fsa{position:relative;display:inline-flex}
+#filters .fbox>h2{display:flex;align-items:center;gap:8px}#filters .fbox>h2 .fsa{margin-left:auto}#filters .fbox>h2 .fhb{background:transparent;border:1px solid rgba(255,255,255,.6);border-radius:5px;color:#fff;font:inherit;font-size:12px;padding:2px 10px}#filters .fbox>h2 .fhb:hover{background:rgba(255,255,255,.18)}   /* same look as the Permits / Building cost toggle in the other cards' title bars */#filters .fbox>h2 #fmenu{left:auto;right:0}#summary .fsw{margin:0 0 2px}
+.fsw .fhb{background:transparent;border:1px dashed color-mix(in srgb,var(--mut) 60%,var(--surface));color:var(--fg);border-radius:12px;font:inherit;font-size:13px;padding:2px 10px;cursor:pointer;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}.fsw .fhb:hover{background:color-mix(in srgb,var(--acc) 12%,var(--surface))}.fsw .fhb[hidden]{display:none}   /* same look as the dashed "Clear all" chip */
+.fsw #fsb::after{content:"▾";font-size:10px}.fsw #flt{font-size:12.5px}.fsw #flt:empty{display:none}
+body.flocked .fsw #flk{background:color-mix(in srgb,var(--acc) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--acc) 60%,var(--surface))}.fsw #flk.nudge{animation:fnudge .5s}
+@keyframes fnudge{20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+body.flocked .fbox>:not(h2):not(#flkp){opacity:.55}.filters .fbox{position:relative}body.flocked #chips{opacity:.6;pointer-events:none}body.flocked .mapc .shade{opacity:.55;cursor:not-allowed}
+#fmenu{position:absolute;left:0;top:calc(100% + 6px);width:280px;max-width:80vw;z-index:60;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:6px;font-size:13px;text-align:left;font-weight:400;letter-spacing:0;text-transform:none}#fmenu[hidden]{display:none}
+#flkp{position:absolute;left:10px;right:10px;top:46px;z-index:61;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:8px 10px;font-size:13px}#flkp[hidden]{display:none}#flkp span{flex:1 1 100%}#flkp .btn{padding:3px 12px;font-size:13px}#flkp .btn.on{background:var(--acc);border-color:var(--acc);color:#fff}
+#fmenu .fi{display:flex;align-items:center;gap:4px;border-radius:4px}#fmenu .fi:hover{background:var(--line)}#fmenu .fn{flex:1;min-width:0;text-align:left;background:none;border:0;color:inherit;font:inherit;padding:5px 6px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#fmenu .fn:disabled{cursor:default;opacity:.5}#fmenu .fi.act .fn{font-weight:600}
+#fmenu .fx{background:none;border:0;color:var(--mut);cursor:pointer;font-size:15px;line-height:1;padding:4px 7px;border-radius:4px}#fmenu .fx.fl{font-size:12px;padding:4px 6px}#fmenu .fx.fl:hover{color:var(--acc)}#fmenu .fx:hover:not(.fl),#fmenu .fx.sure{color:#c0392b}#fmenu .fx.sure{font-size:12px;font-weight:600}
+#fmenu .fe{color:var(--mut);padding:5px 6px}#fmenu .fs{display:flex;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}#fmenu .fs input{flex:1;min-width:0;font-size:13px;padding:4px 6px}#fmenu .fs .btn{padding:3px 10px;font-size:13px}#fmenu .fu{display:block;margin:6px 6px 0;font-size:12.5px}
+/* underlined fields in the Search & filter card: a hairline under each field instead of a box; the focused field gets a 2px accent line */
+#filters .fbox .fg input:not([type=range]):not([type=checkbox]):not([type=radio]),#filters .fbox .cabtn,#filters .fbox .dates input{border:0;border-bottom:1px solid color-mix(in srgb,var(--mut) 55%,var(--surface));border-radius:0;background:transparent;box-shadow:none;padding-left:2px}
+#filters .fbox .dates input{padding-right:2px}
+#filters .fbox .fg input:not([type=range]):not([type=checkbox]):not([type=radio]):hover,#filters .fbox .cabtn:hover,#filters .fbox .dates input:hover{border-bottom-color:color-mix(in srgb,var(--fg) 60%,var(--surface))}
+#filters .fbox .fg input:not([type=range]):not([type=checkbox]):not([type=radio]):focus,#filters .fbox .cabtn:focus,#filters .fbox .dates input:focus,#filters .fbox .cabtn[aria-expanded=true]{outline:0;border-bottom-color:var(--acc);box-shadow:0 1px 0 0 var(--acc)}
+#filters .fbox .geo{border:0;background:transparent;color:var(--mut)}#filters .fbox .geo:hover{color:var(--acc);background:transparent}
 html.mob .filters .shade{display:none!important}
-.filters .fsep{border:0;border-top:1px solid var(--line);margin:0;align-self:stretch}
+.filters .fsep{display:none}   /* the rule between the search boxes and the filters: gone, the underlined fields do that job now */
 @media(min-width:1181px){.layout #map{min-height:160px}}      /* one filters card sets the row height; the map takes whatever it leaves */
 .sgw .xclr{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--mut);font-size:19px;line-height:1;cursor:pointer;display:none}
 .sgw input:not(:placeholder-shown)~.xclr{display:flex;align-items:center;justify-content:center}.sgw .xclr:hover{color:var(--fg);background:var(--line)}
@@ -274,7 +297,7 @@ html.mob .filters .shade{display:none!important}
 <div id="busy" hidden role="progressbar" aria-label="Loading"></div>
 <div class="layout">
 <aside class="filters" id="filters">
- <section class="card fbox"><h2>Search &amp; filter</h2>
+ <section class="card fbox"><h2>Search &amp; filter</h2><div id="flkp" hidden role="alertdialog" aria-label="Filters are locked"><span>The filters are locked. Unlock them to make changes?</span><button type="button" class="btn on" id="flkpu">Unlock</button><button type="button" class="btn" id="flkpk">Keep locked</button></div>
  <div id="summary"></div>
  <div class="fg"><span class="fl">Address or street</span><div class="sgrow"><span class="sgw qw"><input id="qa" class="big" placeholder="1925 W Madison, or a street name…" autocomplete="off" aria-autocomplete="list"><div id="qasg" class="qsug" hidden role="listbox"></div></span><button type="button" class="btn geo" id="geoq" aria-label="Use my location" title="Use my location: centre the map on where you are and list the permits around you"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/><path d="M10 1.5v3.2M10 15.3v3.2M1.5 10h3.2M15.3 10h3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button></div><div id="qloc" class="mut" hidden style="font-size:12.5px;margin-top:5px"></div></div>
  <div class="fg"><span class="fl">Owner or building</span><span class="sgw qw"><input id="q" class="big" placeholder="owner or building name…" autocomplete="off" aria-autocomplete="list"><div id="qsg" class="qsug" hidden role="listbox"></div></span></div>
@@ -293,12 +316,12 @@ html.mob .filters .shade{display:none!important}
   <div class="card"><h2 class="wkh"><span class="htl">Architects</span><span class="mtog" title="Order the list: busiest first, or alphabetical by last name (A–Z shows every architect)"><button id="asm" class="on">Most</button><button id="asa">A–Z</button></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
+   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><button class="btn" id="dmap" hidden title="Centre the map on this permit's building"><span class="ar">⌖</span> Show on map</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
    <div id="pnav"><span class="pn"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span><span id="pcan"></span></div>
    <div id="mt"></div>
   </div>
  </div></div>
-<div class="tbar" id="tbar"><div class="chipbar" id="chipbar"><div class="chips" id="chips"></div><button type="button" class="lk" id="chipmore" hidden></button><span id="cprompt"></span><a class="lk" id="totop" href="#" hidden title="Scroll back up to the map and filters"><span class="ar">↑</span> Back to map &amp; filters</a></div><span id="tnote"></span><span id="pgr"></span><span class="mut" id="dln"></span><span class="dlw"><span class="dlsplit"><button class="btn dlbtn" id="dlb" title="Download the permits that match the current filters as a CSV spreadsheet (Excel, Google Sheets)"><svg class="xl" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="3" fill="#1d6f42"/><rect x="1.5" y="2" width="13" height="12" rx="1.5" fill="none" stroke="currentColor"/><path d="M1.5 6h13M1.5 10h13M6 2v12" stroke="currentColor" fill="none"/></svg> Download <span id="dlc" class="mut"></span></button><button class="btn dlcaret" id="dlcar" aria-haspopup="menu" aria-expanded="false" aria-label="Choose a file format" title="Other file formats"><svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>
+<div class="tbar" id="tbar"><div class="chipbar" id="chipbar"><div class="chips" id="chips"></div><button type="button" class="lk" id="chipmore" hidden></button><span class="fsw" id="fsw"><span class="fsa" id="fsa"><button type="button" class="fhb" id="fsb" hidden aria-haspopup="true" aria-expanded="false" title="Save these filters, or load a set you saved before"></button><div id="fmenu" hidden role="dialog" aria-label="Saved filters"></div></span><button type="button" class="fhb" id="flk" hidden aria-pressed="false" title="Lock the filters so nothing can change them by accident"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="currentColor"/><path id="fshk" d="M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><small id="flt"></small></button><button type="button" class="fhb" id="fcp" hidden aria-label="Copy link" title="Copy a link to this view: the filters and, with Filter by map on, the map position"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button></span><span id="cprompt"></span><a class="lk" id="totop" href="#" hidden title="Scroll back up to the map and filters"><span class="ar">↑</span> Back to map &amp; filters</a></div><span id="tnote"></span><span id="pgr"></span><span class="mut" id="dln"></span><span class="dlw"><span class="dlsplit"><button class="btn dlbtn" id="dlb" title="Download the permits that match the current filters as a CSV spreadsheet (Excel, Google Sheets)"><svg class="xl" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="3" fill="#1d6f42"/><rect x="1.5" y="2" width="13" height="12" rx="1.5" fill="none" stroke="currentColor"/><path d="M1.5 6h13M1.5 10h13M6 2v12" stroke="currentColor" fill="none"/></svg> Download <span id="dlc" class="mut"></span></button><button class="btn dlcaret" id="dlcar" aria-haspopup="menu" aria-expanded="false" aria-label="Choose a file format" title="Other file formats"><svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span>
  <div id="dlm" role="menu" hidden>
   <div class="dlh">Download <b id="dln2"></b> permits as…</div>
   <button role="menuitem" data-f="csv"><b>CSV spreadsheet</b><span class="rec">recommended</span><small>Opens in Excel or Google Sheets. Includes every permit.</small></button>
@@ -323,6 +346,8 @@ const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
+var FLOCK=null,FSETS=[],FACT='',RESTORING=0,VIEWB=null,INITVIEW=null,INITLOCK=false,VMOVE=0;   /* VIEWB = a saved map extent that the filter uses instead of the window's own view (set by a shared link or a saved set, dropped when the map is moved or Filter by map is turned off) */
+   /* the filter lock (the frozen filters), the saved sets, the active set's name */
 let AREAT=Date.now(),AKEY='';const GAPQ=new URLSearchParams(location.search).has('gap');   // TEMPORARY: ?gap=1 shows only permits placed by the street grid because the County has no address within 2 blocks (the block may be gone: expressway etc.)
 const LEGACY=new URLSearchParams(location.search).has('old');   // ?old=1 loads the single big index as before (for comparing)
 let SQ='',SL=null,SLP=null,STL=null,STSK='';   // SQ: a street picked from the suggestions (matches the address, not the whole text)
@@ -333,6 +358,8 @@ const short=n=>n>=1e6?'$'+(n/1e6).toFixed(1)+'M':n>=1e3?'$'+Math.round(n/1e3)+'k
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dims=s=>s?s.replace(/x/g,' × '):'';
 const arch=r=>r.ar||'';const OWNERISH=/^(owners?|same|self)\b/i,ownerOf=(t,r)=>OWNERISH.test(t||'')?`Owner (${r.own||'?'})`:t;
+/* "Owner (J Smith)" as the builder: the name is a link that filters to everything J Smith built (and, below, every permit whose builder is listed as the owner and the owner is J Smith) */
+const ownName=r=>(r.own||'').split(';')[0].trim(),ownerLink=(t,r)=>{const n=ownName(r);return n?`Owner (<a class=lk data-c="${esc(n)}">${esc(n)}</a>)`:esc(ownerOf(t,r))};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const num=r=>{let t=0;for(const m of (r.sz||'').matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
@@ -408,13 +435,13 @@ map.on('zoomend moveend',platSync);platSync();
    Set AERIAL_URL to that file's public URL (the host must allow Range requests and CORS); ?aerial=<url> overrides it for testing. The button is hidden while it is empty.
    Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
 const AERIAL_URL=(new URLSearchParams(location.search)).get('aerial')||'https://chicagopermits.blob.core.windows.net/aerial/aerial_2024.pmtiles',
- AERIAL_LL=L.latLngBounds([[41.6759,-87.7397],[41.7357,-87.6331]]),AERIAL_MINZ=13,AERIAL_NATIVE=20;
+ AERIAL_LL=(new URLSearchParams(location.search)).get('aerial')?L.latLngBounds([[41.64,-87.95],[42.03,-87.52]]):L.latLngBounds([[41.6759,-87.7397],[41.7357,-87.6331]])   /* a test file (?aerial=) may cover anywhere in Chicago */,AERIAL_MINZ=13,AERIAL_NATIVE=20;
 const AerialLayer=L.GridLayer.extend({
  initialize(url,o){L.GridLayer.prototype.initialize.call(this,o);this._pm=new pmtiles.PMTiles(url)},
  createTile(c,done){
   const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
-  const k=Math.max(0,c.z-AERIAL_NATIVE),z=c.z-k,x=c.x>>k,y=c.y>>k;
-  this._pm.getZxy(z,x,y).then(r=>{
+  let k=0,x=0,y=0;
+  this._pm.getHeader().then(h=>{k=Math.max(0,c.z-Math.min(AERIAL_NATIVE,h.maxZoom));x=c.x>>k;y=c.y>>k;return this._pm.getZxy(c.z-k,x,y)}).then(r=>{      // closer in than the file's finest zoom (the header says which), the same tile is cropped and enlarged
    if(!r)return done(null,t);
    const u=URL.createObjectURL(new Blob([r.data],{type:new Uint8Array(r.data)[0]==0xFF?'image/jpeg':'image/webp'})),img=new Image();   // fully covered tiles are JPEG, tiles at the edge of the imagery are WebP with transparency
    img.onload=()=>{const w=256/(1<<k);t.getContext('2d').drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);done(null,t)};
@@ -518,7 +545,16 @@ const phLoad=im=>{if(im.naturalWidth===259&&im.naturalHeight===194)phFail(im)};
 window.phFail=phFail;window.phLoad=phLoad;
 const phImg=(pin,alt,extra)=>{const u=PPM&&PPM[pin];return `<div class=phcrop data-open="0"><img alt="${alt}" data-pin="${pin}"${u?' data-fb="1"':''} referrerpolicy="no-referrer" src="https://maps.cookcountyil.gov/groundphotos/${u||pin}" onload="phLoad(this)" onerror="phFail(this)"></div>`};
 /* the County photo opens in a lightbox: the whole picture, nothing cropped (the PIN and date strip included) */
-document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();const im=c.querySelector('img');if(!im)return;const lb=$('lbox');$('lbimg').src=im.src;$('lbcap').textContent=(CURR&&(CURR.mod||CURR.site))?'Cook County Assessor photo \u00b7 near '+(CURR.mod||CURR.site):'Cook County Assessor photo';lb.hidden=false;document.body.classList.add('lbopen')},true);
+document.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('.phcrop');if(!c)return;e.preventDefault();const im=c.querySelector('img');if(!im)return;const lb=$('lbox');$('lbimg').src=im.src;$('lbcap').textContent=(CURR&&(CURR.mod||CURR.site))?'Cook County Assessor photo \u00b7 near '+(CURR.mod||CURR.site):'Cook County Assessor photo';lb.hidden=false;$('lbimg').style.visibility='';document.body.classList.add('lbopen');lbSync()},true);
+/* with the photo open, the left and right arrows move to the neighbouring building (the ◀ / ▶ address buttons under the permit's photo) and the lightbox follows to that building's photo */
+const lbRow=()=>{const row=[...document.querySelectorAll('#ph .pins')].find(d=>[...d.querySelectorAll('button')].some(b=>/[◀▶]/.test(b.textContent)));return row?[...row.querySelectorAll('button[data-pin]:not([disabled])')]:[]};   /* the row  ◀ neighbour | This building | neighbour ▶ */
+const lbNeighbour=d=>{const r=lbRow(),i=r.findIndex(b=>b.classList.contains('on'));return r[(i<0?r.findIndex(b=>/This building/.test(b.textContent)):i)+d]};
+function lbSync(){if($('lbox').hidden)return;const ph=$('ph'),im=ph&&ph.querySelector('.phcrop img'),cap=ph&&ph.querySelector('.phcap');
+ if(im){if($('lbimg').getAttribute('src')!==im.getAttribute('src')){$('lbimg').style.visibility='';$('lbimg').src=im.getAttribute('src')}}
+ else if(ph&&!/Loading photo/.test(ph.textContent)){$('lbimg').style.visibility='hidden'}   /* no photo for that building: the box stays open so the arrows keep working */
+ const t=cap?cap.textContent.replace(/\s+/g,' ').trim():'';$('lbcap').textContent='Cook County Assessor photo'+(t?' \u00b7 '+t:(CURR&&(CURR.mod||CURR.site)?' \u00b7 near '+(CURR.mod||CURR.site):''))+(lbNeighbour(-1)||lbNeighbour(1)?'   (\u2190 \u2192 neighbouring buildings)':'')}
+new MutationObserver(lbSync).observe($('mt'),{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
+addEventListener('keydown',e=>{if($('lbox').hidden||(e.key!='ArrowLeft'&&e.key!='ArrowRight'))return;e.preventDefault();e.stopPropagation();const b=lbNeighbour(e.key=='ArrowLeft'?-1:1);if(b)b.click()},true);
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
 let HOUSE=null;const HOUSE_MINZ=17;   // clicking a property (County lookup) only works at close zoom
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
@@ -729,14 +765,14 @@ async function boot(){
  const months=Object.keys(cj.cube).sort(),pd=m=>({d:m+'-01'});
  ISS=cj.issues.map(e=>e[0]);
  caInit();
- suggestInit();fromHash();caInit();await go();
+ suggestInit();fromHash();caInit();await go();fsInit();fsInitView();
  if(OPEN){if(OPENA)await loadShards([OPENA]);else await loadAll();const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}}
 /* ---- filtering ---- */
 function legacyBoot(){
  ALLKEYS=['*'];LOADED=new Set(['*']);
  fetch(DATA+'index.json').then(r=>r.json()).then(async ix=>{const d=D=unpack(ix);CA=await (await fetch('ca.json')).json();
  ISS=[...new Set(d.map(r=>r.d))].sort();
- caInit();buildArchIndex();suggestInit();fromHash();caInit();go();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
+ caInit();buildArchIndex();suggestInit();fromHash();caInit();go();fsInit();fsInitView();if(OPEN){const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}});
 }
 
 const Yr=r=>r.d.slice(0,4),Qt=r=>r.d.slice(0,4)+' Q'+Math.ceil(+r.d.slice(5,7)/3),Dec=r=>Math.floor(+r.d.slice(0,4)/10)*10+'s';
@@ -795,10 +831,11 @@ function syncCost(){const n=STOPS.length-1,i1=nearStop(CLO),i2=nearStop(CHI);$('
 function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b)a=b;if(which==2&&b<a)b=a;CLO=STOPS[a];CHI=STOPS[b];syncCost();clearTimeout(goT);goT=setTimeout(go,140)}
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
 
-function flt(skip){const B=($('inview').checked&&skip!='view')?map.getBounds():null,W=issWin(),q=$('q').value.toLowerCase().trim(),qa=$('qa').value.trim(),ar=nk($('ar').value),co=costOn(),aq=qa?addrQ(qa):null;
+function flt(skip){const B=($('inview').checked&&skip!='view')?(FLOCK&&FLOCK.b||VIEWB||map.getBounds()):null,W=issWin(),q=$('q').value.toLowerCase().trim(),qa=$('qa').value.trim(),ar=nk($('ar').value),co=costOn(),aq=qa?addrQ(qa):null;
  return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||ownHit(r,q))&&(!qa||addrHit(r,qa,aq))&&(!ar||arHit(r,ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))&&(!GAPQ||(r.geo||'').endsWith('grid'))&&(cfAll()||CF.has(r.cf||1))}
 let BN=0;const busy=d=>{BN=Math.max(0,BN+d);$('busy').hidden=BN<=0};   // a thin moving bar at the top of the window while permit details or the search text load
 async function go(){
+ if(fsGuard())return;   // locked: put the filters back instead
  const tok=++GOTOK;{const k=[...AREAS].join();if(k!==AKEY){AKEY=k;AREAT=Date.now()}}
  {const nf=needFind().filter(k=>!(k in FL));if(nf.length){busy(1);try{await Promise.all(nf.map(findLoad))}finally{busy(-1)}if(tok!==GOTOK)return}}
  const rk=rowKeys(),dk=(!LEGACY&&!commMode())?viewShards():[];
@@ -824,12 +861,13 @@ function render(rk){
 
  let tn,t;if(AGG){const g=aggTotals();tn=g.n;t=g.c;TOT={n:g.n,placed:g.placed}}else{tn=cur.length;t=cur.reduce((s,r)=>s+(r.cost||0),0);TOT={n:cur.length,placed:cur.filter(r=>r.lat).length}}
  $('wkstats').textContent=`${tn.toLocaleString()} permits  |  Building cost ${money(t)}`+(!AGG&&cur.length?`  |  Median ${money(median(cur.map(r=>r.cost||0)))}`:'');
- chips();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
+ chips();fsRefresh();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',qa:'qa',ar:'ar'};
 let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');SQ=p.get('st')||'';if(/\(now /.test(SQ))osLoad().then(()=>{OQK='';go()});OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});{const cf=p.get('cf')?p.get('cf').split('').map(ch=>({h:3,m:2,l:1})[ch]).filter(Boolean):(p.get('open')?[3,2,1]:[]);if(cf.length){CF.clear();cf.forEach(v=>CF.add(v))}}   // a link to one permit shows every level so its dot is there
- if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'))}
-function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+ if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'));
+ {const vw=(p.get('vw')||'').split(',').map(Number);INITVIEW=vw.length==4&&vw.every(isFinite)?vw:null;INITLOCK=p.get('lk')=='1'}}   /* a link made with Copy link carries lk=1: it opens with the filters locked */   /* a shared link with "Filter by map" on: applied once the page has loaded (fsInitView), because the start-up code moves the map */
+function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');{const n=new URLSearchParams(fsNow().h);['vw'].forEach(k=>n.get(k)&&p.set(k,n.get(k)))}if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 /* ---- address search: "10711 S Hoyne" also finds the permit for 10709-13 S Hoyne (any number inside a printed range, same side of the street), and can be looked up in the County's records ---- */
 const SKIPW=new Set(['st','street','ave','av','avenue','blvd','boul','boulevard','pl','place','ct','court','rd','road','dr','drive','ter','terrace','pkwy','n','s','e','w','north','south','east','west']);
 function addrQ(q){const m=(q||'').trim().toLowerCase().match(/^(\d{1,6})\s+(.+)$/);if(!m)return null;const words=m[2].replace(/[.,]/g,' ').split(/\s+/).filter(Boolean),dm=words.find(x=>['n','s','e','w','north','south','east','west'].includes(x)),name=words.filter(x=>!SKIPW.has(x));if(!name.length)return null;return{n:+m[1],name,dir:dm?dm[0].toUpperCase():''}}
@@ -948,7 +986,7 @@ function dotKey(){const m=[['time','Time'],['cost','Cost'],['arch','Architect']]
 $('dotkey').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.dataset.m==DOTC)return;DOTC=b.dataset.m;toHash();archs();weeks();drawPts();dotKey()});
 /* ---- contractor filter: click a contractor or trade name in the table (like the architect links) to keep only permits that name them ---- */
 const cn=t=>(t||'').toLowerCase().replace(/[.,]/g,'').replace(/\s+/g,' ').trim();
-const rowNames=r=>r._cn||(r._cn=[r.con,...(r.trd?r.trd.split('|').map(t=>t.slice(t.indexOf(': ')+2)):[])].filter(Boolean).map(cn));
+const rowNames=r=>r._cn||(r._cn=[r.con,...(r.trd?r.trd.split('|').map(t=>t.slice(t.indexOf(': ')+2)):[])].filter(Boolean).map(x=>OWNERISH.test(x)?cn(ownName(r)):cn(x)).filter(Boolean));   // a builder listed as "Owner" counts as the owner's own name
 /* a name clicked in the table or the details panel starts a fresh search on that person: every other filter is cleared (clicking one that is already selected just unselects it) */
 function pickPerson(kind,name){const k=kind=='a'?nk(name):cn(name),on=kind=='a'?AS.has(k):CS.has(k);
  if(!on){SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();caLabel();CLO=0;CHI=Infinity;CF.clear();CF.add(3);setR(null,null);AS.clear();CS.clear();$('inview').checked=false}
@@ -978,6 +1016,84 @@ function chips(){toHash();qlocUpdate();const c=[];
  if(c.length>1){const e=document.createElement('span');e.className='chip';e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
  c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
  foldChips()}
+/* ---- saved filter sets and the filter lock ----
+   A set is the filter part of the page address (text boxes, architects, contractors, areas, dates, cost, confidence, street, and the map view when "Filter by map" is on), kept in this browser.
+   The lock freezes the current filters: go() (every refilter passes through it) compares the filters with the frozen ones and puts them back if anything changed them. */
+const FSKEY='permits-filter-sets';
+function fsLoad(){try{const a=JSON.parse(localStorage.getItem(FSKEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&typeof x.h=='string'):[]}catch(e){return[]}}
+function fsStore(){try{localStorage.setItem(FSKEY,JSON.stringify(FSETS))}catch(e){}}
+FSETS=fsLoad();
+const fsStrip=h=>{const p=new URLSearchParams(h);p.delete('vw');p.delete('vz');return p.toString()};   /* the map extent (vw = south,west,north,east) is compared separately */
+const fsExt=()=>(FLOCK&&FLOCK.b)||VIEWB||map.getBounds();
+function fsViewDiff(h){const v=new URLSearchParams(h).get('vw');if(!v||!$('inview').checked)return false;const a=v.split(',').map(Number),b=fsExt(),c=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()];return a.some((x,i)=>Math.abs(x-c[i])>.0008)}
+function fsSetView(vw){const bb=L.latLngBounds([vw[0],vw[1]],[vw[2],vw[3]]);VIEWB=bb;VMOVE=MOVEBYCODE=Date.now()+3000;$('inview').checked=true;map.fitBounds(bb,{animate:false});return bb}
+function fsInitView(){const v=INITVIEW;INITVIEW=null;if(v)fsSetView(v);if(INITLOCK){INITLOCK=false;if(fsNow().h)fsLock(true)}if(v)go()}
+map.on('movestart',()=>{if(VIEWB&&Date.now()>VMOVE)VIEWB=null});   /* the person moves the map: the filter follows the window again */
+function fsNow(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS)){const v=$(id).value.trim();if(v)p.set(k,v)}
+ [...AS].map(k=>AN[k]||k).sort().forEach(a=>p.append('a',a));[...CS].map(k=>CSN[k]||k).sort().forEach(c=>p.append('c',c));
+ if(AREAS.size)p.set('ca',[...AREAS].sort((a,b)=>a-b).join(','));if(R.a){p.set('from',R.a);p.set('to',R.b)}
+ if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);
+ let b=null;if($('inview').checked){b=fsExt();p.set('vw',[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(x=>x.toFixed(5)).join(','))}
+ return{h:p.toString(),b}}
+function fsApply(h,keepView){RESTORING++;try{const p=new URLSearchParams(h);
+  SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();AS.clear();CS.clear();CLO=0;CHI=Infinity;CF.clear();CF.add(3);R={a:null,b:null};
+  const q=new URLSearchParams(h);q.delete('vw');q.delete('vz');history.replaceState(null,'','#'+q);fromHash();
+  const vw=p.get('vw');
+  if(vw){const v=vw.split(',').map(Number);$('inview').checked=true;if(!keepView&&v.length==4&&v.every(isFinite)){const bb=fsSetView(v);if(FLOCK)FLOCK.b=bb}}   /* the saved extent is what the filter uses, so the same buildings come back whatever the window size */
+  else{$('inview').checked=false;if(!keepView)VIEWB=null;if(FLOCK&&!keepView)FLOCK.b=null}
+  caLabel();if($('cap'))caList();toHash()}finally{RESTORING--}
+ go()}
+function fsGuard(){if(!FLOCK||RESTORING)return false;const n=fsNow();if(fsStrip(n.h)===FLOCK.h&&$('inview').checked===FLOCK.iv)return false;
+ fsNudge();fsApply(FLOCK.h+(FLOCK.iv&&FLOCK.b?'&vw='+[FLOCK.b.getSouth(),FLOCK.b.getWest(),FLOCK.b.getNorth(),FLOCK.b.getEast()].join(','):''),true);return true}
+function fsLink(h){return location.origin+location.pathname+'#'+h+(h?'&':'')+'lk=1'}   /* shared links open locked, so the view you sent is the view they see until they unlock it */
+async function fsCopy(text,btn,done){let ok=false;try{await navigator.clipboard.writeText(text);ok=true}catch(e){try{const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;opacity:0';document.body.append(t);t.select();ok=document.execCommand('copy');t.remove()}catch(e2){}}
+ const icon=btn.id=='fcp',was=btn.innerHTML,wt=btn.title;clearTimeout(btn._t);if(btn._was===undefined){btn._was=was;btn._wt=wt}
+ if(icon){btn.innerHTML=ok?'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>':'!';btn.title=ok?'Link copied':'Could not copy the link'}else btn.textContent=ok?done:'Could not copy';
+ btn._t=setTimeout(()=>{btn.innerHTML=btn._was;btn.title=btn._wt;btn._was=undefined},1600)}
+/* locked: a click or focus on the filter controls asks whether to unlock, instead of doing nothing */
+function fsAskUnlock(){const k=$('flkp');k.hidden=false;clearTimeout(k._t);k._t=setTimeout(()=>{k.hidden=true},10000);$('flkpu').focus({preventScroll:true})}
+const fsBlocked=t=>!!(t&&t.closest&&t.closest('#filters .fbox')&&!t.closest('#filters .fbox>h2,#fmenu,#flkp,.fsw'));
+for(const ev of ['mousedown','touchstart'])document.addEventListener(ev,e=>{const k=$('flkp');if(!k.hidden&&!e.target.closest('#flkp'))k.hidden=true;if(FLOCK&&fsBlocked(e.target)){e.preventDefault();e.stopPropagation();fsAskUnlock()}},{capture:true,passive:false});
+document.addEventListener('click',e=>{if(FLOCK&&fsBlocked(e.target)){e.preventDefault();e.stopPropagation()}},true);
+document.addEventListener('focusin',e=>{if(FLOCK&&fsBlocked(e.target)){e.target.blur();fsAskUnlock()}},true);
+$('flkpu').onclick=()=>{$('flkp').hidden=true;fsLock(false)};$('flkpk').onclick=()=>{$('flkp').hidden=true};
+function fsNudge(){const b=$('flk');b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');b.title='Filters are locked. Click the padlock to unlock them.';$('flt').textContent='Locked: click to unlock';clearTimeout(fsNudge.t);fsNudge.t=setTimeout(fsRefresh,3000)}
+function fsLock(on){if(on){const n=fsNow();FLOCK={h:fsStrip(n.h),iv:$('inview').checked,b:n.b};}
+ else{FLOCK=null}
+ document.body.classList.toggle('flocked',!!FLOCK);$('flkp').hidden=true;fsMenuHide();fsRefresh();if(!FLOCK)go()}
+function fsInit(){try{sessionStorage.removeItem('permits-flock')}catch(e){}fsRefresh()}   /* a lock does not outlive the page: after a reload the filters come from the address, and a lock nobody can see would be a trap */
+function fsRefresh(){const b=$('fsb');if(!b)return;const s=FSETS.find(x=>x.name===FACT),n=fsNow(),has=!!n.h;let mod=false;
+ /* nothing shows until there is something to do: Save/Load appears once a filter is set or a set exists, the padlock once a filter is set */
+ {const w=$('fsw'),a=$('fsa'),inBar=$('chips').children.length>0||!(has||FLOCK),host=inBar?$('chipmore').parentNode:$('summary'),fh=document.querySelector('#filters .fbox>h2');
+  if(w.parentNode!==host){if(inBar)$('chipmore').after(w);else $('summary').append(w)}   /* the padlock (and "Save filters" before any set exists) sit beside the chips, or at the top of the card when there are none */
+  if(FSETS.length||s){if(a.parentNode!==fh)fh.append(a)}else if(a.parentNode!==w)w.prepend(a)}   /* once a set exists, Saved (n) lives at the right of the card's title bar */
+ b.hidden=!(has||FSETS.length||s);$('flk').hidden=!(has||FLOCK);$('fcp').hidden=!has;if(b.hidden)fsMenuHide();
+ if(s){mod=fsStrip(s.h)!==fsStrip(n.h)||(!!new URLSearchParams(s.h).get('vw'))!==$('inview').checked||fsViewDiff(s.h)}
+ b.textContent=s?s.name+(mod?' *':''):FSETS.length?'Saved ('+FSETS.length+')':'Save filters';
+ const k=$('flk');k.setAttribute('aria-pressed',FLOCK?'true':'false');$('flt').textContent=FLOCK?'Locked':'';$('fshk').setAttribute('d',FLOCK?'M5.2 7V5a2.8 2.8 0 0 1 5.6 0v2':'M5.2 7V5a2.8 2.8 0 0 1 5.4-1');
+ k.title=FLOCK?'Filters are locked: click to unlock':'Lock the filters so nothing can change them by accident'}
+function fsDesc(h){const p=new URLSearchParams(h),o=[];const add=(l,v)=>v&&o.push(l+v);add('Address: ',p.get('qa'));add('Owner/building: ',p.get('q'));add('Architect/builder: ',p.get('ar'));add('Street: ',p.get('st'));
+ add('Architects: ',p.getAll('a').join(', '));add('Contractors: ',p.getAll('c').join(', '));if(p.get('ca'))o.push('Areas: '+p.get('ca').split(',').map(n=>CAN[n]||n).join(', '));
+ if(p.get('from'))o.push('Dates: '+p.get('from')+' to '+p.get('to'));if(p.get('min')||p.get('max'))o.push('Cost: '+(p.get('min')||'0')+' to '+(p.get('max')||'no limit'));if(p.get('cf'))o.push('Confidence: '+p.get('cf'));if(p.get('vw'))o.push('Map view');
+ return o.join('\n')||'No filters'}
+function fsSave(name){name=(name||'').trim().slice(0,40);if(!name)return;const n=fsNow(),i=FSETS.findIndex(x=>x.name===name);if(i>=0)FSETS[i]={name,h:n.h};else FSETS.push({name,h:n.h});FACT=name;fsStore();fsMenuHide();fsRefresh()}
+function fsMenuHide(){const m=$('fmenu');m.hidden=true;$('fsb').setAttribute('aria-expanded','false')}
+function fsMenuShow(){const m=$('fmenu');m.textContent='';const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+ if(!FSETS.length)m.append(mk('div','fe','Nothing saved yet. Set up the filters you want, then name and save them below.'));
+ FSETS.forEach(s=>{const r=mk('div','fi'+(s.name===FACT?' act':'')),b=mk('button','fn',(s.name===FACT?'● ':'')+s.name),x=mk('button','fx','×');b.type=x.type='button';b.title=fsDesc(s.h)+(FLOCK?'\n\nUnlock the filters to load this set.':'');b.disabled=!!FLOCK;
+  b.onclick=()=>{FACT=s.name;fsMenuHide();fsApply(s.h)};x.title='Delete this set';let sure=0;
+  x.onclick=e=>{e.stopPropagation();if(!sure){sure=1;x.textContent='delete?';x.classList.add('sure');setTimeout(()=>{if(x.isConnected){sure=0;x.textContent='×';x.classList.remove('sure')}},2500);return}
+   FSETS=FSETS.filter(y=>y!==s);if(FACT===s.name)FACT='';fsStore();fsRefresh();fsMenuShow()};const cl=mk('button','fx fl','link');cl.type='button';cl.title='Copy a link to this saved set';cl.onclick=e=>{e.stopPropagation();fsCopy(fsLink(s.h),cl,'copied')};r.append(b,cl,x);m.append(r)});
+ const act=FSETS.find(x=>x.name===FACT);if(act){const n=fsNow();if(fsStrip(act.h)!==fsStrip(n.h)||(!!new URLSearchParams(act.h).get('vw'))!==$('inview').checked||fsViewDiff(act.h)){const u=mk('a','lk fu','Update “'+act.name+'” with the current filters');u.href='#';u.onclick=e=>{e.preventDefault();fsSave(act.name)};m.append(u)}}
+ const f=mk('div','fs'),i=mk('input'),sv=mk('button','btn','Save');i.placeholder='Name the current filters…';i.maxLength=40;i.setAttribute('aria-label','Name for the saved filters');sv.type='button';
+ const none=!fsStrip(fsNow().h)&&!$('inview').checked;if(none){i.disabled=sv.disabled=true;i.placeholder='Set some filters first'}
+ sv.onclick=()=>fsSave(i.value);i.onkeydown=e=>{if(e.key=='Enter')fsSave(i.value);e.stopPropagation()};f.append(i,sv);m.append(f);
+ m.hidden=false;$('fsb').setAttribute('aria-expanded','true');if(!i.disabled)i.focus()}
+$('fsb').onclick=e=>{e.stopPropagation();$('fmenu').hidden?fsMenuShow():fsMenuHide()};
+$('flk').onclick=e=>{e.stopPropagation();fsLock(!FLOCK)};
+$('fcp').onclick=e=>{e.stopPropagation();fsCopy(fsLink(fsNow().h),$('fcp'),'Link copied')};
+document.addEventListener('click',e=>{if(!$('fmenu').hidden&&!e.target.closest('#fmenu'))fsMenuHide()});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('flkp').hidden)$('flkp').hidden=true;if(e.key=='Escape'&&!$('fmenu').hidden){fsMenuHide();$('fsb').focus()}});
 /* chips show two rows; the rest sit behind "+N more" */
 let CHIPSOPEN=false;const CHIPROWS=1;      // chip rows shown before '+N more'
 function foldChips(){const box=$('chips'),more=$('chipmore');box.classList.remove('fold');box.style.maxHeight='';box.classList.toggle('open',CHIPSOPEN);more.hidden=true;if(!box.children.length)return;
@@ -1075,8 +1191,8 @@ function table(){tnote();tbh();stuckBar();setTimeout(markRow,0);const single=!AG
  $('tarea').hidden=AGG||single;
  if(AGG){$('tb').innerHTML='';const none=!$('chips').children.length;$('cprompt').innerHTML=none?'':`<b>${TOT.n.toLocaleString()}</b> permits match: add a search, area or street to list them here.`;$('tbar').hidden=none;document.querySelector('.dlw').hidden=[...$('chips').children].every(c=>/^Confidence:/.test(c.textContent));placeSoon();return}   // no download while nothing but confidence is filtered (that is still the whole file); the chip itself stays
  $('cprompt').textContent='';$('tbar').hidden=single;document.querySelector('.dlw').hidden=false;if(single){$('tb').innerHTML='';return}
- $('tb').innerHTML=cur.slice(PAGE*PS,PAGE*PS+PS).map((r,k0)=>{const k=PAGE*PS+k0;return `<tr class="r" data-k="${k}"><td>${r.d}${r.lat?'':'<span class=nopin title="Not on the map: this permit\'s address could not be placed">&#9676; no pin</span>'}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.hp?`<a class=cam data-k="${k}" title="Show the Cook County Assessor's photo of this property today">📷</a>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?(OWNERISH.test(arch(r))?esc(ownerOf(arch(r),r)):`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`):''}</td><td class="crew">${r.con?`<div class=con>${OWNERISH.test(r.con)?esc(ownerOf(r.con,r)):`<a class=lk data-c="${esc(r.con)}">${esc(r.con)}</a>`}</div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': '),nm=t.slice(i+2);return `<div class=trade><span>${esc(t.slice(0,i))}</span> ${OWNERISH.test(nm)?esc(ownerOf(nm,r)):`<a class=lk data-c="${esc(nm)}">${esc(nm)}</a>`}</div>`}).join(''):''}</td></tr>`}).join('')+(cur.length>PS?`<tr class="pgrow"><td colspan=10>${pagerHTML()}</td></tr>`:'');
- $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>{dock(true);show(cur[+e.dataset.k])});$('tb').querySelectorAll('a.cam').forEach(a=>a.onclick=ev=>{ev.stopPropagation();dock(true);show(cur[+a.dataset.k],true)});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();a.dataset.c!=null?pickPerson('c',a.dataset.c):pickPerson('a',a.dataset.a)})}
+ $('tb').innerHTML=cur.slice(PAGE*PS,PAGE*PS+PS).map((r,k0)=>{const k=PAGE*PS+k0;return `<tr class="r" data-k="${k}"><td>${r.d}${r.lat?'':'<span class=nopin title="Not on the map: this permit\'s address could not be placed">&#9676; no pin</span>'}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?(OWNERISH.test(arch(r))?esc(ownerOf(arch(r),r)):`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`):''}</td><td class="crew">${r.con?`<div class=con>${OWNERISH.test(r.con)?ownerLink(r.con,r):`<a class=lk data-c="${esc(r.con)}">${esc(r.con)}</a>`}</div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': '),nm=t.slice(i+2);return `<div class=trade><span>${esc(t.slice(0,i))}</span> ${OWNERISH.test(nm)?ownerLink(nm,r):`<a class=lk data-c="${esc(nm)}">${esc(nm)}</a>`}</div>`}).join(''):''}</td></tr>`}).join('')+(cur.length>PS?`<tr class="pgrow"><td colspan=10>${pagerHTML()}</td></tr>`:'');
+ $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>{dock(true);show(cur[+e.dataset.k])});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();a.dataset.c!=null?pickPerson('c',a.dataset.c):pickPerson('a',a.dataset.a)})}
 let CURR=null,phT=null;
 const ovUrl=r=>`https://maps.cookcountyil.gov/nearmapOpenlayers/?map=19.00/${r.lon}/${r.lat}/0${r.pin?'&pin10='+r.pin.slice(0,10):''}`;
 let MM=null;
@@ -1088,7 +1204,7 @@ function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
  setTimeout(()=>MM&&MM.invalidateSize(),50)}
 const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & Building');
 function phView(r,pin,label){
- const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`:ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
+ const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\S*\s+([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),face=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[face];return g==right})();
  const nbL=hiRight?(r.nb||{}).lo:(r.nb||{}).hi,nbR=hiRight?(r.nb||{}).hi:(r.nb||{}).lo;
@@ -1205,8 +1321,11 @@ function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b
 let DOCK=false,MODE='side';
 const canDock=()=>innerWidth>=1181;
 /* the open panel takes the right-hand column (same left edge and width as the By-decade / Architects widgets) at the full height of the window; the summary bar and table end where the map ends */
-function panePos(){if(document.body.classList.contains('paneopen'))document.body.style.setProperty('--pt',Math.max(0,document.querySelector('.side').getBoundingClientRect().top)+'px')}
-window.addEventListener('scroll',panePos,{passive:true});
+const SDA=!!(window.CSS&&CSS.supports&&CSS.supports('animation-timeline','scroll()'));
+function panePos(){if(document.body.classList.contains('paneopen')){const t=document.querySelector('.side').getBoundingClientRect().top,pt0=Math.max(0,t+scrollY);document.body.style.setProperty('--pt',Math.max(0,t)+'px');document.body.style.setProperty('--pt0',pt0+'px');
+ /* the glide needs the page to scroll at least as far as the panel starts from the top; on a short page (e.g. no table shown) it would never finish and the panel's bottom would stay cut off, so the script-set top is used there */
+ document.body.classList.toggle('panejs',!SDA||document.documentElement.scrollHeight-innerHeight<pt0+2)}}
+window.addEventListener('scroll',()=>{if(document.body.classList.contains('panejs'))panePos()},{passive:true});   /* the scroll-driven animation needs no per-scroll script (and its forced layout) */
 function fitPane(){panePos();const on=document.body.classList.contains('paneopen'),sd=document.querySelector('.side').getBoundingClientRect(),mp=document.querySelector('.mapc').getBoundingClientRect();
  document.body.style.setProperty('--px',sd.left+'px');document.body.style.setProperty('--pw',sd.width+'px');
  for(const id of ['tbar','tarea']){const e=$(id);e.style.marginRight='';if(on&&!e.hidden){const pr=e.parentElement.getBoundingClientRect().right,over=e.getBoundingClientRect().right-mp.right;e.style.marginRight=Math.max(0,over)+'px'}}}
@@ -1221,7 +1340,7 @@ let ATBOT=false;
 function panelScroller(){const d=$('detail');if(!d||d.hidden||!d.offsetHeight)return null;
  for(const el of [d,$('tdock'),document.querySelector('.side')]){if(!el||!el.offsetHeight)continue;const oy=getComputedStyle(el).overflowY;if((oy=='auto'||oy=='scroll')&&el.scrollHeight>el.clientHeight+4)return el}return null}
 addEventListener('scroll',()=>{const bot=innerHeight+scrollY>=document.documentElement.scrollHeight-3;
- if(bot&&!ATBOT){const el=panelScroller();if(el&&el.scrollTop+el.clientHeight<el.scrollHeight-4)el.scrollTo({top:el.scrollHeight,behavior:'smooth'})}ATBOT=bot},{passive:true});
+ if(bot&&!ATBOT){const el=$('tarea').hidden?panelScroller():null;   /* only when the table is not shown */if(el&&el.scrollTop+el.clientHeight<el.scrollHeight-4)el.scrollTo({top:el.scrollHeight,behavior:'smooth'})}ATBOT=bot},{passive:true});
 addEventListener('resize',()=>{if(!canDock()){setMode('side');reserve(false)}else{reserve(!!CURR&&!$('detail').hidden);placeSoon()}});
 /* the table's right margin (it stops where the map card ends, beside the open panel) is measured, so it must be re-measured whenever the table or its bar is shown/hidden or the layout width changes:
    otherwise a table that appears after the panel opened (e.g. after a refresh, when the data arrives later) is left at full width under the panel */
@@ -1238,13 +1357,15 @@ const placeSoon=()=>{if(!adT)adT=setTimeout(placeDetail,30)};
 window.addEventListener('scroll',placeSoon,{passive:true});
 function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr){tr.classList.add('sel');keepRowInView(tr)}}updTableBtn()}
 /* the "Table row" button: shown whenever the open permit has a row in the table, unless that row is already on screen (below the frozen bar); it can jump to another page of the table */
-function updTableBtn(){const b=$('dtable');if(!b)return;const k=(CURR&&!AGG&&!$('tarea').hidden)?cur.findIndex(r=>r.id===CURR.id):-1;
+function updTableBtn(){updTableBtn0();const t=$('dtable'),m=$('dmap');if(m)m.hidden=!(CURR&&CURR.lat&&t&&t.hidden)}   // "Show on map" takes the place of "Table row" whenever that one is not shown
+function updTableBtn0(){const b=$('dtable');if(!b)return;const k=(CURR&&!AGG&&!$('tarea').hidden)?cur.findIndex(r=>r.id===CURR.id):-1;
  if(k<0){b.hidden=true;return}
  const tr=k>=PAGE*PS&&k<PAGE*PS+PS?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;
  if(!tr){b.hidden=false;return}                                   // its row is on another page of the table
  const r=tr.getBoundingClientRect(),top=($('tbar')?$('tbar').offsetHeight:52)+44;b.hidden=r.bottom>top&&r.top<innerHeight-8}
 $('dtable').onclick=()=>{const k=CURR?cur.findIndex(r=>r.id===CURR.id):-1;if(k<0)return;const pg=Math.floor(k/PS);if(pg!==PAGE){PAGE=pg;table()}
  setTimeout(()=>{const tr=$('tb').querySelector(`tr.r[data-k="${k}"]`);if(tr)tr.scrollIntoView({behavior:'smooth',block:'center'})},60)};
+$('dmap').onclick=()=>{if(!CURR||!CURR.lat)return;$('map').scrollIntoView({behavior:'smooth',block:'center'});flyTo(CURR);if($('inview').checked)map.once('moveend',()=>{MOVEBYCODE=0})};   // with "Filter by map" on, let the move end re-run the filter so the dots of the new view are drawn (flyTo normally holds that back while a permit is open)
 window.addEventListener('scroll',()=>{if(CURR&&!$('detail').hidden)updTableBtn()},{passive:true});window.addEventListener('resize',()=>updTableBtn());
 function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 const placeNote=r=>{const m=String(r.gm||'').replace('renamed:',''),nb=r.nb||{},near=[...(nb.lo||[]).slice(0,1),...(nb.hi||[]).slice(0,1)].map(x=>x[2]),nm=near.map(x=>'<b>'+esc(x)+'</b>').join(' and ');
@@ -1263,8 +1384,11 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
- const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?money(r.cost)+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
- const who=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0])).map(x=>`<div class=wr><span class=wl>${esc(x[0])}</span><span class=wv>${x[0]!='owner'&&OWNERISH.test(x[1])?esc(ownerOf(x[1],r)):x[0]=='architect'?`<a class=lk onclick='pickPerson("a",this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?`<span class=wa>${esc(x[2])}</span>`:''}${x[3]?`<span class=wa>from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan</span>`:''}</span></div>`).join('');
+ const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?(r.calt?`<span class=ptdot title="The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.">${money(r.cost)}</span>`:money(r.cost))+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
+ const whoAll=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0]));
+ const whoCells=x=>`<span class=wl>${esc(x[0])}</span><span class=wv>${x[0]!='owner'&&OWNERISH.test(x[1])?(x[0]=='architect'||!ownName(r)?esc(ownerOf(x[1],r)):`Owner (<a class=lk onclick='pickPerson("c",this.textContent)'>${esc(ownName(r))}</a>)`):x[0]=='architect'?`<a class=lk onclick='pickPerson("a",this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?`<span class=wa>${esc(x[2])}</span>`:''}${x[3]?`<span class=wa>from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan</span>`:''}</span>`,whoRow=x=>`<div class=wr>${whoCells(x)}</div>`;
+ const isMain=x=>x[0]=='owner'||/^arch/i.test(x[0]||''),wMain=whoAll.filter(isMain),wTr=whoAll.filter(x=>!isMain(x));
+ const who=wTr.length?Array.from({length:Math.max(wMain.length,wTr.length)},(_,i)=>`<div class='wr w4'>${wMain[i]?whoCells(wMain[i]):'<span></span><span></span>'}${wTr[i]?whoCells(wTr[i]):'<span></span><span></span>'}</div>`).join(''):whoAll.map(whoRow).join('');
  const b0=b[0]||{};
  $('mt').innerHTML=`<div class=hd>
   <div class=addr>${(r.chg||r.nowp||r.a9e)&&r.site?`<span class=ptd title="Printed as: ${esc(r.site)}${r.chg?' (street since renamed)':''}${r.a9e?'. Today\'s number is estimated: the '+(r.a9y==1914?'Morgan Park 1914 street-renaming mapping':r.a9y?'1911 Loop renumbering guide':'1909 renumbering guide')+' does not list the printed number, so it was worked out from the numbers around it.':''}">${esc(r.mod||r.site)}</span>`:esc(r.mod||r.site||'Address not given')}</div>${r.lat?'':`<div class="mut" style="font-size:13px;margin-top:4px">Not on the map: ${r.mod||r.site?'this address could not be matched to a County address point.':'the entry gives no street address.'}</div>`}
@@ -1280,12 +1404,11 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  <div id=ph></div>
  <dl class=c2>
   ${yb?`<dt>Note</dt><dd class=mut>${yb}</dd>`:''}
-  ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}
-  ${r.calt?`<dt></dt><dd class=flag>The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.</dd>`:''}</dl>
- ${(r.pp||'').startsWith('The American Contractor index')?`<h3>${esc(ppName(String(r.pp).replace(' (Chicago History Museum)','')))} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a> and request the image for ${esc(r.ix?r.ix[0]:'this address')} on Page ${esc(r.pg||'?')} of the issue from ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}.${r.ix?` The index for this permit has the following: address: ${esc(r.ix[0]||'(none)')}; owner: ${esc(r.ix[1]||'(none)')}; architect: ${esc(r.ix[2]||'(none)')}; date of issue: ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(r.pg||'?')}.`:''}</p>`:`<h3>${esc(ppName(r.pp)||'The printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button></p>
+  ${r.unc?'<dt></dt><dd class=flag>Some letters were hard to read in the scan.</dd>':''}</dl>
+ ${(r.pp||'').startsWith('The American Contractor index')?`<h3>${esc(ppName(String(r.pp).replace(' (Chicago History Museum)','')))} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a> and request the image for ${esc(r.ix?r.ix[0]:'this address')} on Page ${esc(r.pg||'?')} of the issue from ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}.${r.ix?` The index for this permit has the following: address: ${esc(r.ix[0]||'(none)')}; owner: ${esc(r.ix[1]||'(none)')}; architect: ${esc(r.ix[2]||'(none)')}; date of issue: ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(r.pg||'?')}.`:''}</p>`:`<h3>${esc(ppName(r.pp)||'The printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button></p>
  <p class=rawtxt>${esc(r.text)}</p>`}
  ${r.rep&&r.rep.length?(()=>{const it=r.rep.map(x=>new Date(x[0]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+(x[1]?' (page '+esc(x[1])+')':'')),list=it.length==1?it[0]:it.length==2?it[0]+' and '+it[1]:it.slice(0,-1).join('; ')+'; and '+it[it.length-1];return `<p class=chmnote>The same entry was printed again in the ${it.length>1?'issues':'issue'} of ${list}.</p>`})():''}
- ${r.chm?r.chm.map(c=>`<h3>The American Contractor index &middot; Page ${esc(c[3]||'?')} &middot; ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</h3><p class=chmnote>The Museum&rsquo;s index also lists a permit at this address${c[0]?' (owner '+esc(c[0])+(c[1]?'; architect '+esc(c[1]):'')+')':c[1]?' (architect '+esc(c[1])+')':''}. The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.</p>`).join(''):''}`;
+ ${r.chm?r.chm.map(c=>`<h3>The American Contractor index &middot; Page ${esc(c[3]||'?')} &middot; ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><p class=chmnote>The Museum&rsquo;s index also lists a permit at this address. The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.${c[4]?` The index has the following: address: ${esc(c[4][0]||'(none)')}; owner: ${esc(c[4][1]||'(none)')}; architect: ${esc(c[4][2]||'(none)')}; date of issue: ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(c[3]||'?')}.`:c[0]||c[1]?` The index lists owner ${esc(c[0]||'(none)')} and architect ${esc(c[1]||'(none)')}.`:''}</p>`).join(''):''}`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
  updTableBtn();clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  reserve(true);if(!DOCK)$('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;{const ix0=cur.indexOf(r);if(ix0>=0&&Math.floor(ix0/PS)!==PAGE){PAGE=Math.floor(ix0/PS);table()}}markRow();
@@ -1337,7 +1460,7 @@ new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
 // the architect box suggests names as you type (from the small index); it filters the table only when you pick a name or press Enter, so typing does not pull the full 6 MB of permit rows
 $('ar').addEventListener('input',()=>{if(!$('ar').value)go()});$('ar').addEventListener('keydown',e=>{if(e.key=='Enter'&&(sgI<0||$('sg').hidden))go()});
 document.querySelectorAll('#cfb .cfo').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.v;if(CF.has(v)){if(CF.size>1)CF.delete(v)}else CF.add(v);syncCF();go()}));$('k1').addEventListener('input',()=>slideCost(1));$('k2').addEventListener('input',()=>slideCost(2));$('c1').addEventListener('change',typedCost);$('c2').addEventListener('change',typedCost);
-$('inview').addEventListener('change',()=>go());
+$('inview').addEventListener('change',()=>{if(!$('inview').checked)VIEWB=null;go()});
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onchange=()=>{perIssue=$('mv').checked;go()};
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
