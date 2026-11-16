@@ -395,7 +395,8 @@ function oldHit(r,it){if(OQK!==SQ){OQK=SQ;OQ={o:new RegExp(oldPre+esc_(it[2])+'(
 function streetHit(r){if(OSN[SQ])return oldHit(r,OSN[SQ]);if(SQK!==SQ){SQK=SQ;SQRE=new RegExp('^[\\d\\s,\\-\u2013&]*(?:(?:and|to)\\s+[\\d\\-\u2013]+\\s*)*(?:(?:n|s|e|w|north|south|east|west)\\s+)?'+streetCanon(sqBase()).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\s|$)')}
  return [r.mod,r.site,r.a9,r.a9y==1914?r.a9o:null].some(t=>t&&SQRE.test(streetCanon(t)))}
 /* ---- map ---- */
-const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
+const METRO=L.latLngBounds([41.45,-88.45],[42.45,-87.25]);   // the Chicago metro area: the map cannot be dragged or zoomed out beyond it
+const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21,maxBounds:METRO,maxBoundsViscosity:1}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 /* Every pin is a circle; how far to trust it shows in its form, whatever its colour: High = a solid disc; Medium = a disc with a small hole (the map shows through); Low = a slightly smaller, paler disc with a grey outline.
    Shape depends on the confidence level only. The hole needs the canvas renderer and a dot of radius 4+; smaller Medium dots are a paler solid disc. */
 L.ShapeMarker=L.CircleMarker.extend({options:{conf:3},_updatePath:function(){
@@ -406,7 +407,7 @@ L.ShapeMarker=L.CircleMarker.extend({options:{conf:3},_updatePath:function(){
  if(r<4){ctx.beginPath();ctx.arc(p.x,p.y,r,0,PI*2);ctx.globalAlpha=.5;ctx.fillStyle=o.fillColor;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=o.color;ctx.lineWidth=1;ctx.stroke();return}
  const h=r*.28;ctx.beginPath();ctx.arc(p.x,p.y,r,0,PI*2);ctx.arc(p.x,p.y,h,0,PI*2,true);ctx.globalAlpha=.92;ctx.fillStyle=o.fillColor;ctx.fill('evenodd');ctx.globalAlpha=1;
  ctx.strokeStyle=o.color;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,r,0,PI*2);ctx.stroke();ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,h,0,PI*2);ctx.stroke()}});
-new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
+new ResizeObserver(()=>{map.invalidateSize();map.setMinZoom(map.getBoundsZoom(METRO,true));cityReFit()}).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 const osmBase=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:21,maxNativeZoom:19,className:'tiles'});   // added by baseSet() below
 /* ---- plat maps: the City of Chicago's 80-acre plat cache (gisapps.chicago.gov, Illinois State Plane East) re-projected on the fly onto our Web Mercator map.
    Each source tile is placed with one affine canvas transform (the two grids differ by a ~0.45-degree rotation and a scale), so edges stay smooth.
@@ -693,7 +694,7 @@ function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
   l.on('click',()=>{if(!commMode())return;const n=f.properties.n,pick=!AREAS.has(n);pick?AREAS.add(n):AREAS.delete(n);caLabel();if($('cap'))caList();go()});
   l.on('mouseover',()=>l.setStyle({weight:2.5,color:css('--fg')}));l.on('mouseout',()=>style(l));
-  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}`},{sticky:true,className:'tip'});l.on('tooltipopen',()=>{if(!commMode())l.closeTooltip()})}}).addTo(map);ptLayer.addTo(map);map.fitBounds(caLayer.getBounds())}
+  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}<br><i>Double-click to zoom in and see every permit</i>`},{sticky:true,className:'tip'});l.on('tooltipopen',()=>{if(!commMode())l.closeTooltip()})}}).addTo(map);ptLayer.addTo(map);cityFit()}
  const vals=Object.values(stat).map(s=>s[metric]).filter(v=>v>0).sort((a,b)=>a-b);
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
@@ -702,7 +703,10 @@ function drawCA(){
 /* ---- map: community areas with counts at zoom 14 and out; every permit as its own dot from zoom 15 ---- */
 
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
-let lastComm=null;
+let lastComm=null;var CITYZ=null,CITYC=null;
+/* the whole city in view: fitted when the area shapes load, and again when the map pane changes size, as long as the view is still the one this fit made (once the user or a search moves the map, it is left alone) */
+function cityFit(){if(!caLayer)return;map.fitBounds(caLayer.getBounds(),{padding:[4,4],animate:false});CITYZ=map.getZoom();CITYC=map.getCenter()}
+function cityReFit(){if(CITYZ!==null&&caLayer&&map.getZoom()===CITYZ&&map.getCenter().distanceTo(CITYC)<50)cityFit()}
 /* ---- the note in the map heading: how many permits are in the results; with "Filter by map" on, how many of them are inside the map view ---- */
 function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
@@ -1540,7 +1544,7 @@ $('r1').addEventListener('input',()=>slide(1));$('r2').addEventListener('input',
  $(id).addEventListener('keydown',e=>{if(e.key!='ArrowLeft'&&e.key!='ArrowRight')return;e.preventDefault();if(!ISS.length)return;const w=V[1]-V[0],t=V[0]+$(id).value/1000*w;let k=0,best=1e9;ISSN.forEach((x,i)=>{const d=Math.abs(x-t);if(d<best){best=d;k=i}});k=Math.max(0,Math.min(ISS.length-1,k+(e.key=='ArrowLeft'?-1:1)));const keep=id=='r1'?(R.b||ISS[ISS.length-1]):(R.a||ISS[0]);const mine=ISS[k];const a=id=='r1'?mine:keep,b=id=='r1'?keep:mine;if(a<=b){R={a,b};if(a<=som(ISS[0])&&b>=eom(ISS[ISS.length-1]))R={a:null,b:null};syncRange();clearTimeout(goT);goT=setTimeout(go,140)}})});
 $('d1').addEventListener('change',typedRange);$('d2').addEventListener('change',typedRange);
 $('rz').onclick=()=>{V=fullSpan();syncRange()};
-new ResizeObserver(()=>map.invalidateSize()).observe($('map'));
+new ResizeObserver(()=>{map.invalidateSize();map.setMinZoom(map.getBoundsZoom(METRO,true));cityReFit()}).observe($('map'));
 // the architect box suggests names as you type (from the small index); it filters the table only when you pick a name or press Enter, so typing does not pull the full 6 MB of permit rows
 $('ar').addEventListener('input',()=>{if(!$('ar').value)go()});$('ar').addEventListener('keydown',e=>{if(e.key=='Enter'&&(sgI<0||$('sg').hidden))go()});
 document.querySelectorAll('#cfb .cfo').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.v;if(CF.has(v)){if(CF.size>1)CF.delete(v)}else CF.add(v);syncCF();go()}));$('k1').addEventListener('input',()=>slideCost(1));$('k2').addEventListener('input',()=>slideCost(2));$('c1').addEventListener('change',typedCost);$('c2').addEventListener('change',typedCost);
