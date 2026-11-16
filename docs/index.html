@@ -396,13 +396,13 @@ function streetHit(r){if(OSN[SQ])return oldHit(r,OSN[SQ]);if(SQK!==SQ){SQK=SQ;SQ
 /* ---- map ---- */
 const map=L.map('map',{renderer:L.canvas({tolerance:6}),attributionControl:false,maxZoom:21}).setView([41.84,-87.68],10);L.control.attribution({position:'topright'}).addTo(map);
 /* Every pin is a circle; the FORM shows how far to trust it, whatever its colour: High = a solid disc; Medium = a disc with a hole (the map shows through); Low = a small dot.
-   A permit placed at a street corner (no house number printed) counts as Medium (corner) or Low (corner-low). The hole needs the canvas renderer and a dot of radius 4+; smaller Medium dots are a paler solid disc. */
+   Shape depends on the confidence level only. The hole needs the canvas renderer and a dot of radius 4+; smaller Medium dots are a paler solid disc. */
 L.ShapeMarker=L.CircleMarker.extend({options:{conf:3},_updatePath:function(){
  const R=this._renderer,o=this.options;
  if(o.conf!==2||!R||!R._ctx||this._empty())return L.CircleMarker.prototype._updatePath.call(this);
  const ctx=R._ctx,p=this._point,r=this._radius;ctx.lineJoin='round';
  if(r<4){ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.globalAlpha=.5;ctx.fillStyle=o.fillColor;ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle=o.color;ctx.lineWidth=1;ctx.stroke();return}
- const h=r*.46;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.arc(p.x,p.y,h,0,Math.PI*2,true);ctx.globalAlpha=.92;ctx.fillStyle=o.fillColor;ctx.fill('evenodd');ctx.globalAlpha=1;
+ const h=r*.28;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.arc(p.x,p.y,h,0,Math.PI*2,true);ctx.globalAlpha=.92;ctx.fillStyle=o.fillColor;ctx.fill('evenodd');ctx.globalAlpha=1;
  ctx.strokeStyle=o.color;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,h,0,Math.PI*2);ctx.stroke()}});
 new ResizeObserver(()=>map.invalidateSize()).observe($('map'));   // the map follows its pane when the filters pane grows or shrinks
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:21,maxNativeZoom:19,className:'tiles'}).addTo(map);
@@ -720,7 +720,7 @@ function drawDots(low){
    g.forEach((r,i)=>{const t=i*2.39996,d=sp*Math.sqrt(i)*1.0;PL.set(r,i?map.layerPointToLatLng(L.point(c0.x+d*Math.cos(t),c0.y+d*Math.sin(t))):[r.lat,r.lon])})})}
  const posOf=r=>PL.get(r)||[r.lat,r.lon];
  vis.forEach(r=>{const rad=radOf(r);
-   const cf=confOf(r),c=new L.ShapeMarker(posOf(r),{conf:cf,radius:cf==1?Math.max(rad*.5,1.3):rad,weight:cf==1?1:1.5,fillColor:dotColor(r),fillOpacity:cf==1?.85:.9,color:css('--ring')});
+   const cf=confOf(r),c=new L.ShapeMarker(posOf(r),{conf:cf,radius:cf==1?Math.max(rad*.66,1.5):rad,weight:cf==1?1:1.5,fillColor:dotColor(r),fillOpacity:cf==1?.85:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);if(MEAS.on)return;const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
@@ -1007,7 +1007,7 @@ const rampC=t=>{const x=Math.max(0,Math.min(1,t))*(TIMEPAL.length-1),i=Math.floo
 const timeColor=(k,i)=>CHART.gran=='d'?(DECC[k]||OTHERC):rampC(CHART.ks.length>1?i/(CHART.ks.length-1):.5);
 function setArchPalette(all){ARCHCOL={};ARCHTOP=[];const seen=new Set();for(const nm of [...[...AS].map(k=>AN[k]||k),...all.map(x=>x[0])]){const k=nk(nm);if(!k||seen.has(k))continue;seen.add(k);if(ARCHTOP.length<8){ARCHCOL[k]=ARCHPAL[ARCHTOP.length];ARCHTOP.push({k,name:AN[k]||nm,color:ARCHCOL[k]})}}}
 const archColor=a=>DOTC=='arch'?(ARCHCOL[nk(a)]||OTHERC):'';
-function confOf(r){return r.geo=='corner'?2:r.geo=='corner-low'?1:r.cf}   // 3 High, 2 Medium, 1 Low (a corner placement is Medium, corner-low is Low)
+function confOf(r){return r.cf}   // 3 High, 2 Medium, 1 Low: the confidence alone (corner placements already carry their own level)
 function dotColor(r){if(DOTC=='arch')return ARCHCOL[nk(arch(r))]||OTHERC;
  if(DOTC=='time'){const k=CHART.key(r.d),i=CHART.ks.indexOf(k);return i<0?OTHERC:timeColor(k,i)}
  if(!(r.cost>0))return OTHERC;let b=0;while(b<COSTBR.length&&r.cost>=COSTBR[b])b++;return COSTC[b]}
