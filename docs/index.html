@@ -713,14 +713,17 @@ function cityReFit(){if(CITYZ!==null&&caLayer&&map.getZoom()===CITYZ&&map.getCen
 function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
-let MAPJ=null;
-function mapJump(el,txt){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
- MAPJ.textContent=txt||'Filters';el.appendChild(document.createTextNode('\u2003\u00b7\u2003'));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
+let MAPJ=null,FILT=[],HIDN=0;
+function clearFilters(){SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();AS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);$('inview').checked=false;CF.clear();CF.add(3);syncCF();if($('cap'))caList();go()}
+function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#';MAPJ.className='lk mapjump';MAPJ.textContent='Clear filters';
+  MAPJ.onmouseenter=()=>{MAPJ.title='Filters applied:\n'+FILT.map(t=>'\u2022 '+t).join('\n')+(HIDN?'\n\n'+HIDN.toLocaleString()+' permits filtered out':'')+'\n\nClick to clear them all'};
+  MAPJ.onclick=e=>{e.preventDefault();clearFilters()}}
+ el.appendChild(document.createTextNode('\u2003\u00b7\u2003'));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
 function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
  if(f){const all=allIgnoringView();
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
  const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
- const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;if(hid)mapJump(el,hid.toLocaleString()+' filtered');else if(filtersOn())mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
+ const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;HIDN=hid;if(filtersOn())mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
@@ -1103,6 +1106,7 @@ function chips(){toHash();qlocUpdate();const c=[];
  if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()},1]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
+ FILT=c.map(x=>x[0]).filter(t=>!/^\+ add all/.test(t));
  $('chips').innerHTML='';
  if(c.length>1){const e=document.createElement('span');e.className='chip';e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
  c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
