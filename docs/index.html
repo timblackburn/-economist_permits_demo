@@ -472,7 +472,7 @@ const HistLayer=L.GridLayer.extend({
    img.onload=()=>{const w=256/(1<<k),g=t.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);done(null,t)};
    img.onerror=()=>{URL.revokeObjectURL(u);done(null,t)};img.src=u}).catch(()=>done(null,t));
   return t}});
-let HISTON=false,HISTOP=.7;try{HISTON=localStorage.getItem('histOn')=='1';HISTOP=+localStorage.getItem('histOp')||.7}catch(e){}
+let HISTON=false,HISTOP=.85;try{HISTON=localStorage.getItem('histOn')=='1';HISTOP=+localStorage.getItem('histOp')||.85}catch(e){}
 const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:HISTOP,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
 const ICON_HIST='<svg viewBox="0 0 24 24"><path d="M4 5.5 9 4l6 1.5L20 4v14.5L15 20l-6-1.5L4 20z"/><path d="M9 4v14.5M15 5.5V20"/></svg>',
  ICON_SAT='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
@@ -480,7 +480,7 @@ const ICON_HIST='<svg viewBox="0 0 24 24"><path d="M4 5.5 9 4l6 1.5L20 4v14.5L15
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
  d.innerHTML='<a href="#" id=aerbtn role=button class=hid title="Satellite view: Cook County 2024 aerial photos (leaf-off)" aria-label="Satellite view">'+ICON_SAT+'</a>'
-  +'<a href="#" id=histbtn role=button title="1906 map: Blanchard\'s map of Chicago laid over today\'s map" aria-label="1906 map" aria-pressed="false">'+ICON_HIST+'</a><div id=histop class=histop hidden><span>1906</span><input id=histrange type=range min=10 max=100 value=70 aria-label="1906 map opacity"><span>today</span></div>'
+  +'<a href="#" id=histbtn role=button title="1906 map: Blanchard\'s map of Chicago laid over today\'s map" aria-label="1906 map" aria-pressed="false">'+ICON_HIST+'</a><div id=histop class=histop hidden><span>1906</span><input id=histrange type=range min=10 max=100 value=85 aria-label="1906 map opacity"><span>today</span></div>'
   +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>';
  L.DomEvent.disableClickPropagation(d);return d};
 toolCtl.addTo(map);
@@ -490,6 +490,7 @@ function aerSync(){const b=$('aerbtn');if(!b)return;
  if(aerLayer){if(AERON&&!map.hasLayer(aerLayer))aerLayer.addTo(map);else if(!AERON&&map.hasLayer(aerLayer))map.removeLayer(aerLayer)}}
 $('aerbtn').addEventListener('click',e=>{e.preventDefault();AERON=!AERON;try{localStorage.setItem('aerialOn',AERON?'1':'0')}catch(err){}aerSync()});
 map.on('zoomend moveend',aerSync);aerSync();
+if(histLayer)histLayer.on('add',()=>{histLayer.getContainer().style.mixBlendMode='multiply'});   // multiply: the map's white paper lets today's map show through unchanged; only its ink and colours darken it. The slider fades the ink.
 function histSync(){const b=$('histbtn');if(!b)return;b.classList.toggle('on',HISTON);b.setAttribute('aria-pressed',HISTON);$('histop').hidden=!HISTON;
  if(histLayer){if(HISTON&&!map.hasLayer(histLayer))histLayer.addTo(map);else if(!HISTON&&map.hasLayer(histLayer))map.removeLayer(histLayer)}}
 if(histLayer){$('histrange').value=Math.round(HISTOP*100);$('histbtn').addEventListener('click',e=>{e.preventDefault();HISTON=!HISTON;try{localStorage.setItem('histOn',HISTON?'1':'0')}catch(err){}histSync()});
