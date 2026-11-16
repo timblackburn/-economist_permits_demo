@@ -291,6 +291,10 @@ html.mob .filters .shade{display:none!important}
 .qw .big,#ar{padding-right:30px}#mpill #qa{padding-right:30px}
 /* search / filter inputs: a light field colour (not the card's white) so they read as inputs; white again while typing */
 .fbar input,.fbar select,.filters input,.filters select,.dates input,.cabtn,.qw .big{background:var(--field)}.fbar input:focus,.filters input:focus,.filters select:focus,.dates input:focus{background:var(--surface)}
+/* the filter panel styles its fields as underlined (no box, transparent) with ID-level selectors, so the light field colour needs the same selectors: a filled field that keeps the underline; white while focused */
+#filters .fbox .fg input:not([type=range]):not([type=checkbox]):not([type=radio]),#filters .fbox .cabtn,#filters .fbox .dates input{background:var(--field);border-radius:4px 4px 0 0;padding-left:8px}
+#filters .fbox .dates input{padding-right:8px}
+#filters .fbox .fg input:not([type=range]):not([type=checkbox]):not([type=radio]):focus,#filters .fbox .dates input:focus{background:var(--surface)}
 #mapnote .mapjump{font-size:13px;font-weight:normal;white-space:nowrap}
 </style></head><body>
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
