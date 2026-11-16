@@ -138,7 +138,7 @@ header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:
 footer .credit{white-space:nowrap}
 td:first-child{white-space:nowrap}
 .mapc>#map{margin-left:-17px;margin-right:-17px;border-radius:0}.dotkey .kl{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center}.leaflet-top.leaflet-right .leaflet-control-attribution{margin-top:6px;margin-right:6px;font-size:10.5px}
-.mapc>h2{margin-bottom:0}.legend .it{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:8px}#pgr{display:inline-flex;gap:8px;align-items:center;font-size:13px}#pgr .btn,.pgrow .btn{padding:4px 10px;font-size:13px}.pgrow td{text-align:center;padding:14px;background:var(--bg)!important;cursor:default}tbody tr.pgrow:hover{background:var(--bg)!important}
+.mapc>h2{margin-bottom:0}.mapc>h2 a.mapjump{color:#fff;font-size:12px;text-decoration:underline}.legend .it{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;margin-right:8px}#pgr{display:inline-flex;gap:8px;align-items:center;font-size:13px}#pgr .btn,.pgrow .btn{padding:4px 10px;font-size:13px}.pgrow td{text-align:center;padding:14px;background:var(--bg)!important;cursor:default}tbody tr.pgrow:hover{background:var(--bg)!important}
 @media(min-width:1181px){#detail.floating{position:fixed!important;top:calc(var(--tbh,52px) + 10px);right:20px;width:clamp(400px,34vw,520px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto!important;z-index:36;margin:0}}
 .mapc>h2{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}.mapc>h2 .shade{margin-left:auto;white-space:nowrap}
 #detail .dbar{padding:6px 10px;min-height:0}#detail .dbar .btn{padding:2px 8px;font-size:12.5px;line-height:1.5}#detail .dbar #pos{font-size:12px;min-width:0;margin:0 4px}#detail .dbar .dnav{gap:3px}
@@ -708,13 +708,13 @@ function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$(
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
 let MAPJ=null;
-function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.textContent='Filters \u2193';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
+function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.textContent='Filters';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
  el.appendChild(document.createTextNode(' \u00b7 '));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
 function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
  if(f){const all=allIgnoringView();
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
- const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;if(hid)t+=' · '+hid.toLocaleString()+' filtered out';   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
- const unp=Math.max(0,TOT.n-TOT.placed);if(unp&&!f&&filtersOn())t+=' · '+unp.toLocaleString()+' not on map';el.textContent=t;mapJump(el);el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''}
+ const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
+ const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
@@ -1291,7 +1291,7 @@ const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & 
 function phView(r,pin,label){
  const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
- const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\S*\s+([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),face=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[face];return g==right})();
+ const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\b.*?\s([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),face=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[face];return g==right})();
  const nbL=hiRight?(r.nb||{}).lo:(r.nb||{}).hi,nbR=hiRight?(r.nb||{}).hi:(r.nb||{}).lo;
  const nb=r.nb&&((r.nb.lo||[])[0]||(r.nb.hi||[])[0])?`<div class=pins>${one((nbL||[])[0],true)} ${r.pin?`<button class="btn${(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin))?' on':''}" data-pin="${r.pin}" data-label="" title="Back to the permit's own building">This building</button>`:''} ${one((nbR||[])[0],false)}</div>`:'';
  const real=pin&&pin!=='__loading';
