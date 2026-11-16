@@ -714,7 +714,7 @@ function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('ma
  if(f){const all=allIgnoringView();
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
  const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
- const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
+ if(hid)t+=' · '+hid.toLocaleString()+' filtered';const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;if(filtersOn())mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
