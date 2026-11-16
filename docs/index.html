@@ -715,7 +715,8 @@ function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$(
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
 let MAPJ=null,FILT=[],HIDN=0;
-function clearFilters(){SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();AS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);$('inview').checked=false;CF.clear();CF.add(3);syncCF();if($('cap'))caList();go()}
+function clearFilters(){if(FLOCK)fsLock(false);   // clearing the filters also takes the lock off
+ SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();AS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);$('inview').checked=false;CF.clear();CF.add(3);syncCF();if($('cap'))caList();go()}
 function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#';MAPJ.className='lk mapjump';MAPJ.textContent='Clear filters';
   MAPJ.onmouseenter=()=>{MAPJ.title='Filters applied:\n'+FILT.map(t=>'\u2022 '+t).join('\n')+(HIDN?'\n\n'+HIDN.toLocaleString()+' permits filtered out':'')+'\n\nClick to clear them all'};
   MAPJ.onclick=e=>{e.preventDefault();clearFilters()}}
