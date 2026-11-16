@@ -707,7 +707,7 @@ function drawCA(){
 function drawPts(){drawPts0();if(CURR&&CURR.lat&&!$('detail').hidden)L.circleMarker([CURR.lat,CURR.lon],{radius:15,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(ptLayer)}
 let lastComm=null;var CITYZ=null,CITYC=null;
 /* the whole city in view: fitted when the area shapes load, and again when the map pane changes size, as long as the view is still the one this fit made (once the user or a search moves the map, it is left alone) */
-function cityFit(){if(!caLayer)return;map.fitBounds(caLayer.getBounds(),{padding:[4,4],animate:false});CITYZ=map.getZoom();CITYC=map.getCenter()}
+function cityFit(){if(!caLayer)return;{const b=caLayer.getBounds();map.setView(b.getCenter(),map.getBoundsZoom(b,false,L.point(4,4))+1,{animate:false})}CITYZ=map.getZoom();CITYC=map.getCenter()}
 var USERMOVED=false;['mousedown','wheel','touchstart','keydown','dblclick'].forEach(ev=>$('map').addEventListener(ev,()=>{USERMOVED=true},{passive:true,capture:true}));
 function cityReFit(){if(CITYZ!==null&&caLayer&&!USERMOVED&&!VIEWB&&map.getZoom()===CITYZ)cityFit()}
 /* ---- the note in the map heading: how many permits are in the results; with "Filter by map" on, how many of them are inside the map view ---- */
