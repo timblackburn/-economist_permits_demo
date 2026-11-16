@@ -4,7 +4,7 @@
 <script>try{if(localStorage.getItem('permits-beta')==='1')document.documentElement.classList.add('authed')}catch(e){}</script>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">   <!-- Leaflet 1.9.4, served from this site (docs/vendor/leaflet), not a third-party CDN -->
 <style>
-:root{--bg:#fbfaf7;--surface:#fff;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;--selrow:#fff0c2;
+:root{--bg:#fbfaf7;--surface:#fff;--field:#f1eee6;--fg:#222;--mut:#6b6558;--line:#ddd6c6;--acc:#8a2f1d;--s1:#2a78d6;--s2:#eb6834;--ring:#fff;--hd:#1d3a5a;--wh:#35597e;--th:#35597e;--stripe:#f5f2ea;--rowhover:#e6edf5;--selrow:#fff0c2;
 --q1:#e3eefb;--q2:#bcd6f3;--q3:#8db9ea;--q4:#5a98de;--q5:#2a78d6;--none:#ece8dd}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 Georgia,serif}
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
@@ -289,6 +289,9 @@ html.mob .filters .shade{display:none!important}
 .sgw .xclr{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:22px;height:22px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--mut);font-size:19px;line-height:1;cursor:pointer;display:none}
 .sgw input:not(:placeholder-shown)~.xclr{display:flex;align-items:center;justify-content:center}.sgw .xclr:hover{color:var(--fg);background:var(--line)}
 .qw .big,#ar{padding-right:30px}#mpill #qa{padding-right:30px}
+/* search / filter inputs: a light field colour (not the card's white) so they read as inputs; white again while typing */
+.fbar input,.fbar select,.filters input,.filters select,.dates input,.cabtn,.qw .big{background:var(--field)}.fbar input:focus,.filters input:focus,.filters select:focus,.dates input:focus{background:var(--surface)}
+#mapnote .mapjump{font-size:13px;font-weight:normal;white-space:nowrap}
 </style></head><body>
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
@@ -478,42 +481,43 @@ const HistLayer=L.GridLayer.extend({
   return t}});
 let HISTON=false,HISTOP=.85;try{HISTON=localStorage.getItem('histOn')=='1';HISTOP=+localStorage.getItem('histOp')||.85}catch(e){}
 const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:HISTOP,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
-const ICON_BASE='<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/></svg>',
- ICON_HIST='<svg viewBox="0 0 24 24"><path d="M4 5.5 9 4l6 1.5L20 4v14.5L15 20l-6-1.5L4 20z"/><path d="M9 4v14.5M15 5.5V20"/></svg>',
+ICON_HIST='<svg viewBox="0 0 24 24"><path d="M4 5.5 9 4l6 1.5L20 4v14.5L15 20l-6-1.5L4 20z"/><path d="M9 4v14.5M15 5.5V20"/></svg>',
  ICON_SAT='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
- d.innerHTML='<a href="#" id=basebtn role=button class=hid title="Base map" aria-label="Base map">'+ICON_BASE+'</a>'
-  +'<a href="#" id=aerbtn role=button class=hid title="Satellite view: Cook County 2024 aerial photos (leaf-off)" aria-label="Satellite view">'+ICON_SAT+'</a>'
+ d.innerHTML='<a href="#" id=aerbtn role=button class=hid title="Satellite view: Cook County 2024 aerial photos (leaf-off)" aria-label="Satellite view">'+ICON_SAT+'</a>'
   +'<a href="#" id=histbtn role=button title="1906 map: Blanchard\'s map of Chicago laid over today\'s map" aria-label="1906 map" aria-pressed="false">'+ICON_HIST+'</a><div id=histop class=histop hidden><span>1906</span><input id=histrange type=range min=10 max=100 value=85 aria-label="1906 map opacity"><span>today</span></div>'
   +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>';
  L.DomEvent.disableClickPropagation(d);return d};
 toolCtl.addTo(map);
 
 /* ---- base map. "Plain" = a self-hosted Protomaps vector map: ONE PMTiles file on our blob storage (Chicago, zoom 0-15; closer in, the same shapes are enlarged), painted in the browser by protomaps-leaflet
-   (muted grey; green open land; outlined buildings; dark street names; house numbers from zoom 18). OpenStreetMap's own tiles are the alternative and the fallback: the button only shows when the file answers,
-   the 128 KB library and the style file load only when the plain map is shown, and any failure leaves OpenStreetMap on the map. ?basemap=<url> overrides the file (testing). ---- */
-const BASEMAP_URL=(new URLSearchParams(location.search)).get('basemap')||'https://chicagopermits.blob.core.windows.net/aerial/chicago_basemap.pmtiles';
-let BASEPREF='plain',BASE='osm',PLAIN_OK=null,plainLayer=null;try{BASEPREF=localStorage.getItem('baseMap')||'plain'}catch(e){}
+   (muted grey; green open land; outlined buildings; dark street names; house numbers from zoom 18). OpenStreetMap's own tiles are only the fallback: there is no switch; if the file cannot be read, OpenStreetMap shows.
+   The 128 KB library and the style file load only when the plain map is shown, and any failure leaves OpenStreetMap on the map. ?basemap=<url> overrides the file (testing). ---- */
+const BASEMAP_URL=(new URLSearchParams(location.search)).get('basemap')||'https://chicagopermits.blob.core.windows.net/aerial/chicago_basemap.pmtiles',
+ RASTER_URL=(new URLSearchParams(location.search)).get('basemapr')||'https://chicagopermits.blob.core.windows.net/aerial/chicago_basemap_raster.pmtiles',RASTER_MINZ=10,RASTER_MAXZ=16;
+/* Zoomed out (10-16) the plain map is shown as PICTURE tiles (a second PMTiles file, drawn from the same style by scripts/basemap_raster.py; WebP, sharp on high-density screens): painting vector tiles there takes
+   0.3-0.4 s a screen, an image about a tenth of that. Closer in (17+) and further out (0-9) the vector tiles are used. Only one of the two layers is on the map at a time; if the picture file is missing, vector is used at every zoom. */
+let BASE='osm',PLAIN_OK=null,RASTER_OK=null,plainLayer=null,rasterLayer=null,SWAP=0;
 const loadJS=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=()=>no(new Error('load '+src));document.head.appendChild(e)});
-async function plainProbe(){if(PLAIN_OK!==null)return PLAIN_OK;try{const r=await fetch(BASEMAP_URL,{headers:{Range:'bytes=0-6'}});const t=r.ok?new TextDecoder().decode(await r.arrayBuffer()).slice(0,7):'';PLAIN_OK=t==='PMTiles'}catch(e){PLAIN_OK=false}return PLAIN_OK}
+const probePM=async url=>{try{const r=await fetch(url,{headers:{Range:'bytes=0-6'}});return r.ok&&new TextDecoder().decode(await r.arrayBuffer()).slice(0,7)==='PMTiles'}catch(e){return false}};
+async function plainProbe(){if(PLAIN_OK===null){PLAIN_OK=await probePM(BASEMAP_URL);RASTER_OK=PLAIN_OK?await probePM(RASTER_URL):false}return PLAIN_OK}
 async function plainBuild(){if(plainLayer)return plainLayer;
- await loadJS('vendor/protomaps-leaflet/protomaps-leaflet.js');const fl=await (await fetch('vendor/protomaps-leaflet/flavor_plain.json')).json();
- const LAND={'#d3dfca':['pitch','garden','recreation_ground','dog_park','playground','common','village_green','park'],'#cfdcc6':['meadow','grassland','grass'],'#dfe3d2':['farmland'],'#cbd9d3':['wetland'],'#cedbc5':['golf_course','cemetery','allotments','nature_reserve']};
- const paint=protomapsL.paintRules(fl).filter(r=>r.dataLayer!=='buildings');let li=-1;paint.forEach((r,i)=>{if(r.dataLayer==='landuse'||r.dataLayer==='landcover'||r.dataLayer==='natural')li=i});
- paint.splice(li+1,0,...Object.entries(LAND).map(([fill,kinds])=>({dataLayer:'landuse',symbolizer:new protomapsL.PolygonSymbolizer({fill}),filter:(z,f)=>kinds.includes(f.props.kind)})));   // land kinds the library has no colour for (pitches, gardens, meadows, wetlands...)
- paint.push({dataLayer:'buildings',symbolizer:new protomapsL.PolygonSymbolizer({fill:fl.buildings,stroke:'#9c9c9c',width:0.9})});
- const lab=protomapsL.labelRules(fl);lab.push({dataLayer:'buildings',symbolizer:new protomapsL.CenteredTextSymbolizer({labelProps:['addr_housenumber'],fill:'#4f4f4f',stroke:'#e4e4e4',width:1.5,font:()=>'500 11px sans-serif'}),filter:(z,f)=>f.props.kind==='address',minzoom:18});   // today's house numbers
- plainLayer=protomapsL.leafletLayer({url:BASEMAP_URL,maxDataZoom:15,maxZoom:21,paintRules:paint,labelRules:lab,backgroundColor:fl.background});return plainLayer}
-async function baseSet(want,save){
+ await loadJS('vendor/protomaps-leaflet/protomaps-leaflet.js');await loadJS('vendor/protomaps-leaflet/plain_style.js');const st=await plainStyle('vendor/protomaps-leaflet/flavor_plain.json');
+ plainLayer=protomapsL.leafletLayer({url:BASEMAP_URL,maxDataZoom:15,maxZoom:21,...st});
+ if(RASTER_OK){const pm=new pmtiles.PMTiles(RASTER_URL),RL=L.GridLayer.extend({createTile(c,done){const img=document.createElement('img');img.alt='';
+   pm.getZxy(c.z-1,c.x,c.y).then(r=>{if(!r)return done(null,img);const u=URL.createObjectURL(new Blob([r.data],{type:'image/webp'}));img.onload=()=>{URL.revokeObjectURL(u);done(null,img)};img.onerror=()=>{URL.revokeObjectURL(u);done(null,img)};img.src=u}).catch(()=>done(null,img));return img}});
+  rasterLayer=new RL({tileSize:512,minZoom:RASTER_MINZ,maxZoom:21,maxNativeZoom:RASTER_MAXZ,attribution:'<a href="https://protomaps.com" target=_blank rel=noopener>Protomaps</a> \u00a9 <a href="https://openstreetmap.org/copyright" target=_blank rel=noopener>OpenStreetMap</a>'})}   // 1024 px pictures (2x2 stitched, stored one zoom lower) shown at 512 css px: sharp on high-density screens, a quarter of the requests
+ return plainLayer}
+const tilesReady=(l,ms)=>new Promise(res=>{const t0=performance.now(),poll=()=>{if(performance.now()-t0>ms||(l._tiles&&Object.keys(l._tiles).length&&l._noTilesToLoad()))res();else setTimeout(poll,40)};setTimeout(poll,60)});
+async function plainSync(){if(BASE!=='plain'||!plainLayer)return;const z=map.getZoom(),pic=!!rasterLayer&&z>=RASTER_MINZ&&z<=RASTER_MAXZ,want=pic?rasterLayer:plainLayer,oth=pic?plainLayer:rasterLayer,tok=++SWAP;
+ if(!map.hasLayer(want))want.addTo(map);if(oth&&map.hasLayer(oth)){await tilesReady(want,2500);if(tok===SWAP&&map.hasLayer(oth))map.removeLayer(oth)}}   // the new layer is on and drawn before the old one goes: no grey flash
+map.on('zoomend',plainSync);
+async function baseSet(want){
  if(want==='plain'){try{if(!(await plainProbe()))throw 0;await plainBuild()}catch(e){PLAIN_OK=false;want='osm'}}
- const cur=want==='plain'?plainLayer:osmBase,oth=want==='plain'?osmBase:plainLayer;if(oth&&map.hasLayer(oth))map.removeLayer(oth);if(!map.hasLayer(cur))cur.addTo(map);BASE=want;
- if(save){try{localStorage.setItem('baseMap',want)}catch(e){}}
- const b=$('basebtn');if(b){b.classList.toggle('hid',!PLAIN_OK);b.classList.toggle('on',BASE==='plain');b.setAttribute('aria-pressed',BASE==='plain');
-  b.title=BASE==='plain'?'Base map: plain (click for OpenStreetMap)':'Base map: OpenStreetMap (click for the plain map)'}}
-$('basebtn').addEventListener('click',e=>{e.preventDefault();baseSet(BASE==='plain'?'osm':'plain',true)});
-if(BASEPREF==='plain')baseSet('plain',false);else{baseSet('osm',false);plainProbe().then(()=>baseSet('osm',false))}   // 'plain' is the default; OpenStreetMap shows at once if the file is missing, and the button appears once the file answers
+ BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
+baseSet('plain');   // the plain map is THE base map; OpenStreetMap's own tiles show only if the plain file cannot be read
 function aerSync(){const b=$('aerbtn');if(!b)return;
  const near=!!aerLayer&&map.getZoom()>=AERIAL_MINZ&&map.getBounds().intersects(AERIAL_LL);
  b.classList.toggle('hid',!near);b.classList.toggle('on',AERON);b.setAttribute('aria-pressed',AERON);
@@ -707,10 +711,14 @@ let lastComm=null;
 function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
+let MAPJ=null;
+function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.textContent='Filters \u2193';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
+ el.appendChild(document.createTextNode(' \u00b7 '));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
 function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
  if(f){const all=allIgnoringView();
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
- const unp=Math.max(0,TOT.n-TOT.placed);if(unp&&!f&&filtersOn())t+=' · '+unp.toLocaleString()+' not on map';el.textContent=t;el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''}
+ const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;if(hid)t+=' · '+hid.toLocaleString()+' filtered out';   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
+ const unp=Math.max(0,TOT.n-TOT.placed);if(unp&&!f&&filtersOn())t+=' · '+unp.toLocaleString()+' not on map';el.textContent=t;mapJump(el);el.title=unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''}
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
@@ -897,7 +905,7 @@ const CFTIP={3:{h:'High: on or beside the building',p:"The permit's street numbe
   document.addEventListener('click',e=>{if(q.getAttribute('aria-expanded')=='true'&&!tip.contains(e.target))close()});addEventListener('keydown',e=>{if(e.key=='Escape')close()});
   addEventListener('scroll',()=>{if(q.getAttribute('aria-expanded')=='true')close()},true)}}
 function cubeLevels(){const c=[0,0,0,0];for(const m in COUNTS.cube){if(!inPeriod({d:m+'-01'}))continue;const a=COUNTS.cube[m];for(const k in a){const v=a[k];c[1]+=v[2];c[2]+=v[4];c[3]+=v[6]}}return c}   // counts by level from the monthly cube (no row-level filter on)
-function setCFCounts(c){document.querySelectorAll('#cfb .cfo').forEach(b=>{const e=b.querySelector('.cfc');if(e)e.textContent=c?(c[+b.dataset.v]||0).toLocaleString():''})}
+function setCFCounts(c){document.querySelectorAll('#cfb .cfo').forEach(b=>{const e=b.querySelector('.cfc'),v=+b.dataset.v;if(e)e.textContent=c&&CF.has(v)?(c[v]||0).toLocaleString():''})}   // a count only beside the levels that are ticked (under the other filters)
 function syncCF(){document.querySelectorAll('#cfb .cfo').forEach(b=>{const on=CF.has(+b.dataset.v);b.classList.toggle('on',on);b.setAttribute('aria-checked',on)})}
 const costOn=()=>CLO>0||CHI<Infinity,fmtC=v=>v>=1e6?'$'+(+(v/1e6).toFixed(2))+'M':v>=1e3?'$'+(+(v/1e3).toFixed(1))+'k':'$'+v;
 function parseC(t){t=(t||'').trim().toLowerCase().replace(/[$,\s]/g,'');const m=t.match(/^(\d+(?:\.\d+)?)(k|m)?$/);if(!m)return null;return Math.round(+m[1]*(m[2]=='k'?1e3:m[2]=='m'?1e6:1))}
