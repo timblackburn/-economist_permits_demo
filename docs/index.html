@@ -708,13 +708,13 @@ function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$(
   if(AREAS.size){if([...AREAS].every(k=>LOADED.has(String(k))))all=D.filter(flt('view')).length}   // the chosen areas' rows are loaded: count them all, ignoring the map view
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
 let MAPJ=null;
-function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.textContent='Filters';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
- el.appendChild(document.createTextNode(' \u00b7 '));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
+function mapJump(el,txt){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#filters';MAPJ.className='lk mapjump';MAPJ.title='Jump to the search and filter controls';MAPJ.onclick=e=>{e.preventDefault();$('filters').scrollIntoView({behavior:'smooth',block:'start'})}}
+ MAPJ.textContent=txt||'Filters';el.appendChild(document.createTextNode('\u2003\u00b7\u2003'));el.appendChild(MAPJ)}   // the link goes back on every time: the note's text is replaced on each update
 function mapNote(){const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote');let t=n.toLocaleString()+' permits';
  if(f){const all=allIgnoringView();
   t=n.toLocaleString()+(all!=null?' of '+all.toLocaleString():'')+' in view'}
  const hid=!f&&COUNTS&&COUNTS.n>n?COUNTS.n-n:0;   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter
- if(hid)t+=' · '+hid.toLocaleString()+' filtered';const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;if(filtersOn())mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
+ const unp=Math.max(0,TOT.n-TOT.placed);el.textContent=t;if(hid)mapJump(el,hid.toLocaleString()+' filtered');else if(filtersOn())mapJump(el);el.title=[hid?hid.toLocaleString()+' more permits in the archive are filtered out':'',unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
