@@ -185,7 +185,11 @@ td:first-child{white-space:nowrap}
 .measpanel .mseglist{max-height:180px;overflow:auto}.measpanel .mrow{display:flex;gap:6px;align-items:baseline;padding:0 1px;border-bottom:1px solid var(--line)}.measpanel .mrow span{width:1.2em;color:var(--mut);font-size:10.5px}.measpanel .mrow b{font-size:14.5px}.measpanel .mrow i{margin-left:auto;font-style:normal;color:var(--mut);font-size:11px}
 .measpanel .mtot{margin-top:3px;color:var(--mut);font-size:11.5px}.measpanel .mtot b{color:var(--fg);font-size:13px}
 .measpanel .mact{display:flex;gap:4px}.measpanel .mact button{flex:1;padding:1px 2px}
-.measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive{cursor:crosshair!important}
+.measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive,.studying,.studying .leaflet-grab,.studying .leaflet-interactive{cursor:crosshair!important}
+.studypanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.3 system-ui,sans-serif;width:222px;margin-bottom:22px;margin-right:10px}.studypanel[hidden]{display:none}.studypanel button{font:inherit;font-size:11.5px;padding:2px 7px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.studypanel button:hover:not(:disabled){border-color:var(--acc)}.studypanel button:disabled{opacity:.45;cursor:default}
+.studypanel .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}.studypanel .sh button{border:0;background:none;font-size:16px;line-height:1;padding:0 2px;color:var(--mut)}.studypanel .sout{color:var(--mut);margin-bottom:5px}.studypanel .sout b{color:var(--fg)}.studypanel .srow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}.studypanel .srow button{flex:1 1 auto}.studypanel .srow .pri{background:var(--s1);color:#fff;border-color:var(--s1)}
+.studypanel .ssave{display:flex;gap:4px;margin-bottom:5px}.studypanel .ssave input{flex:1;min-width:0;font:inherit;font-size:12px;padding:2px 5px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px}.studypanel .slh{color:var(--mut);font-size:11px;border-top:1px solid var(--line);padding-top:4px;margin-top:2px}.studypanel .sl{display:flex;gap:4px;align-items:center;margin-top:3px}.studypanel .sl .sn{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.studypanel .sl .sx{border:0;background:none;color:var(--mut);font-size:14px;padding:0 3px}.studypanel .sl .sx.sure{color:#c0392b;font-size:11px}
+.svert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #e8590c;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}.svert.first{width:20px;height:20px;margin:-3px 0 0 -3px;background:#ffe8cc;cursor:pointer!important}
 .mvert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #ffd400;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 .mseg span{display:block;width:max-content;transform:translate(-50%,-50%);background:#111;color:#ffe45c;border:1.5px solid #fff;border-radius:4px;padding:1px 6px;font:700 14px/18px system-ui,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;pointer-events:none}
 .platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
@@ -381,6 +385,7 @@ if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
 var INVOFF=false;   /* the person switched Filter by map off while zoomed in: do not turn it back on until they zoom out */
+var POLY=null,PBB=null,STUDY={on:false,panel:false,pts:[],cur:null,drag:false,t:0,g:null,v:null,rnd:null,from:null};   /* the study area: POLY = the saved/active shape as [[lat,lng],...] (a filter like the others, kept in the page address as sa=), PBB = its bounding box; STUDY = the drawing tool's state */
 var FLOCK=null,FSETS=[],FACT='',RESTORING=0,VIEWB=null,INITVIEW=null,INITLOCK=false,VMOVE=0;   /* VIEWB = a saved map extent that the filter uses instead of the window's own view (set by a shared link or a saved set, dropped when the map is moved or Filter by map is turned off) */
    /* the filter lock (the frozen filters), the saved sets, the active set's name */
 let AREAT=Date.now(),AKEY='';const GAPQ=new URLSearchParams(location.search).has('gap');   // TEMPORARY: ?gap=1 shows only permits placed by the street grid because the County has no address within 2 blocks (the block may be gone: expressway etc.)
@@ -397,7 +402,9 @@ const arch=r=>r.ar||'';const OWNERISH=/^(owners?|same|self)\b/i,ownerOf=(t,r)=>O
 const ownName=r=>(r.own||'').split(';')[0].trim(),ownerLink=(t,r)=>{const n=ownName(r);return n?`Owner (<a class=lk data-c="${esc(n)}">${esc(n)}</a>)`:esc(ownerOf(t,r))};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const BLB={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};
-const blTag=r=>r.bl&&r.bl[0]>1?`<span class=nbld title="${esc('This entry is for '+r.bl[0]+' buildings: '+(BLB[r.bl[1]]||'')+'.')}">${r.bl[0]} buildings</span>`:'';
+const blTag=r=>{const b=r.bl;   // "N buildings" only where the description itself gives the count (it counts them, or says "each"); otherwise how many addresses the printed list or range holds
+ if(b&&b[0]>1&&(b[1]=='count'||b[1]=='each'))return `<span class=nbld title="${esc('This entry is for '+b[0]+' buildings: '+(BLB[b[1]]||'')+'.')}">${b[0]} buildings</span>`;
+ return r.ad>1?`<span class=nbld title="${esc('The printed address holds '+r.ad+' house numbers (a list or a range). The description does not say how many buildings.')}">${r.ad} addresses</span>`:''};
 const num=r=>{let t=0;for(const m of (r.sz||'').matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
 const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -522,6 +529,7 @@ let HISTON=false,HISTOP=.85;try{HISTON=localStorage.getItem('histOn')=='1';HISTO
 const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:9,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
 ICON_LAYERS='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
  ICON_PIN='<svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3H7l3-3z"/><path d="M12 12v8"/></svg>',
+ ICON_STUDY='<svg viewBox="0 0 24 24"><path d="M5 6.5 14 4l5.5 6.5-2 8.5-9 .5L4 13z" stroke-dasharray="2.6 2.2"/><circle cx="5" cy="6.5" r="1.2"/><circle cx="14" cy="4" r="1.2"/><circle cx="19.5" cy="10.5" r="1.2"/><circle cx="17.5" cy="19" r="1.2"/><circle cx="8.5" cy="19.5" r="1.2"/><circle cx="4" cy="13" r="1.2"/></svg>',
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
 const HYEAR={h1892:1892,h1906:1906,h1913:1913,h1930:1930,sb50:1950};   // the Layers menu lists the imagery oldest first (2024 satellite and the plat map follow)
 const HMAPS=[{k:'h1906',name:'1906 map',full:"Blanchard's Map of Chicago, 1906 (David Rumsey Map Collection no. 4464.001; public domain)"},
@@ -532,7 +540,7 @@ const HMAPS=[{k:'h1906',name:'1906 map',full:"Blanchard's Map of Chicago, 1906 (
 const URLBTN=k=>'<button type=button class=layurl data-k='+k+' title="Copy the PMTiles file address, to use as a layer in QGIS or another GIS program that reads PMTiles" aria-label="Copy the PMTiles URL">URL</button>';
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
- d.innerHTML='<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a><a href="#" id=fsbtn role=button title="Full screen: the map and the permit details only" aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></a>';
+ d.innerHTML='<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a><a href="#" id=studybtn role=button title="Study area: draw a shape on the map and keep only the permits inside it" aria-label="Study area">'+ICON_STUDY+'</a><a href="#" id=fsbtn role=button title="Full screen: the map and the permit details only" aria-label="Full screen" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></a>';
  L.DomEvent.disableClickPropagation(d);return d};
 toolCtl.addTo(map);
 /* bottom right: [old-map slider] [Layers button], with the menu opening upwards from the button */
@@ -681,7 +689,7 @@ measCtl.onAdd=()=>{const d=L.DomUtil.create('div','measpanel');
   ;d.title='Click a building\'s corners; drag a corner to adjust.';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
 function measOn(on){
- if(on===MEAS.on)return;MEAS.on=on;
+ if(on===MEAS.on)return;if(on&&STUDY.on)studyCancel();MEAS.on=on;
  if(on){if(!MEAS.g){MEAS.rnd=L.svg({padding:.5});MEAS.g=L.layerGroup();MEAS.v=L.layerGroup()}MEAS.g.addTo(map);MEAS.v.addTo(map);measCtl.addTo(map);map.getContainer().classList.add('measuring');
   document.querySelectorAll('.measpanel [data-m]').forEach(b=>b.onclick=()=>measMode(b.dataset.m));
   $('measundo').onclick=()=>{MEAS.pts.pop();measDraw()};$('measclr').onclick=()=>{MEAS.pts=[];measDraw()};$('measx').onclick=()=>measOn(false);
@@ -736,6 +744,69 @@ document.addEventListener('keydown',e=>{if(!MEAS.on||/^(INPUT|TEXTAREA|SELECT)$/
  if(e.ctrlKey||e.metaKey||e.altKey){if(!((e.ctrlKey||e.metaKey)&&e.key=='z'))return}
  else if(e.key=='d'||e.key=='D'){measMode('len');return}else if(e.key=='a'||e.key=='A'){measMode('area');return}else if(e.key=='c'||e.key=='C'){MEAS.pts=[];measDraw();return}
  if(e.key=='Escape')measOn(false);else if(e.key=='Backspace'||((e.ctrlKey||e.metaKey)&&e.key=='z')){e.preventDefault();MEAS.pts.pop();measDraw()}});
+/* ---- study area: draw a shape on the map and keep only the permits inside it.
+   Click to place corners; drag the map to pan and scroll to zoom between clicks, so a large area can be drawn over several screens. Finish by clicking the first corner, double-clicking, or pressing Enter.
+   The shape is a filter like the others (POLY): a chip, part of saved filter sets and shared links (sa=, corners delta-coded in base 36), and it can also be saved on its own by name (this browser). ---- */
+const studyBusy=()=>STUDY.on||Date.now()-STUDY.t<450;   /* true while drawing and just after: the click that ends a shape must not also pick an area or a dot */
+function polyEnc(p){let a=0,b=0;const o=[];for(const [y,x] of p){const Y=Math.round(y*1e5),X=Math.round(x*1e5);o.push((Y-a).toString(36),(X-b).toString(36));a=Y;b=X}return o.join('.')}
+function polyDec(s){if(!s)return null;const v=s.split('.').map(t=>parseInt(t,36));if(v.length<6||v.length%2||v.some(x=>!isFinite(x)))return null;let a=0,b=0;const o=[];for(let i=0;i<v.length;i+=2){a+=v[i];b+=v[i+1];o.push([a/1e5,b/1e5])}return o.every(q=>Math.abs(q[0])<=90&&Math.abs(q[1])<=180)?o:null}
+function polyBox(){PBB=null;if(!POLY)return;let a=90,b=180,c=-90,d=-180;for(const [y,x] of POLY){if(y<a)a=y;if(y>c)c=y;if(x<b)b=x;if(x>d)d=x}PBB=[a,b,c,d]}
+function inPoly(la,lo){const B=PBB;if(la<B[0]||la>B[2]||lo<B[1]||lo>B[3])return false;let ins=false;for(let i=0,j=POLY.length-1;i<POLY.length;j=i++){const ai=POLY[i][0],oi=POLY[i][1],aj=POLY[j][0],oj=POLY[j][1];if((ai>la)!==(aj>la)&&lo<(oj-oi)*(la-ai)/(aj-ai)+oi)ins=!ins}return ins}
+function polyShards(){if(LEGACY||!CA||!PBB)return ALLKEYS;viewShards();const b=L.latLngBounds([PBB[0],PBB[1]],[PBB[2],PBB[3]]).pad(.02);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
+function polyFit(){if(!POLY)return;MOVEBYCODE=Date.now()+3000;map.fitBounds(L.latLngBounds(POLY).pad(.06),{animate:false})}
+function polySet(p){POLY=p&&p.length>=3?p:null;polyBox();polyDraw()}   /* state only: the caller runs go() */
+function studyInit(){if(STUDY.g)return;STUDY.rnd=L.svg({padding:.5});STUDY.g=L.layerGroup().addTo(map);STUDY.v=L.layerGroup().addTo(map)}
+function polyDraw(verts){studyInit();STUDY.g.clearLayers();const o={renderer:STUDY.rnd,interactive:false},P=STUDY.on?STUDY.pts:POLY;
+ if(P&&P.length){
+  if(STUDY.on){const ll=P.slice();
+   if(P.length>=3)STUDY.g.addLayer(L.polygon(P,{...o,stroke:false,fillColor:'#e8590c',fillOpacity:.1}));
+   if(ll.length>1){STUDY.g.addLayer(L.polyline(ll,{...o,color:'#000',weight:7,opacity:.6}));STUDY.g.addLayer(L.polyline(ll,{...o,color:'#e8590c',weight:3.5}))}
+   if(STUDY.cur&&!STUDY.drag){const last=P[P.length-1];STUDY.g.addLayer(L.polyline([last,STUDY.cur],{...o,color:'#e8590c',weight:2.5,dashArray:'7 6'}));if(P.length>=2)STUDY.g.addLayer(L.polyline([STUDY.cur,P[0]],{...o,color:'#e8590c',weight:1.5,dashArray:'2 6',opacity:.8}))}}
+  else{STUDY.g.addLayer(L.polygon(P,{...o,color:'#000',weight:7,opacity:.45,fill:false}));STUDY.g.addLayer(L.polygon(P,{...o,color:'#e8590c',weight:3,fillColor:'#e8590c',fillOpacity:.07}))}}
+ if(verts!==false){STUDY.v.clearLayers();if(STUDY.on)STUDY.pts.forEach((ll,i)=>{const m=L.marker(ll,{draggable:true,keyboard:false,icon:L.divIcon({className:'svert'+(i==0?' first':''),iconSize:i==0?[20,20]:[14,14]})});
+   m.on('dragstart',()=>{STUDY.drag=true});m.on('dragend',()=>{STUDY.drag=false;polyDraw(false)});m.on('drag',e=>{const q=e.target.getLatLng();STUDY.pts[i]=[q.lat,q.lng];polyDraw(false)});
+   if(i==0)m.on('click',()=>{if(STUDY.pts.length>=3)studyFinish()});STUDY.v.addLayer(m)})}}
+function studyStart(edit){if(FLOCK){fsAskUnlock();return}if(MEAS.on)measOn(false);studyInit();studyPanel(true);STUDY.on=true;STUDY.pts=edit&&POLY?POLY.map(p=>p.slice()):[];STUDY.cur=null;map.doubleClickZoom.disable();map.getContainer().classList.add('studying');polyDraw();studyUI()}
+function studyEnd(){STUDY.on=false;STUDY.cur=null;STUDY.drag=false;STUDY.pts=[];STUDY.v.clearLayers();map.getContainer().classList.remove('studying');setTimeout(()=>{if(!STUDY.on)map.doubleClickZoom.enable()},450);polyDraw();studyUI()}
+function studyCancel(){STUDY.t=Date.now();studyEnd()}
+function studyFinish(){if(STUDY.pts.length<3){studyUI('Place at least three corners first.');return}
+ STUDY.t=Date.now();const pts=STUDY.pts.map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)]);studyEnd();polySet(pts);$('inview').checked=false;go()}   /* the shape replaces "Filter by map": it is the place filter now */
+function studyUndo(){STUDY.pts.pop();polyDraw();studyUI()}
+function studyUse(sa){if(FLOCK){fsAskUnlock();return}const p=polyDec(sa);if(!p)return;if(STUDY.on)studyCancel();polySet(p);$('inview').checked=false;polyFit();go()}
+function studyRemove(){if(FLOCK){fsAskUnlock();return}polySet(null);go()}
+let STUDYSAVED=(()=>{try{const a=JSON.parse(localStorage.getItem('permits-study-areas')||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&polyDec(x.sa)):[]}catch(e){return[]}})();
+const studyStore=()=>{try{localStorage.setItem('permits-study-areas',JSON.stringify(STUDYSAVED))}catch(e){}};
+function studySave(name){name=(name||'').trim().slice(0,40);if(!name||!POLY)return;const i=STUDYSAVED.findIndex(x=>x.name===name),o={name,sa:polyEnc(POLY)};if(i>=0)STUDYSAVED[i]=o;else STUDYSAVED.push(o);studyStore();studyUI('Saved as “'+name+'”.')}
+const studyCtl=L.control({position:'bottomright'});
+studyCtl.onAdd=()=>{const d=L.DomUtil.create('div','studypanel');
+ d.innerHTML='<div class=sh><b>Study area</b><button type=button id=studyx title="Close" aria-label="Close the study area panel">×</button></div><div class=sout id=studyout></div><div class=srow id=studyr1></div>'
+  +'<div class=ssave id=studysv><input id=studynm maxlength=40 placeholder="Name this area to save it…" aria-label="Name for the saved study area"><button type=button id=studysb>Save</button></div><div id=studylist></div>';
+ L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
+function studyPanel(on){if(on===STUDY.panel)return;STUDY.panel=on;
+ if(on){studyCtl.addTo(map);$('studyx').onclick=()=>{if(STUDY.on)studyCancel();studyPanel(false)};
+  const sv=()=>{studySave($('studynm').value)};$('studysb').onclick=sv;$('studynm').onkeydown=e=>{if(e.key=='Enter')sv();e.stopPropagation()};studyUI()}
+ else map.removeControl(studyCtl);
+ $('studybtn').classList.toggle('on',on);$('studybtn').setAttribute('aria-pressed',on)}
+function studyUI(msg){const el=$('studyout');if(!STUDY.panel||!el)return;
+ const mk=(t,c,x,f)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;if(f){e.type='button';e.onclick=f}return e},r=$('studyr1');r.textContent='';let n,save=false;
+ if(STUDY.on){n=STUDY.pts.length;el.innerHTML=msg?esc(msg):n<3?'Click the map to place corners. Drag the map to pan and scroll to zoom, then keep clicking.':'<b>'+n+'</b> corners. Click the first corner, double-click or press Enter to finish.';
+  const f=mk('button','pri','Finish (↵)',studyFinish);f.disabled=n<3;r.append(f,mk('button','','Undo (⌫)',studyUndo),mk('button','','Clear',()=>{STUDY.pts=[];polyDraw();studyUI()}),mk('button','','Cancel (Esc)',studyCancel))}
+ else if(POLY){const t=typeof TOT!=='undefined'&&TOT&&TOT.n!=null?' · <b>'+TOT.n.toLocaleString()+'</b> permits match':'';el.innerHTML=msg?esc(msg):'<b>'+POLY.length+'</b> corners'+t;save=true;
+  r.append(mk('button','','Edit corners',()=>studyStart(true)),mk('button','','Redraw',()=>studyStart(false)),mk('button','','Zoom to it',polyFit),mk('button','','Remove',studyRemove))}
+ else{el.innerHTML=msg?esc(msg):'Draw a shape on the map to keep only the permits inside it.';r.append(mk('button','pri','Draw an area',()=>studyStart(false)))}
+ $('studysv').style.display=save?'':'none';
+ const L2=$('studylist');L2.textContent='';if(STUDYSAVED.length){L2.append(mk('div','slh','Saved study areas'));
+  STUDYSAVED.forEach(s=>{const row=mk('div','sl'),b=mk('button','sn',s.name,()=>studyUse(s.sa)),x=mk('button','sx','×');b.title='Use this area as a filter ('+polyDec(s.sa).length+' corners)';x.type='button';x.title='Delete this saved area';let sure=0;
+   x.onclick=()=>{if(!sure){sure=1;x.textContent='delete?';x.classList.add('sure');setTimeout(()=>{if(x.isConnected){sure=0;x.textContent='×';x.classList.remove('sure')}},2500);return}STUDYSAVED=STUDYSAVED.filter(y=>y!==s);studyStore();studyUI()};row.append(b,x);L2.append(row)})}}
+$('studybtn').addEventListener('click',e=>{e.preventDefault();if(STUDY.panel){if(STUDY.on)studyCancel();studyPanel(false)}else{studyPanel(true);if(!POLY&&!STUDYSAVED.length)studyStart(false)}});
+map.on('click',e=>{if(!STUDY.on)return;STUDY.t=Date.now();const P=STUDY.pts,l=P[P.length-1];
+ if(l&&map.latLngToContainerPoint(l).distanceTo(e.containerPoint)<5)return;   // the second click of a double-click
+ P.push([e.latlng.lat,e.latlng.lng]);polyDraw();studyUI()});
+map.on('dblclick',e=>{if(STUDY.on&&STUDY.pts.length>=3)studyFinish()});
+let SRAF=0;map.on('mousemove',e=>{if(!STUDY.on)return;STUDY.cur=[e.latlng.lat,e.latlng.lng];if(!SRAF)SRAF=requestAnimationFrame(()=>{SRAF=0;if(STUDY.on)polyDraw(false)})});
+map.getContainer().addEventListener('mouseleave',()=>{if(STUDY.on){STUDY.cur=null;polyDraw(false)}});
+document.addEventListener('keydown',e=>{if(!STUDY.on||/^(INPUT|TEXTAREA|SELECT)$/.test((e.target||{}).tagName))return;
+ if(e.key=='Escape')studyCancel();else if(e.key=='Enter'){e.preventDefault();studyFinish()}else if(e.key=='Backspace'||((e.ctrlKey||e.metaKey)&&e.key=='z')){e.preventDefault();studyUndo()}});
 
 let caLayer=null,ptLayer=L.layerGroup(),cntLayer=L.layerGroup(),stat={},brk=[0,0,0,0];
 function caColor(n){const v=stat[n]?.[metric];if(!v)return css('--none');return css('--q'+(1+(v>brk[3]?4:v>brk[2]?3:v>brk[1]?2:v>brk[0]?1:0)))}
@@ -830,7 +901,7 @@ const caLblSoon=()=>{if(!CALBL.raf)CALBL.raf=requestAnimationFrame(caLabels)};
 map.on('move zoomend viewreset resize layeradd',caLblSoon);map.on('zoomstart',()=>{if(CALBL.svg)CALBL.svg.innerHTML=''});
 function areaAt(ll){let hit=null;const pt=[ll.lng,ll.lat];if(caLayer)caLayer.eachLayer(l=>{if(hit||!l.getBounds().contains(ll))return;const g=l.feature.geometry,polys=g.type=='Polygon'?[g.coordinates]:g.coordinates;if(polys.some(pl=>inRing(pt,pl[0])&&!pl.slice(1).some(h=>inRing(pt,h))))hit=l.feature.properties.n});return hit}
 // at building zoom: a click in an area that is not selected selects it (and loads its permits); a click in a selected area looks up the County record of the house
-map.on('click',e=>{if(commMode()||MEAS.on)return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
+map.on('click',e=>{if(commMode()||MEAS.on||studyBusy())return;hCancel();const ll=e.latlng;hT=setTimeout(()=>{hT=0;const n=areaAt(ll);if(n&&!AREAS.has(n)){AREAS.add(n);caLabel();if($('cap'))caList();go();return}if(map.getZoom()>=HOUSE_MINZ)pickHouse(ll)},280)});map.on('dblclick zoomstart movestart',hCancel);
 async function zoomToArea(n,l){   // always land close enough to see the permit dots, centred where this area's permits are
  await loadShards([String(n)]);const pts=D.filter(flt('ca')).filter(r=>r.ca==n&&r.lat);
  if(!pts.length){map.setView(l.getBounds().getCenter(),CA_ZOOM+1);return}
@@ -861,7 +932,7 @@ function allIgnoringView(){let all=null;const rowLevel=!!(GAPQ||$('q').value||$(
   else if(!rowLevel&&COUNTS)all=aggTotals().n;else if(ALLLOADED())all=D.filter(flt('view')).length;return all}
 let MAPJ=null,FILT=[],HIDN=0;
 function clearFilters(){if(FLOCK)fsLock(false);   // clearing the filters also takes the lock off
- SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();AS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);$('inview').checked=false;CF.clear();CF.add(3);syncCF();if($('cap'))caList();go()}
+ SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();AS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);$('inview').checked=false;polySet(null);CF.clear();CF.add(3);syncCF();if($('cap'))caList();go()}
 function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#';MAPJ.className='lk mapjump';MAPJ.textContent='Clear filters';
   MAPJ.onmouseenter=()=>{MAPJ.title='Filters applied:\n'+FILT.map(t=>'\u2022 '+t).join('\n')+(HIDN?'\n\n'+HIDN.toLocaleString()+' permits filtered out':'')+'\n\nClick to clear them all'};
   MAPJ.onclick=e=>{e.preventDefault();clearFilters()}}
@@ -869,10 +940,10 @@ function mapJump(el){if(!MAPJ){MAPJ=document.createElement('a');MAPJ.href='#';MA
 function mapNote(){fsInfoSoon();const f=$('inview').checked,n=(AGG?TOT.n:cur.length),el=$('mapnote'),rec=n==1?'permit':'permits';
  let t='Showing <b>'+n.toLocaleString()+'</b> '+rec+(f?' in view':'');
  const hid=COUNTS&&COUNTS.n>n?COUNTS.n-n:0;   // out of ALL the permits in the archive (COUNTS.n): includes the default confidence filter and, with Filter by map on, everything outside the map view
- const other=f||(filtersOn()&&!!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||R.a||R.b||costOn()));   // only the confidence levels are limiting the results: say so, and no Clear filters link
+ const other=f||(filtersOn()&&!!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||R.a||R.b||costOn()||POLY));   // only the confidence levels are limiting the results: say so, and no Clear filters link
  const unp=Math.max(0,TOT.n-TOT.placed);HIDN=hid;
  if(hid)t+=' <em>('+hid.toLocaleString()+' hidden by '+(other?'filters':'confidence filter')+')</em>';el.innerHTML=t;if(other)mapJump(el);el.title=[unp&&!f?unp.toLocaleString()+' of these lack a usable address (or the street could not be matched) and are not on the map; they are listed in the table':''].filter(Boolean).join('\n')}
-function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn())}
+function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn()||POLY)}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
  if(AGG||cur.length!=1){AUTOID=null;return}const r=cur[0];if(AUTOID===r.id||(CURR&&CURR.id===r.id&&!$('detail').hidden))return;AUTOID=r.id;dock(false);show(r)}   // no table is shown for a single result, so the panel stays in the right-hand column
@@ -912,7 +983,7 @@ function drawDots(low){
  vis.forEach(r=>{const rad=radOf(r);
    const cf=confOf(r),c=new L.ShapeMarker(posOf(r),{conf:cf,radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
    c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
-   c.on('click',e=>{L.DomEvent.stop(e);if(MEAS.on)return;const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
+   c.on('click',e=>{L.DomEvent.stop(e);if(MEAS.on||studyBusy())return;const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
 function communityView(){   // community boundaries with the name and the count of permits matching the current filters; labelled in the part of the area that is on screen
@@ -972,9 +1043,10 @@ function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
 function autoInview(){if(typeof commMode==='function'&&!commMode()&&!AREAS.size&&!INVOFF&&!$('inview').checked&&!rowFilters()){$('inview').checked=true;go()}}   // zoomed in with no area, search or filter: list what is in view (otherwise the table stays empty)
-const rowFilters=()=>!!(GAPQ||SQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
+const rowFilters=()=>!!(POLY||GAPQ||SQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL)return ALLKEYS;
+ if(POLY){const ps=polyShards(),na=needAreas();return na?na.filter(k=>ps.includes(String(k))):ps}   // a study area: only the community-area files its outline touches (and, with a text search too, only those the search can match in)
  if(rowFilters())return needAreas()||ALLKEYS;
  if($('inview').checked)return viewShards();
  if(AREAS.size)return [...AREAS].map(String);
@@ -1074,7 +1146,7 @@ function slideCost(which){let a=+$('k1').value,b=+$('k2').value;if(which==1&&a>b
 function typedCost(){const a=parseC($('c1').value),b=parseC($('c2').value);CLO=a==null?0:a;CHI=b==null?Infinity:b;if(CHI<CLO)[CLO,CHI]=[CHI,CLO];syncCost();go()}
 
 function flt(skip){const B=($('inview').checked&&skip!='view')?(FLOCK&&FLOCK.b||VIEWB||map.getBounds()):null,W=issWin(),q=$('q').value.toLowerCase().trim(),qa=$('qa').value.trim(),ar=nk($('ar').value),co=costOn(),aq=qa?addrQ(qa):null;
- return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||ownHit(r,q))&&(!qa||addrHit(r,qa,aq))&&(!ar||arHit(r,ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))&&(!GAPQ||(r.geo||'').endsWith('grid'))&&(skip=='cf'||cfAll()||CF.has(r.cf||1))}
+ return r=>(!B||(r.lat&&B.contains([r.lat,r.lon])))&&(!POLY||(r.lat&&inPoly(r.lat,r.lon)))&&inPeriod(r)&&(skip=='ca'||!AREAS.size||AREAS.has(r.ca))&&(!SQ||streetHit(r))&&(!q||ownHit(r,q))&&(!qa||addrHit(r,qa,aq))&&(!ar||arHit(r,ar))&&(skip=='arch'||!AS.size||AS.has(nk(r.ar)))&&(!CS.size||rowNames(r).some(k=>CS.has(k)))&&(!co||(r.cost>0&&r.cost>=CLO&&r.cost<=CHI))&&(!GAPQ||(r.geo||'').endsWith('grid'))&&(skip=='cf'||cfAll()||CF.has(r.cf||1))}
 let BN=0;const busy=d=>{BN=Math.max(0,BN+d);$('busy').hidden=BN<=0};   // a thin moving bar at the top of the window while permit details or the search text load
 async function go(){
  if(fsGuard())return;   // locked: put the filters back instead
@@ -1108,9 +1180,9 @@ function render(rk){
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',qa:'qa',ar:'ar'};
 let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');SQ=p.get('st')||'';if(/\(now /.test(SQ))osLoad().then(()=>{OQK='';go()});OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});{const cf=p.get('cf')?p.get('cf').split('').map(ch=>({h:3,m:2,l:1})[ch]).filter(Boolean):(p.get('open')?[3,2,1]:[]);if(cf.length){CF.clear();cf.forEach(v=>CF.add(v))}}   // a link to one permit shows every level so its dot is there
- if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'));
+ if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);POLY=polyDec(p.get('sa'));polyBox();autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'));
  {const vw=(p.get('vw')||'').split(',').map(Number);INITVIEW=vw.length==4&&vw.every(isFinite)?vw:null;INITLOCK=p.get('lk')=='1'}}   /* a link made with Copy link carries lk=1: it opens with the filters locked */   /* a shared link with "Filter by map" on: applied once the page has loaded (fsInitView), because the start-up code moves the map */
-function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');{const n=new URLSearchParams(fsNow().h);['vw'].forEach(k=>n.get(k)&&p.set(k,n.get(k)))}if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
+function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');{const n=new URLSearchParams(fsNow().h);['vw','sa'].forEach(k=>n.get(k)&&p.set(k,n.get(k)))}if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
 /* ---- address search: "10711 S Hoyne" also finds the permit for 10709-13 S Hoyne (any number inside a printed range, same side of the street), and can be looked up in the County's records ---- */
 const SKIPW=new Set(['st','street','ave','av','avenue','blvd','boul','boulevard','pl','place','ct','court','rd','road','dr','drive','ter','terrace','pkwy','n','s','e','w','north','south','east','west']);
 function addrQ(q){const m=(q||'').trim().toLowerCase().match(/^(\d{1,6})\s+(.+)$/);if(!m)return null;const words=m[2].replace(/[.,]/g,' ').split(/\s+/).filter(Boolean),dm=words.find(x=>['n','s','e','w','north','south','east','west'].includes(x)),name=words.filter(x=>!SKIPW.has(x));if(!name.length)return null;return{n:+m[1],name,dir:dm?dm[0].toUpperCase():''}}
@@ -1233,7 +1305,7 @@ const cn=t=>(t||'').toLowerCase().replace(/[.,]/g,'').replace(/\s+/g,' ').trim()
 const rowNames=r=>r._cn||(r._cn=[r.con,...(r.trd?r.trd.split('|').map(t=>t.slice(t.indexOf(': ')+2)):[])].filter(Boolean).map(x=>OWNERISH.test(x)?cn(ownName(r)):cn(x)).filter(Boolean));   // a builder listed as "Owner" counts as the owner's own name
 /* a name clicked in the table or the details panel starts a fresh search on that person: every other filter is cleared (clicking one that is already selected just unselects it) */
 function pickPerson(kind,name){const k=kind=='a'?nk(name):cn(name),on=kind=='a'?AS.has(k):CS.has(k);
- if(!on){SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();caLabel();CLO=0;CHI=Infinity;CF.clear();CF.add(3);setR(null,null);AS.clear();CS.clear();$('inview').checked=false}
+ if(!on){SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();caLabel();CLO=0;CHI=Infinity;CF.clear();CF.add(3);setR(null,null);AS.clear();CS.clear();polySet(null);$('inview').checked=false}
  kind=='a'?setArch(name):setContractor(name)}
 function setContractor(name){const k=cn(name);if(CS.has(k))CS.delete(k);else{CS.add(k);CSN[k]=name}go()}
 /* ---- About box: what is included (built from data/about.json so the numbers stay true), how to read it, credits ---- */
@@ -1253,17 +1325,17 @@ function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('a
 $('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});$('aclose').onclick=()=>$('about').close();
 $('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
- if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
+ if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(POLY)c.push(['Study area ('+POLY.length+' corners)',()=>polySet(null)]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()},1]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
- FILT=c.map(x=>x[0]).filter(t=>!/^\+ add all/.test(t));CHIPL=c;
+ FILT=c.map(x=>x[0]).filter(t=>!/^\+ add all/.test(t));CHIPL=c;studyUI();
  $('chips').innerHTML='';chipEls(c).forEach(e=>$('chips').append(e));
  foldChips();fsInfoSoon()}
 let CHIPL=[];
 /* the filter chips (also used in the full screen bar): Clear all first when there is more than one, then one per filter, coloured by kind; clicking one removes that filter */
 function chipEls(c){const out=[];
- if(c.length>1){const e=document.createElement('span');e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};out.push(e)}
- c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};out.push(e)});return out}
+ if(c.length>1){const e=document.createElement('span');e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();polySet(null);go()};out.push(e)}
+ c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view|Study area)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};out.push(e)});return out}
 /* ---- saved filter sets and the filter lock ----
    A set is the filter part of the page address (text boxes, architects, contractors, areas, dates, cost, confidence, street, and the map view when "Filter by map" is on), kept in this browser.
    The lock freezes the current filters: go() (every refilter passes through it) compares the filters with the frozen ones and puts them back if anything changed them. */
@@ -1275,20 +1347,21 @@ const fsStrip=h=>{const p=new URLSearchParams(h);p.delete('vw');p.delete('vz');r
 const fsExt=()=>(FLOCK&&FLOCK.b)||VIEWB||map.getBounds();
 function fsViewDiff(h){const v=new URLSearchParams(h).get('vw');if(!v||!$('inview').checked)return false;const a=v.split(',').map(Number),b=fsExt(),c=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()];return a.some((x,i)=>Math.abs(x-c[i])>.0008)}
 function fsSetView(vw){const bb=L.latLngBounds([vw[0],vw[1]],[vw[2],vw[3]]);VIEWB=bb;VMOVE=MOVEBYCODE=Date.now()+3000;$('inview').checked=true;map.fitBounds(bb,{animate:false});return bb}
-function fsInitView(){const v=INITVIEW;INITVIEW=null;if(v)fsSetView(v);if(INITLOCK){INITLOCK=false;if(fsNow().h)fsLock(true)}if(v)go()}
+function fsInitView(){const v=INITVIEW;INITVIEW=null;if(v)fsSetView(v);else if(POLY){$('inview').checked=false;polyFit()}polyDraw();if(INITLOCK){INITLOCK=false;if(fsNow().h)fsLock(true)}if(v)go()}
 map.on('movestart',()=>{if(VIEWB&&Date.now()>VMOVE)VIEWB=null});   /* the person moves the map: the filter follows the window again */
 function fsNow(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS)){const v=$(id).value.trim();if(v)p.set(k,v)}
  [...AS].map(k=>AN[k]||k).sort().forEach(a=>p.append('a',a));[...CS].map(k=>CSN[k]||k).sort().forEach(c=>p.append('c',c));
  if(AREAS.size)p.set('ca',[...AREAS].sort((a,b)=>a-b).join(','));if(R.a){p.set('from',R.a);p.set('to',R.b)}
- if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);
+ if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(POLY)p.set('sa',polyEnc(POLY));
  let b=null;if($('inview').checked){b=fsExt();p.set('vw',[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(x=>x.toFixed(5)).join(','))}
  return{h:p.toString(),b}}
 function fsApply(h,keepView){RESTORING++;try{const p=new URLSearchParams(h);
-  SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();AS.clear();CS.clear();CLO=0;CHI=Infinity;CF.clear();CF.add(3);R={a:null,b:null};
+  SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();AS.clear();CS.clear();CLO=0;CHI=Infinity;CF.clear();CF.add(3);R={a:null,b:null};POLY=null;
   const q=new URLSearchParams(h);q.delete('vw');q.delete('vz');history.replaceState(null,'','#'+q);fromHash();
   const vw=p.get('vw');
   if(vw){const v=vw.split(',').map(Number);$('inview').checked=true;if(!keepView&&v.length==4&&v.every(isFinite)){const bb=fsSetView(v);if(FLOCK)FLOCK.b=bb}}   /* the saved extent is what the filter uses, so the same buildings come back whatever the window size */
   else{$('inview').checked=false;if(!keepView)VIEWB=null;if(FLOCK&&!keepView)FLOCK.b=null}
+  if(POLY){$('inview').checked=false;if(!keepView&&!vw)polyFit()}polyDraw();
   caLabel();if($('cap'))caList();toHash()}finally{RESTORING--}
  go()}
 function fsGuard(){if(!FLOCK||RESTORING)return false;const n=fsNow();if(fsStrip(n.h)===FLOCK.h&&$('inview').checked===FLOCK.iv)return false;
@@ -1322,7 +1395,7 @@ function fsRefresh(){const b=$('fsb');if(!b)return;const s=FSETS.find(x=>x.name=
  k.title=FLOCK?'Filters are locked: click to unlock':'Lock the filters so nothing can change them by accident'}
 function fsDesc(h){const p=new URLSearchParams(h),o=[];const add=(l,v)=>v&&o.push(l+v);add('Address: ',p.get('qa'));add('Owner/building: ',p.get('q'));add('Architect/builder: ',p.get('ar'));add('Street: ',p.get('st'));
  add('Architects: ',p.getAll('a').join(', '));add('Contractors: ',p.getAll('c').join(', '));if(p.get('ca'))o.push('Areas: '+p.get('ca').split(',').map(n=>CAN[n]||n).join(', '));
- if(p.get('from'))o.push('Dates: '+p.get('from')+' to '+p.get('to'));if(p.get('min')||p.get('max'))o.push('Cost: '+(p.get('min')||'0')+' to '+(p.get('max')||'no limit'));if(p.get('cf'))o.push('Confidence: '+p.get('cf'));if(p.get('vw'))o.push('Map view');
+ if(p.get('from'))o.push('Dates: '+p.get('from')+' to '+p.get('to'));if(p.get('min')||p.get('max'))o.push('Cost: '+(p.get('min')||'0')+' to '+(p.get('max')||'no limit'));if(p.get('cf'))o.push('Confidence: '+p.get('cf'));if(p.get('vw'))o.push('Map view');if(p.get('sa'))o.push('Study area ('+((polyDec(p.get('sa'))||[]).length)+' corners)');
  return o.join('\n')||'No filters'}
 function fsSave(name){name=(name||'').trim().slice(0,40);if(!name)return;const n=fsNow(),i=FSETS.findIndex(x=>x.name===name);if(i>=0)FSETS[i]={name,h:n.h};else FSETS.push({name,h:n.h});FACT=name;fsStore();fsMenuHide();fsRefresh()}
 function fsMenuHide(){const m=$('fmenu');m.hidden=true;$('fsb').setAttribute('aria-expanded','false')}
@@ -1469,7 +1542,7 @@ function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
  setTimeout(()=>MM&&MM.invalidateSize(),50)}
 const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & Building');
 function phView(r,pin,label){
- const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
+ const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:(r.ad>1&&bl[1]!='count'&&bl[1]!='each'?`<span class=cl title="The description does not say how many buildings">${r.ad} addresses:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`)):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\b.*?\s([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),face=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[face];return g==right})();
  const nbL=hiRight?(r.nb||{}).lo:(r.nb||{}).hi,nbR=hiRight?(r.nb||{}).hi:(r.nb||{}).lo;
@@ -1569,7 +1642,7 @@ let MOVEBYCODE=0;
    Not done within 4 s of choosing an area or while the map is flying to a permit. Zooming back out to the community-area view turns Filter by map off. */
 let PREVC=commMode();
 map.doubleClickZoom.disable();   // double-click: in the community-area view go in to where the dots show, centred there, with Filter by map on; closer in, zoom in one level as usual
-map.on('dblclick',e=>{if(MEAS.on)return;if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
+map.on('dblclick',e=>{if(MEAS.on||studyBusy())return;if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
 map.on('zoomend',()=>{const now=commMode();if(map.getZoom()>CA_ZOOM)DOTHOLD=true;else if(now)DOTHOLD=false;if(PREVC&&!now&&AREAS.size&&Date.now()-AREAT>4000&&Date.now()>MOVEBYCODE){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;go()}
  else if(!PREVC&&now&&$('inview').checked&&Date.now()>MOVEBYCODE){$('inview').checked=false;go()}   // back out to the community-area counts: they cover the whole city again
  if(now)INVOFF=false;else autoInview();
@@ -1782,7 +1855,7 @@ LEGACY?legacyBoot():boot();
  new MutationObserver(()=>{const open=!dt.hidden,was=tray.classList.contains('det');if(open&&!was){tsc=$('tarea').scrollTop;tray.classList.add('det');if(S.t=='peek')S.t='half';dt.scrollTop=0}else if(!open&&was){tray.classList.remove('det');setTimeout(()=>{$('tarea').scrollTop=tsc},30)}cssvar();if(open)setTimeout(clear,350)}).observe(dt,{attributes:true,attributeFilter:['hidden']});
  const clear=()=>{try{const r=CURR;if(!r||r.lat==null)return;const p=map.latLngToContainerPoint([r.lat,r.lon]),vis=innerHeight-hs.t()[S.t]-30;if(p.y>vis||p.y<70)map.panBy([0,p.y-Math.max(90,vis*.5)],{animate:true})}catch(x){}};
  /* the list is what the map shows: zoomed in past the community-area view, Filter by map turns itself on (and off when zoomed out) */
- const auto=()=>{const want=!commMode();if($('inview').checked!==want){$('inview').checked=want;go()}};map.on('zoomend',()=>setTimeout(auto,60));setTimeout(auto,1500);
+ const auto=()=>{const want=!commMode();if(POLY)return;if($('inview').checked!==want){$('inview').checked=want;go()}};map.on('zoomend',()=>setTimeout(auto,60));setTimeout(auto,1500);
  /* an address / owner / street search zooms the map to its results (the desktop only does that for architect and area searches) */
  let fk='';const fit=()=>{if(AGG||!(($('qa').value||$('q').value||SQ)))return;const k=$('qa').value+'|'+$('q').value+'|'+SQ+'|'+cur.length;if(k===fk)return;fk=k;const pts=cur.filter(r=>r.lat);if(!pts.length||pts.length>600||!dt.hidden)return;const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b,{paddingTopLeft:[24,120],paddingBottomRight:[24,hs.t().half+10],maxZoom:17})};
  new MutationObserver(()=>setTimeout(fit,150)).observe($('tnote'),{childList:true,characterData:true,subtree:true});
