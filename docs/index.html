@@ -508,7 +508,7 @@ const HistLayer=L.GridLayer.extend({
    if(c.z<h.minZoom){const k=h.minZoom-c.z,n=1<<k,w=sz.x/n,ps=[];      // farther out than the file's coarsest zoom: its tiles are shrunk and stitched, so the map shows at every zoom
     for(let i=0;i<n;i++)for(let j=0;j<n;j++)ps.push(this._pm.getZxy(h.minZoom,(c.x<<k)+i,(c.y<<k)+j).then(r=>r?put(r,0,0,256,i*w,j*w,w):0).catch(()=>0));
     return Promise.all(ps)}
-   const k=Math.max(0,c.z-HIST_NATIVE),x=c.x>>k,y=c.y>>k,w=256/(1<<k);       // closer in than its finest zoom: the same tile is cropped and enlarged
+   const k=Math.max(0,c.z-Math.min(HIST_NATIVE,h.maxZoom)),x=c.x>>k,y=c.y>>k,w=256/(1<<k);       // closer in than its finest zoom: the same tile is cropped and enlarged
    return this._pm.getZxy(c.z-k,x,y).then(r=>r?put(r,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,0,0,sz.x):0)
   }).catch(()=>0).then(()=>done(null,t));
   return t}});
@@ -517,6 +517,7 @@ const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:9,maxZoom:21,bounds:HIS
 ICON_LAYERS='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
  ICON_PIN='<svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3H7l3-3z"/><path d="M12 12v8"/></svg>',
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
+const HYEAR={h1892:1892,h1906:1906,h1913:1913,h1930:1930,sb50:1950};   // the Layers menu lists the imagery oldest first (2024 satellite and the plat map follow)
 const HMAPS=[{k:'h1906',name:'1906 map',full:"Blanchard's Map of Chicago, 1906 (David Rumsey Map Collection no. 4464.001; public domain)"},
  {k:'h1913',name:'1913 map',full:'Rand McNally New Standard Map of Chicago, 1913 (University of Chicago Library, G4104.C6 1913 .R3)'},
  {k:'h1892',name:'1892 map',full:'Rand McNally Standard Map of Chicago, 1892 (University of Chicago Library, G4104.C6 1892 .R3)'},
@@ -536,7 +537,7 @@ layCtl.onAdd=()=>{const d=L.DomUtil.create('div','laydock');
   +'<div id=laypanel class=laypanel hidden><div class=layh><b>Layers</b><button type=button id=laypx class=layslx title="Close" aria-label="Close the layers menu">\u00d7</button></div>'
   +'<div class=lays>Imagery layer (select one)</div>'
   +'<label><input type=radio name=lay value=none> None</label>'
-  +HMAPS.map(m=>'<label title="'+m.full+'"><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> <span>'+m.name+'</span><small id=lnote'+m.k+'></small>'+URLBTN(m.k)+'</label>').join('')
+  +[...HMAPS].sort((x,y)=>HYEAR[x.k]-HYEAR[y.k]).map(m=>'<label title="'+m.full+'"><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> <span>'+m.name+'</span><small id=lnote'+m.k+'></small>'+URLBTN(m.k)+'</label>').join('')
   +'<label title="Cook County 2024 aerial photographs: 6-inch resolution, leaf-off (Cook County GIS)"><input type=radio name=lay value=sat> <span>2024 satellite</span>'+URLBTN('sat')+'</label>'
   +'<label title="City of Chicago 80-acre plat maps: lot lines and numbers; shows only when zoomed in close"><input type=radio name=lay value=plat> <span>Plat map</span> <small>close zoom only</small></label><div id=layhint class=layhint></div>'
   +'<div class=lays>Show</div>'
