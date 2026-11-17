@@ -350,6 +350,7 @@ const $=id=>document.getElementById(id),m=$('m');
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
 const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
+var INVOFF=false;   /* the person switched Filter by map off while zoomed in: do not turn it back on until they zoom out */
 var FLOCK=null,FSETS=[],FACT='',RESTORING=0,VIEWB=null,INITVIEW=null,INITLOCK=false,VMOVE=0;   /* VIEWB = a saved map extent that the filter uses instead of the window's own view (set by a shared link or a saved set, dropped when the map is moved or Filter by map is turned off) */
    /* the filter lock (the frozen filters), the saved sets, the active set's name */
 let AREAT=Date.now(),AKEY='';const GAPQ=new URLSearchParams(location.search).has('gap');   // TEMPORARY: ?gap=1 shows only permits placed by the street grid because the County has no address within 2 blocks (the block may be gone: expressway etc.)
@@ -893,6 +894,7 @@ const ALLLOADED=()=>LEGACY||ALLKEYS.every(k=>LOADED.has(k));
 function buildArchIndex(){const seen={};D.forEach(r=>{const a=arch(r);if(a&&a!='owner'){const k=nk(a);(seen[k]??={n:0,names:{}}).n++;seen[k].names[a]=(seen[k].names[a]||0)+1}});for(const k in seen){AN[k]=Object.entries(seen[k].names).sort((x,y)=>y[1]-x[1])[0][0];AC[k]=seen[k].n}}
 let AB=null;function viewShards(){if(LEGACY||!CA)return[];if(!AB){AB={};CA.features.forEach(f=>{AB[f.properties.n]=L.geoJSON(f).getBounds()})}
  const b=map.getBounds().pad(.1);return [...Object.keys(AB).filter(n=>AB[n].intersects(b)),'out']}
+function autoInview(){if(typeof commMode==='function'&&!commMode()&&!AREAS.size&&!INVOFF&&!$('inview').checked&&!rowFilters()){$('inview').checked=true;go()}}   // zoomed in with no area, search or filter: list what is in view (otherwise the table stays empty)
 const rowFilters=()=>!!(GAPQ||SQ||$('q').value||$('qa').value||$('ar').value||AS.size||CS.size||costOn()||!dateAligned()||archKey()===null);
 function rowKeys(){   // the shards the selection needs; null = the counts alone answer it (period filters only)
  if(LEGACY||LISTALL)return ALLKEYS;
@@ -1354,7 +1356,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk]||[sk,'ascending','descending'],srt='';$('pgr').innerHTML=(!AGG&&n>PS)?pagerHTML():'';el.innerHTML=(AGG?'':n>PS?`Showing <b>${(PAGE*PS+1).toLocaleString()}&ndash;${Math.min(n,PAGE*PS+PS).toLocaleString()}</b> of <b>${n.toLocaleString()}</b> permits`:`Showing all <b>${n.toLocaleString()}</b> permits`)+(()=>{if(AGG||!$('inview').checked)return '';const all=allIgnoringView();return all!=null&&all>n?` &middot; <span class=mut>${(all-n).toLocaleString()} more outside the map view</span>`:''})()+srt}
 function table(){tnote();tbh();stuckBar();setTimeout(markRow,0);const single=!AGG&&cur.length==1&&!!($('qa').value.trim()||$('q').value.trim());   // an address or owner search that finds exactly one permit: its panel opens by itself, so no chips or table
  $('tarea').hidden=AGG||single;
- if(AGG){$('tb').innerHTML='';const none=!$('chips').children.length;$('cprompt').innerHTML=none?'':`<b>${TOT.n.toLocaleString()}</b> permits match: add a search, area or street to list them here.`;$('tbar').hidden=none;document.querySelector('.dlw').hidden=[...$('chips').children].every(c=>/^Confidence:/.test(c.textContent));placeSoon();return}   // no download while nothing but confidence is filtered (that is still the whole file); the chip itself stays
+ if(AGG){$('tb').innerHTML='';const none=!$('chips').children.length;$('cprompt').innerHTML=none?`<b>${TOT.n.toLocaleString()}</b> permits in all: zoom in on the map, or add a search, community area or street, to list them here.`:`<b>${TOT.n.toLocaleString()}</b> permits match: add a search, area or street to list them here.`;$('tbar').hidden=false;document.querySelector('.dlw').hidden=[...$('chips').children].every(c=>/^Confidence:/.test(c.textContent));placeSoon();return}   // no download while nothing but confidence is filtered (that is still the whole file); the chip itself stays
  $('cprompt').textContent='';$('tbar').hidden=single;document.querySelector('.dlw').hidden=false;if(single){$('tb').innerHTML='';return}
  $('tb').innerHTML=cur.slice(PAGE*PS,PAGE*PS+PS).map((r,k0)=>{const k=PAGE*PS+k0;return `<tr class="r" data-k="${k}"><td>${r.d}${r.lat?'':'<span class=nopin title="Not on the map: this permit\'s address could not be placed">&#9676; no pin</span>'}</td><td>${r.pg||''}</td><td>${esc(r.own)}</td><td>${esc(r.mod||r.site)}${r.now&&r.nowp?`<span class="old" style="color:var(--fg)">today: ${esc(r.now)}</span>`:''}${r.chg?`<span class="old">printed: ${esc(r.site)}</span>`:''}</td><td>${esc(r.can||'')}${r.geo&&r.geo!='exact'&&r.can?' <span class=flag title="'+r.geo+'">~</span>':''}</td><td>${(r.st?r.st+'-story ':'')+esc(r.bld||'')}</td><td class="dim">${dims(r.sz)}</td><td class="n">${money(r.cost)}${r.inc?' <span class=flag title="amount may be cut off">?</span>':''}</td><td>${arch(r)?(OWNERISH.test(arch(r))?esc(ownerOf(arch(r),r)):`<a class=lk data-a="${esc(arch(r))}">${esc(arch(r))}</a>`):''}</td><td class="crew">${r.con?`<div class=con>${OWNERISH.test(r.con)?ownerLink(r.con,r):`<a class=lk data-c="${esc(r.con)}">${esc(r.con)}</a>`}</div>`:''}${r.trd?r.trd.split('|').map(t=>{const i=t.indexOf(': '),nm=t.slice(i+2);return `<div class=trade><span>${esc(t.slice(0,i))}</span> ${OWNERISH.test(nm)?ownerLink(nm,r):`<a class=lk data-c="${esc(nm)}">${esc(nm)}</a>`}</div>`}).join(''):''}</td></tr>`}).join('')+(cur.length>PS?`<tr class="pgrow"><td colspan=10>${pagerHTML()}</td></tr>`:'');
  $('tb').querySelectorAll('tr.r').forEach(e=>e.onclick=()=>{dock(true);show(cur[+e.dataset.k])});$('tb').querySelectorAll('a.lk').forEach(a=>a.onclick=ev=>{ev.stopPropagation();a.dataset.c!=null?pickPerson('c',a.dataset.c):pickPerson('a',a.dataset.a)})}
@@ -1472,6 +1474,7 @@ map.doubleClickZoom.disable();   // double-click: in the community-area view go 
 map.on('dblclick',e=>{if(MEAS.on)return;if(commMode()){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;map.setView(e.latlng,CA_ZOOM+1);go()}else map.setZoomAround(e.containerPoint,Math.min(map.getZoom()+1,map.getMaxZoom()))});
 map.on('zoomend',()=>{const now=commMode();if(map.getZoom()>CA_ZOOM)DOTHOLD=true;else if(now)DOTHOLD=false;if(PREVC&&!now&&AREAS.size&&Date.now()-AREAT>4000&&Date.now()>MOVEBYCODE){AREAS.clear();caLabel();if($('cap'))caList();$('inview').checked=true;go()}
  else if(!PREVC&&now&&$('inview').checked&&Date.now()>MOVEBYCODE){$('inview').checked=false;go()}   // back out to the community-area counts: they cover the whole city again
+ if(now)INVOFF=false;else autoInview();
  PREVC=now});
 function flyTo(r){MOVEBYCODE=Date.now()+3000;const z=Math.max(map.getZoom(),17),pt=map.latLngToContainerPoint([r.lat,r.lon]),sz=map.getSize(),far=Math.hypot(pt.x-sz.x/2,pt.y-sz.y/2)>Math.max(sz.x,sz.y)*0.9;
  if(map.getZoom()>=16&&!far)map.panTo([r.lat,r.lon],{animate:true,duration:.5,easeLinearity:.4});else map.flyTo([r.lat,r.lon],z,{duration:.9})}
@@ -1578,7 +1581,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
  updTableBtn();clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  reserve(true);if(!DOCK)$('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;{const ix0=cur.indexOf(r);if(ix0>=0&&Math.floor(ix0/PS)!==PAGE){PAGE=Math.floor(ix0/PS);table()}}markRow();
- if(r.lat)flyTo(r);drawPts();toHash();}
+ if(r.lat){flyTo(r);map.once('moveend',()=>setTimeout(autoInview,80))}drawPts();toHash();}
 let ZOOM=true,CURRP=null;
 function zoomFactor(bs){const w=bs.length?Math.max(...bs.map(x=>(x.box[3]-x.box[1])/1000)):.3;return Math.max(1.8,Math.min(3.4,.8/Math.max(w,.2)))}
 function applyZoom(center){const pg=$('pg'),pi=pg.querySelector('.pgi');if(!pi)return;const z=+pg.dataset.z||2.5;const im=pi.querySelector('img');im.style.width=ZOOM?Math.round(pg.clientWidth*z)+'px':'100%';im.style.maxWidth='none';pi.style.width='';pg.classList.toggle('zin',ZOOM);pg.classList.toggle('zout',!ZOOM);
@@ -1626,7 +1629,7 @@ new ResizeObserver(()=>{map.invalidateSize();metroMinZoom();cityReFit()}).observ
 // the architect box suggests names as you type (from the small index); it filters the table only when you pick a name or press Enter, so typing does not pull the full 6 MB of permit rows
 $('ar').addEventListener('input',()=>{if(!$('ar').value)go()});$('ar').addEventListener('keydown',e=>{if(e.key=='Enter'&&(sgI<0||$('sg').hidden))go()});
 document.querySelectorAll('#cfb .cfo').forEach(b=>b.addEventListener('click',()=>{const v=+b.dataset.v;if(CF.has(v)){if(CF.size>1)CF.delete(v)}else CF.add(v);syncCF();go()}));$('k1').addEventListener('input',()=>slideCost(1));$('k2').addEventListener('input',()=>slideCost(2));$('c1').addEventListener('change',typedCost);$('c2').addEventListener('change',typedCost);
-$('inview').addEventListener('change',()=>{if(!$('inview').checked)VIEWB=null;go()});
+$('inview').addEventListener('change',()=>{if(!$('inview').checked){VIEWB=null;INVOFF=!commMode()}go()});
 $('ar').addEventListener('change',()=>{const k=nk($('ar').value);if(AN[k]){AS.add(k);$('ar').value='';go()}});
 $('mv').onchange=()=>{perIssue=$('mv').checked;go()};
 $('mc').onclick=()=>{metric='n';$('mc').classList.add('on');$('mk').classList.remove('on');go()};$('mk').onclick=()=>{metric='c';$('mk').classList.add('on');$('mc').classList.remove('on');go()};
