@@ -10,7 +10,7 @@
 header{padding:14px 16px 8px}h1{margin:0;font-size:21px}header p{margin:3px 0 0;color:var(--mut);font-size:13px;max-width:900px}
 .f{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px;align-items:center}
 .nav{display:inline-flex;gap:4px;align-items:center}.fbar input,.fbar select,.filters input,.filters select,.btn{padding:6px 8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;font:inherit;font-size:14px}
-.btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}
+.btn{cursor:pointer}.btn.on{background:var(--s1);color:#fff;border-color:var(--s1)}.pgl{font-size:13px;color:var(--mut)}
 .chips{padding:0 16px 6px;display:flex;flex-wrap:wrap;gap:6px;min-height:6px}
 .chip{--c:var(--acc);background:color-mix(in srgb,var(--c) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--c) 60%,var(--surface));border-radius:12px;padding:2px 10px;font-size:13px;cursor:pointer;color:var(--fg)}.chip:hover{background:color-mix(in srgb,var(--c) 28%,var(--surface))}.chip b{color:var(--c);margin-left:6px}.chip.k-place{--c:var(--s1)}.chip.k-who{--c:var(--s2)}.chip.k-clear{--c:var(--mut);background:transparent}
 #summary{padding:2px 16px 8px;color:var(--mut);font-size:13px}
@@ -1482,7 +1482,8 @@ function entryCrops(r){const box=$('crops');if(!box)return;box.innerHTML='';
   const fit=()=>{const W=box.clientWidth||520,nw=im.naturalWidth,Wd=Math.min(W*1000/(X1-X0),nw*2.4),Hd=Wd*im.naturalHeight/nw;d.style.width=Math.min(Wd*(X1-X0)/1000,W)+'px';d.style.height=((Y1-Y0)/1000*Hd)+'px';im.style.width=Wd+'px';im.style.marginLeft=(-X0/1000*Wd)+'px';im.style.marginTop=(-Y0/1000*Hd)+'px'};
   if(im.complete&&im.naturalWidth)fit();else im.onload=fit})}
 function openScan(r){const b=r.boxes,pgs=[...new Set(b.map(x=>x.pdf))];window._b=b;$('mttl').textContent=(r.mod||r.site||'Permit')+' · '+fmtDate(r.d);
- $('pb').innerHTML=pgs.map(p=>`<button class=btn onclick='draw(window._b,${p})'>Scan page ${sp(p)}</button> `).join('');m.style.display='block';draw(b,pgs[0])}
+ $('pb').innerHTML=pgs.length>1?pgs.map((p,i)=>`<button class="btn pgb${i?'':' on'}" data-p="${p}" title="Show this scan page">Scan page ${sp(p)}</button> `).join(''):`<span class=pgl>Scan page ${sp(pgs[0])}</span>`;   // a button only when there is more than one page to switch between; a single page is just a label
+ $('pb').querySelectorAll('.pgb').forEach(bn=>bn.onclick=()=>{draw(window._b,+bn.dataset.p);$('pb').querySelectorAll('.pgb').forEach(x=>x.classList.toggle('on',x===bn))});m.style.display='block';draw(b,pgs[0])}
 /* ---- the property panel docks beside the table when a row is picked (the table narrows, nothing to scroll back to); picked from the map it stays in the right-hand column ---- */
 let DOCK=false,MODE='side';
 const canDock=()=>innerWidth>=1181;
