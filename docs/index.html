@@ -299,7 +299,7 @@ html.fs #fsinfo{display:flex;align-items:flex-start;gap:8px 18px;background:var(
 #fshint{display:none}
 html.fs,html.fs body{height:100%;overflow:hidden}
 html.fs header,html.fs footer,html.fs .filters,html.fs #overview,html.fs .mapc>h2,html.fs .tbar,html.fs #tarea,html.fs #tdock,html.fs .legend,html.fs .dotkey{display:none!important}
-html.fs .layout{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:0;margin:0;padding:0;background:var(--surface);z-index:5}
+html.fs .layout{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) clamp(400px,36vw,540px);gap:0;margin:0;padding:0;background:var(--surface);z-index:5}
 html.fs .layout .mapc{position:static;height:100%;min-height:0;margin:0;padding:0;border:0;border-radius:0;box-shadow:none}
 html.fs .mapc>#map{margin:0;min-height:0;border-radius:0}
 html.fs .layout .side{height:100%;min-height:0;overflow:auto;padding:10px;box-sizing:border-box;border-left:1px solid var(--line)}
