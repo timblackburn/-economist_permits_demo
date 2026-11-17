@@ -88,8 +88,8 @@ footer{padding:14px 16px 30px;font-size:12px;color:var(--mut);border-top:1px sol
 .rs input[type=range]::-webkit-slider-thumb{pointer-events:auto;-webkit-appearance:none;width:14px;height:24px;border-radius:5px;background:#2b2b2b;border:2px solid var(--surface,#fff);box-shadow:0 0 0 1px #2b2b2b;cursor:ew-resize}
 .rs input[type=range]::-moz-range-thumb{pointer-events:auto;width:10px;height:20px;border-radius:5px;background:#2b2b2b;border:2px solid var(--surface,#fff);cursor:ew-resize}
 .rs input[type=range]:focus-visible::-webkit-slider-thumb{outline:2px solid var(--fg)}.rnote{display:flex;justify-content:space-between;font-size:12px;margin-top:2px}/* several buildings on one permit */
-.nbld{display:inline-block;font-weight:600;font-size:.85em;line-height:1.3;padding:1px 7px;border-radius:10px;border:1px solid var(--fg);white-space:nowrap}
-td .nbld{margin-left:6px;font-size:.78em;padding:0 6px}
+.nbld{font-weight:600;white-space:nowrap}
+td .nbld{display:block;font-weight:400;font-size:.85em;color:var(--mut)}
 #cn{height:2.5em;line-height:1.25}html{scrollbar-gutter:stable}   /* the cost note always has room for two lines and the page keeps its scrollbar space, so a re-wrap of the text cannot change the page height or width (that fed back into the layout and made the bottom of the page jump) */.lnk{background:none;border:0;color:var(--acc);cursor:pointer;font-size:12px;padding:0;text-decoration:underline}
 .fgroup{border:1px solid var(--line);border-radius:5px}.fgroup>summary{cursor:pointer;padding:6px 9px;font-weight:600;font-size:13px}.fgroup[open]>summary{border-bottom:1px solid var(--line)}.fgroup>.fr{padding:8px 9px}
 .mapc{position:sticky;top:8px;height:calc(100vh - 16px)}
@@ -1634,7 +1634,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
- const facts=[bd.trim()?'<b>'+esc(bd)+'</b>':'',blTag(r),r.sz?dims(r.sz)+' ft':'',r.cost!=null?(r.calt?`<span class=ptdot title="The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.">${money(r.cost)}</span>`:money(r.cost))+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
+ const facts=[blTag(r),bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?(r.calt?`<span class=ptdot title="The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.">${money(r.cost)}</span>`:money(r.cost))+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const whoAll=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0]));
  const whoCells=x=>`<span class=wl>${esc(x[0])}</span><span class=wv>${x[0]!='owner'&&OWNERISH.test(x[1])?(x[0]=='architect'||!ownName(r)?esc(ownerOf(x[1],r)):`Owner (<a class=lk onclick='pickPerson("c",this.textContent)'>${esc(ownName(r))}</a>)`):x[0]=='architect'?`<a class=lk onclick='pickPerson("a",this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?`<span class=wa>${esc(x[2])}</span>`:''}${x[3]?`<span class=wa>from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan</span>`:''}</span>`,whoRow=x=>`<div class=wr>${whoCells(x)}</div>`;
  const isMain=x=>x[0]=='owner'||/^arch/i.test(x[0]||''),wMain=whoAll.filter(isMain),wTr=whoAll.filter(x=>!isMain(x));
