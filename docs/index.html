@@ -773,6 +773,8 @@ function studyFinish(){if(STUDY.pts.length<3){studyUI('Place at least three corn
  STUDY.t=Date.now();const pts=STUDY.pts.map(p=>[+p[0].toFixed(5),+p[1].toFixed(5)]);studyEnd();polySet(pts);$('inview').checked=false;go()}   /* the shape replaces "Filter by map": it is the place filter now */
 function studyUndo(){STUDY.pts.pop();polyDraw();studyUI()}
 function studyUse(sa){if(FLOCK){fsAskUnlock();return}const p=polyDec(sa);if(!p)return;if(STUDY.on)studyCancel();polySet(p);$('inview').checked=false;polyFit();go()}
+function studyExport(){if(!POLY)return;const ring=POLY.map(([la,lo])=>[lo,la]);ring.push(ring[0]);   /* GeoJSON is [longitude, latitude] and a ring closes on its first point */
+ saveBlob([JSON.stringify({type:'FeatureCollection',name:'study_area',features:[{type:'Feature',properties:{name:'study_area',corners:POLY.length},geometry:{type:'Polygon',coordinates:[ring]}}]})],'application/geo+json','study_area.geojson')}
 function studyRemove(){if(FLOCK){fsAskUnlock();return}polySet(null);go()}
 let STUDYSAVED=(()=>{try{const a=JSON.parse(localStorage.getItem('permits-study-areas')||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&polyDec(x.sa)):[]}catch(e){return[]}})();
 const studyStore=()=>{try{localStorage.setItem('permits-study-areas',JSON.stringify(STUDYSAVED))}catch(e){}};
@@ -792,7 +794,7 @@ function studyUI(msg){const el=$('studyout');if(!STUDY.panel||!el)return;
  if(STUDY.on){n=STUDY.pts.length;el.innerHTML=msg?esc(msg):n<3?'Click the map to place corners. Drag the map to pan and scroll to zoom, then keep clicking.':'<b>'+n+'</b> corners. Click the first corner, double-click or press Enter to finish.';
   const f=mk('button','pri','Finish (↵)',studyFinish);f.disabled=n<3;r.append(f,mk('button','','Undo (⌫)',studyUndo),mk('button','','Clear',()=>{STUDY.pts=[];polyDraw();studyUI()}),mk('button','','Cancel (Esc)',studyCancel))}
  else if(POLY){const t=typeof TOT!=='undefined'&&TOT&&TOT.n!=null?' · <b>'+TOT.n.toLocaleString()+'</b> permits match':'';el.innerHTML=msg?esc(msg):'<b>'+POLY.length+'</b> corners'+t;save=true;
-  r.append(mk('button','','Edit corners',()=>studyStart(true)),mk('button','','Redraw',()=>studyStart(false)),mk('button','','Zoom to it',polyFit),mk('button','','Remove',studyRemove))}
+  r.append(mk('button','','Edit corners',()=>studyStart(true)),mk('button','','Redraw',()=>studyStart(false)),mk('button','','Zoom to it',polyFit),mk('button','','Export GeoJSON',studyExport),mk('button','','Remove',studyRemove))}
  else{el.innerHTML=msg?esc(msg):'Draw a shape on the map to keep only the permits inside it.';r.append(mk('button','pri','Draw an area',()=>studyStart(false)))}
  $('studysv').style.display=save?'':'none';
  const L2=$('studylist');L2.textContent='';if(STUDYSAVED.length){L2.append(mk('div','slh','Saved study areas'));
