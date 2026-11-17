@@ -446,23 +446,31 @@ function platSync(){const near=map.getZoom()>=PLAT_MINZ&&map.getBounds().interse
 $('platchk').addEventListener('change',e=>{PLATON=e.target.checked;try{localStorage.setItem('platOn',PLATON?'1':'0')}catch(err){}platSync()});
 map.on('zoomend moveend',platSync);platSync();
 /* ---- satellite view: Cook County 2024 orthophotos (6-inch, leaf-off), cut into a PMTiles file on our blob storage and read with HTTP range requests.
-   Set AERIAL_URL to that file's public URL (the host must allow Range requests and CORS); ?aerial=<url> overrides it for testing. The button is hidden while it is empty.
+   The files are listed in data/aerial_index.json (scripts/aerial_manifest.py); the host must allow Range requests and CORS. ?aerial=<url> shows a single test file instead. The button shows only over the files' bounds.
    Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
-const AERIAL_URL=(new URLSearchParams(location.search)).get('aerial')||'https://chicagopermits.blob.core.windows.net/aerial/aerial_2024.pmtiles',
- AERIAL_LL=(new URLSearchParams(location.search)).get('aerial')?L.latLngBounds([[41.64,-87.95],[42.03,-87.52]]):L.latLngBounds([[41.6759,-87.7397],[41.7357,-87.6331]])   /* a test file (?aerial=) may cover anywhere in Chicago */,AERIAL_MINZ=13,AERIAL_NATIVE=20;
+const AERIAL_OVR=(new URLSearchParams(location.search)).get('aerial'),AERIAL_MINZ=13,AERIAL_NATIVE=20,
+ AERIAL_OLD={u:'https://chicagopermits.blob.core.windows.net/aerial/aerial_2024_ca72-75.pmtiles',b:[41.6746,-87.7415,41.737,-87.6313]};      // used if the manifest cannot be read
+/* The photos are several PMTiles files (one per group of community areas) listed with their bounds in data/aerial_index.json (scripts/aerial_manifest.py).
+   A file is opened only when a tile on screen falls inside its bounds, so only the files in view are ever touched. ?aerial=<url> shows one test file instead. */
+const AERIAL_FILES=AERIAL_OVR?Promise.resolve([{u:AERIAL_OVR,b:[41.64,-87.95,42.03,-87.52]}]):fetch('data/aerial_index.json').then(r=>r.json()).then(j=>j.files.map(f=>({u:j.base+f.u,b:f.b}))).catch(()=>[AERIAL_OLD]);
+let AERIAL_BS=[L.latLngBounds([[41.64,-87.95],[42.03,-87.52]])];      // narrowed to the files' own bounds once the manifest has loaded (the satellite button shows only over them)
+AERIAL_FILES.then(fs=>{AERIAL_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof aerSync==='function')aerSync()});
 const AerialLayer=L.GridLayer.extend({
- initialize(url,o){L.GridLayer.prototype.initialize.call(this,o);this._pm=new pmtiles.PMTiles(url)},
+ initialize(o){L.GridLayer.prototype.initialize.call(this,o);this._pms={}},
+ _pmOf(f){return this._pms[f.u]||(this._pms[f.u]=new pmtiles.PMTiles(f.u))},
  createTile(c,done){
   const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
-  let k=0,x=0,y=0;
-  this._pm.getHeader().then(h=>{k=Math.max(0,c.z-Math.min(AERIAL_NATIVE,h.maxZoom));x=c.x>>k;y=c.y>>k;return this._pm.getZxy(c.z-k,x,y)}).then(r=>{      // closer in than the file's finest zoom (the header says which), the same tile is cropped and enlarged
-   if(!r)return done(null,t);
-   const u=URL.createObjectURL(new Blob([r.data],{type:new Uint8Array(r.data)[0]==0xFF?'image/jpeg':'image/webp'})),img=new Image();   // fully covered tiles are JPEG, tiles at the edge of the imagery are WebP with transparency
-   img.onload=()=>{const w=256/(1<<k);t.getContext('2d').drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);done(null,t)};
-   img.onerror=()=>{URL.revokeObjectURL(u);done(null,t)};img.src=u}).catch(()=>done(null,t));
+  const o=c.scaleBy(sz),tb=L.latLngBounds(this._map.unproject(o,c.z),this._map.unproject(o.add(sz),c.z));        // this tile's lat/lng box
+  AERIAL_FILES.then(fs=>Promise.all(fs.filter(f=>tb.intersects(L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]))).map(f=>{
+   const pm=this._pmOf(f);let k=0,x=0,y=0;
+   return pm.getHeader().then(h=>{k=Math.max(0,c.z-Math.min(AERIAL_NATIVE,h.maxZoom));x=c.x>>k;y=c.y>>k;return pm.getZxy(c.z-k,x,y)}).then(r=>{      // closer in than the file's finest zoom (its header says which), the same tile is cropped and enlarged
+    if(!r)return;
+    return new Promise(res=>{const u=URL.createObjectURL(new Blob([r.data],{type:new Uint8Array(r.data)[0]==0xFF?'image/jpeg':'image/webp'})),img=new Image();   // fully covered tiles are JPEG, tiles at the edge of the imagery are WebP with transparency
+     img.onload=()=>{const w=256/(1<<k);t.getContext('2d').drawImage(img,(c.x-(x<<k))*w,(c.y-(y<<k))*w,w,w,0,0,sz.x,sz.y);URL.revokeObjectURL(u);res()};
+     img.onerror=()=>{URL.revokeObjectURL(u);res()};img.src=u})}).catch(()=>{})}))).then(()=>done(null,t),()=>done(null,t));
   return t}});
 let AERON=false;try{AERON=localStorage.getItem('aerialOn')=='1'}catch(e){}
-const aerLayer=AERIAL_URL?new AerialLayer(AERIAL_URL,{minZoom:AERIAL_MINZ,maxZoom:21,bounds:AERIAL_LL,zIndex:2,attribution:'Imagery © <a href="https://maps.cookcountyil.gov/imagery-tile-downloader/" target=_blank rel=noopener>Cook County GIS</a>, 2024'}):null;
+const aerLayer=new AerialLayer({minZoom:AERIAL_MINZ,maxZoom:21,zIndex:2,attribution:'Imagery © <a href="https://maps.cookcountyil.gov/imagery-tile-downloader/" target=_blank rel=noopener>Cook County GIS</a>, 2024'});
 /* ---- historic map: Blanchard's map of Chicago, 1906 (public domain; Rumsey 4464.001), georeferenced by hand (scripts/historic_gcp.py, historic_tiles.py) and cut into a PMTiles file (WebP, transparent outside the map) on blob storage.
    Zoom 16 is its finest level (about 1.8 m per source pixel); closer in, the zoom-16 tile is enlarged. ?hist=<url> overrides the file. ---- */
 const HIST_URL=(new URLSearchParams(location.search)).get('hist')||'https://chicagopermits.blob.core.windows.net/aerial/blanchard_1906.pmtiles',HIST_LL=L.latLngBounds([[41.64,-87.85],[42.03,-87.52]]),HIST_NATIVE=16;
@@ -517,7 +525,7 @@ async function baseSet(want){
  BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
 baseSet('plain');   // the plain map is THE base map; OpenStreetMap's own tiles show only if the plain file cannot be read
 function aerSync(){const b=$('aerbtn');if(!b)return;
- const near=!!aerLayer&&map.getZoom()>=AERIAL_MINZ&&map.getBounds().intersects(AERIAL_LL);
+ const near=!!aerLayer&&map.getZoom()>=AERIAL_MINZ&&AERIAL_BS.some(r=>map.getBounds().intersects(r));
  b.classList.toggle('hid',!near);b.classList.toggle('on',AERON);b.setAttribute('aria-pressed',AERON);
  if(aerLayer){if(AERON&&!map.hasLayer(aerLayer))aerLayer.addTo(map);else if(!AERON&&map.hasLayer(aerLayer))map.removeLayer(aerLayer)}}
 $('aerbtn').addEventListener('click',e=>{e.preventDefault();AERON=!AERON;try{localStorage.setItem('aerialOn',AERON?'1':'0')}catch(err){}aerSync()});
