@@ -172,7 +172,7 @@ td:first-child{white-space:nowrap}
 #map.mfocus:focus,#map.mfocus:focus-visible{outline:none}   /* clicking the map focuses it (Leaflet's keyboard panning) and the browser's focus ring then showed along its top and bottom edges; hidden after a mouse press only, back as soon as a key is pressed */
 .maptools a{display:flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--fg);background:var(--surface)}.maptools{position:relative}.histop{position:absolute;left:36px;top:34px;display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap}.histop[hidden]{display:none}.histop input{width:90px}
 .maptools a.on{background:var(--s1);color:#fff}.maptools a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.maptools a.hid{display:none}
-.laypanel{position:absolute;left:36px;top:0;width:262px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.3);padding:6px 9px 8px;font:12.5px/1.3 system-ui,sans-serif}.laypanel[hidden]{display:none}.laypanel label{display:flex;gap:6px;align-items:center;padding:2px 0;cursor:pointer}.laypanel label small{color:var(--mut)}.laypanel input[disabled]+*,.laypanel label:has(input:disabled){opacity:.5;cursor:default}.layh{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}.layh button{width:26px;height:26px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.layh button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.layh button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.lays{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:6px 0 2px}.layhint{display:none;color:var(--mut);font-size:11.5px;padding:0 0 2px 20px}.laypanel .histop{position:static;border:0;padding:3px 0 2px 20px;margin:0}.laypanel .histop input{width:100px}
+.laypanel{position:absolute;right:0;bottom:36px;width:262px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.3);padding:6px 9px 8px;font:12.5px/1.3 system-ui,sans-serif}.laypanel[hidden]{display:none}.laypanel label{display:flex;gap:6px;align-items:center;padding:2px 0;cursor:pointer}.laypanel label small{color:var(--mut)}.laypanel input[disabled]+*,.laypanel label:has(input:disabled){opacity:.5;cursor:default}.layh{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}.layh button{width:26px;height:26px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.layh button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.layh button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.lays{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:6px 0 2px}.layhint{display:none;color:var(--mut);font-size:11.5px;padding:0 0 2px 20px}.laydock{display:flex;align-items:flex-end;gap:8px;margin:0 10px 22px 0}.layslider{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.3);padding:4px 9px 5px;font:11.5px/1.25 system-ui,sans-serif}.layslider[hidden]{display:none}#layslname{display:block;font-weight:600;margin-bottom:2px}.layslrow{display:flex;align-items:center;gap:6px;white-space:nowrap}.layslrow input{width:170px}@media(max-width:560px){.layslrow input{width:90px}}
 #map.leaflet-container.base-off{background:#fff}#map.leaflet-container.base-off.aer-on{background:#3a3a30}
 #map.leaflet-container.aer-on{background:#3a3a30}
 .measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.25 system-ui,sans-serif;width:178px;margin-bottom:22px;margin-right:10px}.measpanel button{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;white-space:nowrap}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}
@@ -437,11 +437,7 @@ const PlatLayer=L.GridLayer.extend({
     ctx.save();ctx.transform(ux*(1+e/W),uy*(1+e/W),vx*(1+e/Hh),vy*(1+e/Hh),a[0]-e/2*(ux+vx),a[1]-e/2*(uy+vy));ctx.imageSmoothingEnabled=true;ctx.drawImage(img,0,0);ctx.restore();pend--;fin()};
    img.onerror=()=>{pend--;fin()};img.src=PLAT_BASE+'L'+String(lv).padStart(2,'0')+'/R'+hex(r)+'/C'+hex(col)+'.png'}
   setTimeout(fin,0);return cv}});
-let PLATON=false;try{PLATON=localStorage.getItem('platOn')=='1'}catch(e){}
 const platLayer=new PlatLayer({zIndex:3,minZoom:PLAT_MINZ,maxZoom:21,maxNativeZoom:20,opacity:.8,className:'plattiles',bounds:PLAT_LL,attribution:'City of Chicago <a href="https://gisapps.chicago.gov/mapchicago/?config=acre" target=_blank rel=noopener>80-acre plat maps</a>'});
-function platSync(){if(!$('platchk'))return;const near=map.getZoom()>=PLAT_MINZ&&map.getBounds().intersects(PLAT_LL);
- $('platchk').checked=PLATON;$('plathint').style.display=PLATON&&!near?'block':'none';
- if(PLATON&&!map.hasLayer(platLayer))platLayer.addTo(map);else if(!PLATON&&map.hasLayer(platLayer))map.removeLayer(platLayer)}      // below PLAT_MINZ the layer draws nothing (and fetches nothing); the choice survives
 /* ---- satellite view: Cook County 2024 orthophotos (6-inch, leaf-off), cut into a PMTiles file on our blob storage and read with HTTP range requests.
    The files are listed in data/aerial_index.json (scripts/aerial_manifest.py); the host must allow Range requests and CORS. ?aerial=<url> shows a single test file instead. The button shows only over the files' bounds.
    Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
@@ -483,26 +479,32 @@ const HistLayer=L.GridLayer.extend({
    img.onerror=()=>{URL.revokeObjectURL(u);done(null,t)};img.src=u}).catch(()=>done(null,t));
   return t}});
 let HISTON=false,HISTOP=.85;try{HISTON=localStorage.getItem('histOn')=='1';HISTOP=+localStorage.getItem('histOp')||.85}catch(e){}
-const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:HISTOP,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
+const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
 ICON_LAYERS='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
  ICON_PIN='<svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3H7l3-3z"/><path d="M12 12v8"/></svg>',
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
 const HMAPS=[{k:'h1906',name:"1906 Blanchard's Map of Chicago"},{k:'h1913',name:'1913 Rand McNally New Standard Map of Chicago'},{k:'h1892',name:'1892 Rand McNally Standard Map of Chicago'}];
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
- d.innerHTML='<a href="#" id=laybtn role=button title="Layers: historic maps, satellite photos, present-day map, permit dots" aria-label="Layers" aria-expanded="false">'+ICON_LAYERS+'</a>'
-  +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>'
+ d.innerHTML='<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>';
+ L.DomEvent.disableClickPropagation(d);return d};
+toolCtl.addTo(map);
+/* bottom right: [old-map slider] [Layers button], with the menu opening upwards from the button */
+const layCtl=L.control({position:'bottomright'});
+layCtl.onAdd=()=>{const d=L.DomUtil.create('div','laydock');
+ d.innerHTML='<div id=layslider class=layslider hidden><span id=layslname></span><div class=layslrow><span>Original</span><input id=layrange type=range min=0 max=100 value=50 aria-label="Old map: original (left) to background removed (right)"><span>Background off</span></div></div>'
+  +'<div class="leaflet-bar maptools laybtnwrap"><a href="#" id=laybtn role=button title="Layers: old maps, satellite photos, plat map, present-day map, permit dots" aria-label="Layers" aria-expanded="false">'+ICON_LAYERS+'</a>'
   +'<div id=laypanel class=laypanel hidden><div class=layh><b>Layers</b></div>'
-  +'<div class=lays>Old map or photos (one at a time)</div>'
+  +'<div class=lays>Imagery layer (select one)</div>'
   +'<label><input type=radio name=lay value=none> None</label>'
-  +HMAPS.map(m=>'<label><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> '+m.name+'</label><div id=op'+m.k+' class=histop hidden><span>map</span><input id=rng'+m.k+' type=range min=10 max=100 value=85 aria-label="'+m.name+' opacity"><span>today</span></div>').join('')
-  +'<label><input type=radio name=lay value=sat> 2024 satellite images <small>Cook County</small></label><div id=layhint class=layhint></div>'
+  +HMAPS.map(m=>'<label><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> '+m.name+'</label>').join('')
+  +'<label><input type=radio name=lay value=sat> 2024 satellite images <small>Cook County</small></label>'
+  +'<label title="City of Chicago 80-acre plat maps: lot lines and numbers"><input type=radio name=lay value=plat> Plat map <small>lot lines</small></label><div id=layhint class=layhint></div>'
   +'<div class=lays>Show</div>'
   +'<label><input type=checkbox id=laybase> Present-day map</label>'
-  +'<label><input type=checkbox id=laydots> Permit dots</label>'
-  +'<label title="City of Chicago 80-acre plat maps: lot lines and numbers"><input type=checkbox id=platchk> Plat map <small>lot lines</small></label><div id=plathint class=layhint>Zoom in to street level to see lot lines.</div></div>';
+  +'<label><input type=checkbox id=laydots> Permit dots</label></div></div>';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
-toolCtl.addTo(map);
+layCtl.addTo(map);
 
 /* ---- base map. "Plain" = a self-hosted Protomaps vector map: ONE PMTiles file on our blob storage (Chicago, zoom 0-15; closer in, the same shapes are enlarged), painted in the browser by protomaps-leaflet
    (muted grey; green open land; outlined buildings; dark street names; house numbers from zoom 18). OpenStreetMap's own tiles are only the fallback: there is no switch; if the file cannot be read, OpenStreetMap shows.
@@ -530,25 +532,28 @@ async function baseSet(want){
  if(want==='plain'){try{if(!(await plainProbe()))throw 0;await plainBuild()}catch(e){PLAIN_OK=false;want='osm'}}
  BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
 baseSet('plain');   // the plain map is THE base map; OpenStreetMap's own tiles show only if the plain file cannot be read
-/* ---- the Layers menu: one button; old map / satellite are a pick-one list, present-day map and permit dots are check boxes; the pin keeps the menu open ---- */
+/* ---- the Layers menu: one button; old map / satellite are a pick-one list, present-day map and permit dots are check boxes; the menu stays open until the button is pressed again ---- */
 const HIST13_URL=(new URLSearchParams(location.search)).get('hist13')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1913.pmtiles';
 const HIST92_URL=(new URLSearchParams(location.search)).get('hist92')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1892.pmtiles',
- OPS={h1906:HISTOP,h1913:.85,h1892:.85};try{OPS.h1913=+localStorage.getItem('histOp_h1913')||.85;OPS.h1892=+localStorage.getItem('histOp_h1892')||.85}catch(e){}
+ CON={h1906:.5,h1913:.5,h1892:.5};try{for(const k in CON){const v=localStorage.getItem('histC_'+k);if(v!==null)CON[k]=+v}}catch(e){}   // slider position per old map: 0 = the map as printed, 1 = background gone
 const histUChi='(<a href="https://www.lib.uchicago.edu/" target=_blank rel=noopener>University of Chicago Library</a>)';
-const hist13Layer=new HistLayer(HIST13_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:OPS.h1913,attribution:'1913 map: Rand McNally '+histUChi}),
- hist92Layer=new HistLayer(HIST92_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:OPS.h1892,attribution:'1892 map: Rand McNally '+histUChi});
+const hist13Layer=new HistLayer(HIST13_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1913 map: Rand McNally '+histUChi}),
+ hist92Layer=new HistLayer(HIST92_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1892 map: Rand McNally '+histUChi});
 let LAY='none',BASEON=true,DOTSON=true,PTREADY=false;
 try{LAY=localStorage.getItem('laySel')||(localStorage.getItem('aerialOn')=='1'?'sat':localStorage.getItem('histOn')=='1'?'h1906':'none');BASEON=localStorage.getItem('layBase')!=='0';DOTSON=localStorage.getItem('layDots')!=='0'}catch(e){}
-const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,sat:aerLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL};
+const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,sat:aerLayer,plat:platLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function baseVis(){if(BASEON){baseSet(BASE)}else{[osmBase,plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)})}
  map.getContainer().classList.toggle('base-off',!BASEON)}
+function histStyle(l){const k=HMAPS.find(m=>LAYS[m.k]===l).k,t=CON[k],c=l.getContainer();if(!c)return;   // slider: 0 = original; rising = more contrast and brighter paper, multiplied onto today's map, so the background drops out and only the ink is left
+ c.style.mixBlendMode=t<.01?'normal':'multiply';c.style.filter=t<.01?'none':`brightness(${1+.25*t}) contrast(${1+4*t})`}
 function laySync(){
  for(const k in LAYS){const l=LAYS[k];if(!l)continue;if(k===LAY){if(!map.hasLayer(l))l.addTo(map)}else if(map.hasLayer(l))map.removeLayer(l)}
  if(PTREADY){if(DOTSON&&!map.hasLayer(ptLayer))ptLayer.addTo(map);else if(!DOTSON&&map.hasLayer(ptLayer))map.removeLayer(ptLayer)}
  document.querySelectorAll('input[name=lay]').forEach(r=>r.checked=r.value===LAY);$('laybase').checked=BASEON;$('laydots').checked=DOTSON;
- HMAPS.forEach(m=>$('op'+m.k).hidden=LAY!==m.k);
+ const hm=HMAPS.find(m=>m.k===LAY);$('layslider').hidden=!hm;if(hm){$('layslname').textContent=hm.name;$('layrange').value=Math.round(CON[hm.k]*100);histStyle(LAYS[hm.k])}
  let h='';if(LAY==='sat'){if(map.getZoom()<AERIAL_MINZ)h='Zoom in closer to see the photos.';else if(!AERIAL_BS.some(r=>map.getBounds().intersects(r)))h='No photos for this part of the city yet.'}
+ if(LAY==='plat'&&!(map.getZoom()>=PLAT_MINZ&&map.getBounds().intersects(PLAT_LL)))h='Zoom in to street level to see lot lines.';
  if(HMAPS.some(m=>m.k===LAY&&HOK[m.k]===false))h='This map is not online yet.';
  $('layhint').textContent=h;$('layhint').style.display=h?'block':'none';
  $('laybtn').classList.toggle('on',LAY!=='none'||!BASEON||!DOTSON)}
@@ -559,9 +564,8 @@ $('laydots').addEventListener('change',e=>{DOTSON=e.target.checked;lsSet('layDot
 function layOpen(on){$('laypanel').hidden=!on;$('laybtn').setAttribute('aria-expanded',on)}
 $('laybtn').addEventListener('click',e=>{e.preventDefault();layOpen($('laypanel').hidden)});   // the menu stays open until the button is pressed again (or Esc), so layers can be changed one after another
 addEventListener('keydown',e=>{if(e.key==='Escape')layOpen(false)});
-$('platchk').addEventListener('change',e=>{PLATON=e.target.checked;lsSet('platOn',PLATON?'1':'0');platSync()});map.on('zoomend moveend',platSync);platSync();
-HMAPS.forEach(m=>{const r=$('rng'+m.k);r.value=Math.round(OPS[m.k]*100);r.addEventListener('input',e=>{OPS[m.k]=e.target.value/100;LAYS[m.k].setOpacity(OPS[m.k]);lsSet(m.k==='h1906'?'histOp':'histOp_'+m.k,OPS[m.k])})});
-[histLayer,hist13Layer,hist92Layer].forEach(l=>l&&l.on('add',()=>{l.getContainer().style.mixBlendMode='multiply'}));   // multiply: the old map's white paper lets today's map show through unchanged; only its ink and colours darken it. The slider fades the ink.
+$('layrange').addEventListener('input',e=>{const m=HMAPS.find(m=>m.k===LAY);if(!m)return;CON[m.k]=e.target.value/100;lsSet('histC_'+m.k,CON[m.k]);histStyle(LAYS[m.k])});
+[histLayer,hist13Layer,hist92Layer].forEach(l=>l&&l.on('add',()=>histStyle(l)));
 map.on('zoomend moveend',laySync);layOpen(false);if(!BASEON)baseVis();laySync();
 if(aerLayer){aerLayer.on('add',()=>map.getContainer().classList.add('aer-on'));aerLayer.on('remove',()=>map.getContainer().classList.remove('aer-on'))}   // dark ground under the photos: the hairline gaps between tiles (fractional screen scales) then show dark, not white
 {const mel=map.getContainer();mel.addEventListener('pointerdown',()=>mel.classList.add('mfocus'),true);addEventListener('keydown',()=>mel.classList.remove('mfocus'),true)}
