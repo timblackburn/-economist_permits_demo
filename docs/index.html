@@ -454,7 +454,7 @@ const AerialLayer=L.GridLayer.extend({
  createTile(c,done){
   const t=document.createElement('canvas'),sz=this.getTileSize();t.width=sz.x;t.height=sz.y;
   const o=c.scaleBy(sz),tb=L.latLngBounds(this._map.unproject(o,c.z),this._map.unproject(o.add(sz),c.z));        // this tile's lat/lng box
-  AERIAL_FILES.then(fs=>Promise.all(fs.filter(f=>tb.intersects(L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]))).map(f=>{
+  (this.options.files||AERIAL_FILES).then(fs=>Promise.all(fs.filter(f=>tb.intersects(L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]))).map(f=>{
    const pm=this._pmOf(f);
    return pm.getHeader().then(h=>{
     const g=t.getContext('2d'),draw=(r,sx,sy,sw,dx,dy,dw)=>new Promise(res=>{const u=URL.createObjectURL(new Blob([r.data],{type:new Uint8Array(r.data)[0]==0xFF?'image/jpeg':'image/webp'})),img=new Image();   // fully covered tiles are JPEG, tiles at the edge of the imagery are WebP with transparency
@@ -492,7 +492,8 @@ ICON_LAYERS='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
 const HMAPS=[{k:'h1906',name:'1906 map',full:"Blanchard's Map of Chicago, 1906 (David Rumsey Map Collection no. 4464.001; public domain)"},
  {k:'h1913',name:'1913 map',full:'Rand McNally New Standard Map of Chicago, 1913 (University of Chicago Library, G4104.C6 1913 .R3)'},
- {k:'h1892',name:'1892 map',full:'Rand McNally Standard Map of Chicago, 1892 (University of Chicago Library, G4104.C6 1892 .R3)'}];
+ {k:'h1892',name:'1892 map',full:'Rand McNally Standard Map of Chicago, 1892 (University of Chicago Library, G4104.C6 1892 .R3)'},
+ {k:'sb50',name:'1949-1951 Fire Insurance maps',full:'Sanborn Fire Insurance Maps of Chicago, 1949-1951 (Library of Congress, Geography and Map Division, Sanborn Maps Collection; georeferenced by OldInsuranceMaps.net contributors). Downtown (the Loop) so far.'}];
 const URLBTN=k=>'<button type=button class=layurl data-k='+k+' title="Copy the PMTiles file address, to use as a layer in QGIS or another GIS program that reads PMTiles" aria-label="Copy the PMTiles URL">URL</button>';
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
@@ -549,9 +550,14 @@ const HIST92_URL=(new URLSearchParams(location.search)).get('hist92')||'https://
 const histUChi='(<a href="https://www.lib.uchicago.edu/" target=_blank rel=noopener>University of Chicago Library</a>)';
 const hist13Layer=new HistLayer(HIST13_URL,{minZoom:9,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1913 map: Rand McNally '+histUChi}),
  hist92Layer=new HistLayer(HIST92_URL,{minZoom:9,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1892 map: Rand McNally '+histUChi});
+/* 1949-1951 Sanborn fire insurance maps: PMTiles files (one per OldInsuranceMaps volume) listed with their bounds in sanborn_index.json next to them; only the Loop so far */
+const SB_BASE=(new URLSearchParams(location.search)).get('sbbase')||'https://chicagopermits.blob.core.windows.net/aerial/',SB_MINZ=13,      // ?sbbase=<folder url> reads the manifest and files from somewhere else (testing)
+ SB_FILES=fetch(SB_BASE+'sanborn_index.json').then(r=>r.json()).then(j=>j.files.map(f=>({u:SB_BASE+f.u,b:f.b}))).catch(()=>[]);
+let SB_BS=[];SB_FILES.then(fs=>{SB_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof laySync==='function')laySync()});
+const sbLayer=new AerialLayer({files:SB_FILES,minZoom:SB_MINZ,maxZoom:21,zIndex:2,attribution:'Sanborn maps 1949-1951: Library of Congress, Geography and Map Division; georeferenced by <a href="https://oldinsurancemaps.net" target=_blank rel=noopener>OldInsuranceMaps.net</a> contributors'});
 let LAY='none',BASEON=true,DOTSON=true,PTREADY=false;
 try{LAY=localStorage.getItem('laySel')||(localStorage.getItem('aerialOn')=='1'?'sat':localStorage.getItem('histOn')=='1'?'h1906':'none');BASEON=localStorage.getItem('layBase')!=='0';DOTSON=localStorage.getItem('layDots')!=='0'}catch(e){}
-const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,sat:aerLayer,plat:platLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL};
+const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,sb50:sbLayer,sat:aerLayer,plat:platLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function baseVis(){if(BASEON){baseSet(BASE)}else{[osmBase,plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)})}
  map.getContainer().classList.toggle('base-off',!BASEON)}
@@ -563,6 +569,7 @@ function laySync(){
  document.querySelectorAll('input[name=lay]').forEach(r=>r.checked=r.value===LAY);$('laybase').checked=BASEON;$('laydots').checked=DOTSON;
  const hm=HMAPS.find(m=>m.k===LAY);$('layslider').hidden=!hm;if(hm){$('layslname').textContent=hm.name;$('layrange').value=Math.round(CON[hm.k]*100);histStyle(LAYS[hm.k])}
  let h='';if(LAY==='sat'){if(!AERIAL_BS.some(r=>map.getBounds().intersects(r)))h='No photos for this part of the city yet.'}
+ if(LAY==='sb50'){if(map.getZoom()<SB_MINZ)h='Zoom in closer to see the sheets.';else if(!SB_BS.some(r=>map.getBounds().intersects(r)))h='Only downtown (the Loop) is online so far.'}
  if(LAY==='plat'&&!(map.getZoom()>=PLAT_MINZ&&map.getBounds().intersects(PLAT_LL)))h='Zoom in to street level to see lot lines.';
  if(HMAPS.some(m=>m.k===LAY&&HOK[m.k]===false))h='This map is not online yet.';
  $('layhint').textContent=h;$('layhint').style.display=h?'block':'none';
@@ -571,7 +578,7 @@ function laySync(){
 const HOK={};['h1913','h1892'].forEach(k=>probePM(HURL[k]).then(ok=>{HOK[k]=ok;if(!ok){$('lay'+k).disabled=true;$('lnote'+k).textContent=' (not online yet)';if(LAY===k){LAY='none'}}laySync()}));
 document.querySelectorAll('input[name=lay]').forEach(r=>r.addEventListener('change',()=>{LAY=r.value;lsSet('laySel',LAY);laySync();layOpen(false)}));   // choosing a map closes the menu
 /* "URL" buttons: copy the PMTiles file address (the satellite photos are several files: one address per line) for use as a layer in a GIS program */
-const PMURL={h1906:()=>Promise.resolve([HIST_URL]),h1913:()=>Promise.resolve([HIST13_URL]),h1892:()=>Promise.resolve([HIST92_URL]),sat:()=>AERIAL_FILES.then(fs=>fs.map(f=>f.u))};
+const PMURL={h1906:()=>Promise.resolve([HIST_URL]),h1913:()=>Promise.resolve([HIST13_URL]),h1892:()=>Promise.resolve([HIST92_URL]),sat:()=>AERIAL_FILES.then(fs=>fs.map(f=>f.u)),sb50:()=>SB_FILES.then(fs=>fs.map(f=>f.u))};
 function copyText(t){return(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove()})}
 document.querySelectorAll('.layurl').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();PMURL[b.dataset.k]().then(u=>copyText(u.join('\n'))).then(()=>{const t=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=t,1500)})}));
 $('laybase').addEventListener('change',e=>{BASEON=e.target.checked;lsSet('layBase',BASEON?'1':'0');baseVis();laySync()});
