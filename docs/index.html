@@ -499,7 +499,7 @@ layCtl.onAdd=()=>{const d=L.DomUtil.create('div','laydock');
   +'<label><input type=radio name=lay value=none> None</label>'
   +HMAPS.map(m=>'<label><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> '+m.name+'</label>').join('')
   +'<label><input type=radio name=lay value=sat> 2024 satellite images <small>Cook County</small></label>'
-  +'<label title="City of Chicago 80-acre plat maps: lot lines and numbers"><input type=radio name=lay value=plat> Plat map <small>lot lines</small></label><div id=layhint class=layhint></div>'
+  +'<label title="City of Chicago 80-acre plat maps: lot lines and numbers"><input type=radio name=lay value=plat> Plat map <small>lot lines; close zoom only</small></label><div id=layhint class=layhint></div>'
   +'<div class=lays>Show</div>'
   +'<label><input type=checkbox id=laybase> Present-day map</label>'
   +'<label><input type=checkbox id=laydots> Permit dots</label></div></div>';
@@ -562,8 +562,8 @@ document.querySelectorAll('input[name=lay]').forEach(r=>r.addEventListener('chan
 $('laybase').addEventListener('change',e=>{BASEON=e.target.checked;lsSet('layBase',BASEON?'1':'0');baseVis();laySync()});
 $('laydots').addEventListener('change',e=>{DOTSON=e.target.checked;lsSet('layDots',DOTSON?'1':'0');laySync()});
 function layOpen(on){$('laypanel').hidden=!on;$('laybtn').setAttribute('aria-expanded',on)}
-$('laybtn').addEventListener('click',e=>{e.preventDefault();layOpen($('laypanel').hidden)});   // the menu stays open until the button is pressed again (or Esc), so layers can be changed one after another
-addEventListener('keydown',e=>{if(e.key==='Escape')layOpen(false)});
+$('laybtn').addEventListener('click',e=>{e.preventDefault();layOpen($('laypanel').hidden)});   // the menu closes on a click elsewhere on the map, on Esc, or when the button is pressed again
+map.on('click',()=>layOpen(false));addEventListener('keydown',e=>{if(e.key==='Escape')layOpen(false)});
 $('layrange').addEventListener('input',e=>{const m=HMAPS.find(m=>m.k===LAY);if(!m)return;CON[m.k]=e.target.value/100;lsSet('histC_'+m.k,CON[m.k]);histStyle(LAYS[m.k])});
 [histLayer,hist13Layer,hist92Layer].forEach(l=>l&&l.on('add',()=>histStyle(l)));
 map.on('zoomend moveend',laySync);layOpen(false);if(!BASEON)baseVis();laySync();
