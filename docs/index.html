@@ -516,8 +516,7 @@ layCtl.onAdd=()=>{const d=L.DomUtil.create('div','laydock');
   +'<div class=lays>Show</div>'
   +'<label><input type=checkbox id=laybase> Present-day map</label>'
   +'<label><input type=checkbox id=laydots> Permit dots</label>'
-  +'<label><input type=checkbox id=layca> Community area polygons</label>'
-  +'<label><input type=checkbox id=laycc> Community area counts</label></div></div>';
+  +'<label title="The community area outlines and the permit count shown on each"><input type=checkbox id=layca> Community areas</label></div></div>';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
 layCtl.addTo(map);
 
@@ -562,7 +561,7 @@ const SB_BASE=(new URLSearchParams(location.search)).get('sbbase')||'https://chi
 let SB_BS=[];SB_FILES.then(fs=>{SB_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof laySync==='function')laySync()});
 const sbLayer=new AerialLayer({files:SB_FILES,minZoom:SB_MINZ,maxZoom:21,zIndex:2,attribution:'Sanborn maps 1949-1951: Library of Congress, Geography and Map Division; georeferenced by <a href="https://oldinsurancemaps.net" target=_blank rel=noopener>OldInsuranceMaps.net</a> contributors'});
 let LAY='none',BASEON=true,DOTSON=true,CAPOLY=true,CACNT=true,PTREADY=false;
-try{LAY=localStorage.getItem('laySel')||(localStorage.getItem('aerialOn')=='1'?'sat':localStorage.getItem('histOn')=='1'?'h1906':'none');BASEON=localStorage.getItem('layBase')!=='0';DOTSON=localStorage.getItem('layDots')!=='0';CAPOLY=localStorage.getItem('layCaPoly')!=='0';CACNT=localStorage.getItem('layCaCnt')!=='0'}catch(e){}
+try{LAY=localStorage.getItem('laySel')||(localStorage.getItem('aerialOn')=='1'?'sat':localStorage.getItem('histOn')=='1'?'h1906':'none');BASEON=localStorage.getItem('layBase')!=='0';DOTSON=localStorage.getItem('layDots')!=='0';CAPOLY=CACNT=localStorage.getItem('layCa')!=='0'}catch(e){}
 const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,h1930:hist30Layer,sb50:sbLayer,sat:aerLayer,plat:platLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL,h1930:HIST30_URL};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 function baseVis(){if(BASEON){baseSet(BASE)}else{[osmBase,plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)})}
@@ -574,7 +573,7 @@ function laySync(){
  if(PTREADY){if(DOTSON&&!map.hasLayer(ptLayer))ptLayer.addTo(map);else if(!DOTSON&&map.hasLayer(ptLayer))map.removeLayer(ptLayer)
   if(CACNT&&!map.hasLayer(cntLayer))cntLayer.addTo(map);else if(!CACNT&&map.hasLayer(cntLayer))map.removeLayer(cntLayer)
   if(caLayer){if(CAPOLY&&!map.hasLayer(caLayer)){caLayer.addTo(map);caLayer.bringToBack()}else if(!CAPOLY&&map.hasLayer(caLayer))map.removeLayer(caLayer)}}
- document.querySelectorAll('input[name=lay]').forEach(r=>r.checked=r.value===LAY);$('laybase').checked=BASEON;$('laydots').checked=DOTSON;$('layca').checked=CAPOLY;$('laycc').checked=CACNT;
+ document.querySelectorAll('input[name=lay]').forEach(r=>r.checked=r.value===LAY);$('laybase').checked=BASEON;$('laydots').checked=DOTSON;$('layca').checked=CAPOLY&&CACNT;
  const hm=HMAPS.find(m=>m.k===LAY);$('layslider').hidden=!hm;if(hm){$('layslname').textContent=hm.name;$('layrange').value=Math.round(CON[hm.k]*100);histStyle(LAYS[hm.k])}
  let h='';if(LAY==='sat'){if(!AERIAL_BS.some(r=>map.getBounds().intersects(r)))h='No photos for this part of the city yet.'}
  if(LAY==='sb50'){if(map.getZoom()<SB_MINZ)h='Zoom in closer to see the sheets.';else if(!SB_BS.some(r=>map.getBounds().intersects(r)))h='Only downtown (the Loop) is online so far.'}
@@ -591,8 +590,7 @@ function copyText(t){return(navigator.clipboard?navigator.clipboard.writeText(t)
 document.querySelectorAll('.layurl').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();PMURL[b.dataset.k]().then(u=>copyText(u.join('\n'))).then(()=>{const t=b.textContent;b.textContent='Copied';setTimeout(()=>b.textContent=t,1500)})}));
 $('laybase').addEventListener('change',e=>{BASEON=e.target.checked;lsSet('layBase',BASEON?'1':'0');baseVis();laySync()});
 $('laydots').addEventListener('change',e=>{DOTSON=e.target.checked;lsSet('layDots',DOTSON?'1':'0');laySync()});
-$('layca').addEventListener('change',e=>{CAPOLY=e.target.checked;lsSet('layCaPoly',CAPOLY?'1':'0');laySync()});
-$('laycc').addEventListener('change',e=>{CACNT=e.target.checked;lsSet('layCaCnt',CACNT?'1':'0');laySync()});
+$('layca').addEventListener('change',e=>{CAPOLY=CACNT=e.target.checked;lsSet('layCa',CAPOLY?'1':'0');laySync()});   // one switch for the outlines and their counts
 $('dotsbackchk').addEventListener('change',e=>{DOTSON=true;lsSet('layDots','1');laySync()});   // the shortcut next to the Layers button shows only while the dots are off, and goes away once ticked
 function layOpen(on){$('laypanel').hidden=!on;$('laybtn').setAttribute('aria-expanded',on)}
 $('laybtn').addEventListener('click',e=>{e.preventDefault();layOpen($('laypanel').hidden)});   // the menu closes on a click elsewhere on the map, on Esc, or when the button is pressed again
