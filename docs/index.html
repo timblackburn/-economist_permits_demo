@@ -172,6 +172,8 @@ td:first-child{white-space:nowrap}
 #map.mfocus:focus,#map.mfocus:focus-visible{outline:none}   /* clicking the map focuses it (Leaflet's keyboard panning) and the browser's focus ring then showed along its top and bottom edges; hidden after a mouse press only, back as soon as a key is pressed */
 .maptools a{display:flex;align-items:center;justify-content:center;width:30px;height:30px;color:var(--fg);background:var(--surface)}.maptools{position:relative}.histop{position:absolute;left:36px;top:34px;display:flex;align-items:center;gap:6px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:11px;white-space:nowrap}.histop[hidden]{display:none}.histop input{width:90px}
 .maptools a.on{background:var(--s1);color:#fff}.maptools a svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.maptools a.hid{display:none}
+.laypanel{position:absolute;left:36px;top:0;width:262px;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 6px rgba(0,0,0,.3);padding:6px 9px 8px;font:12.5px/1.3 system-ui,sans-serif}.laypanel[hidden]{display:none}.laypanel label{display:flex;gap:6px;align-items:center;padding:2px 0;cursor:pointer}.laypanel label small{color:var(--mut)}.laypanel input[disabled]+*,.laypanel label:has(input:disabled){opacity:.5;cursor:default}.layh{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}.layh button{width:26px;height:26px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center}.layh button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.layh button.on{background:var(--s1);color:#fff;border-color:var(--s1)}.lays{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);margin:6px 0 2px}.layhint{display:none;color:var(--mut);font-size:11.5px;padding:0 0 2px 20px}.laypanel .histop{position:static;border:0;padding:3px 0 2px 20px;margin:0}.laypanel .histop input{width:100px}
+#map.leaflet-container.base-off{background:#fff}#map.leaflet-container.base-off.aer-on{background:#3a3a30}
 #map.leaflet-container.aer-on{background:#3a3a30}
 .measpanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.25 system-ui,sans-serif;width:178px;margin-bottom:22px;margin-right:10px}.measpanel button{font:inherit;font-size:11.5px;padding:1px 6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer;white-space:nowrap}.measpanel button.on{background:var(--s1);color:#fff;border-color:var(--s1)}
 .measpanel .mh{display:flex;gap:4px;margin-bottom:4px}.measpanel .mh button{flex:1}
@@ -454,7 +456,7 @@ const AERIAL_OVR=(new URLSearchParams(location.search)).get('aerial'),AERIAL_MIN
    A file is opened only when a tile on screen falls inside its bounds, so only the files in view are ever touched. ?aerial=<url> shows one test file instead. */
 const AERIAL_FILES=AERIAL_OVR?Promise.resolve([{u:AERIAL_OVR,b:[41.64,-87.95,42.03,-87.52]}]):fetch('data/aerial_index.json').then(r=>r.json()).then(j=>j.files.map(f=>({u:j.base+f.u,b:f.b}))).catch(()=>[AERIAL_OLD]);
 let AERIAL_BS=[L.latLngBounds([[41.64,-87.95],[42.03,-87.52]])];      // narrowed to the files' own bounds once the manifest has loaded (the satellite button shows only over them)
-AERIAL_FILES.then(fs=>{AERIAL_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof aerSync==='function')aerSync()});
+AERIAL_FILES.then(fs=>{AERIAL_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof laySync==='function')laySync()});
 const AerialLayer=L.GridLayer.extend({
  initialize(o){L.GridLayer.prototype.initialize.call(this,o);this._pms={}},
  _pmOf(f){return this._pms[f.u]||(this._pms[f.u]=new pmtiles.PMTiles(f.u))},
@@ -487,15 +489,23 @@ const HistLayer=L.GridLayer.extend({
   return t}});
 let HISTON=false,HISTOP=.85;try{HISTON=localStorage.getItem('histOn')=='1';HISTOP=+localStorage.getItem('histOp')||.85}catch(e){}
 const histLayer=HIST_URL?new HistLayer(HIST_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:HISTOP,attribution:'1906 map: Blanchard (<a href="https://www.davidrumsey.com/" target=_blank rel=noopener>David Rumsey Map Collection</a>, no. 4464.001; public domain)'}):null;
-ICON_HIST='<svg viewBox="0 0 24 24"><path d="M4 5.5 9 4l6 1.5L20 4v14.5L15 20l-6-1.5L4 20z"/><path d="M9 4v14.5M15 5.5V20"/></svg>',
- ICON_SAT='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
+ICON_LAYERS='<svg viewBox="0 0 24 24"><path d="M12 3 3 7.5 12 12l9-4.5L12 3z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>',
+ ICON_PIN='<svg viewBox="0 0 24 24"><path d="M9 3h6l-1 6 3 3H7l3-3z"/><path d="M12 12v8"/></svg>',
  ICON_RULER='<svg viewBox="0 0 24 24"><path d="m3.5 16.5 13-13 4 4-13 13z"/><path d="m7 13 2 2M10 10l1.5 1.5M13 7l2 2"/></svg>';
+const HMAPS=[{k:'h1906',name:"1906 Blanchard's Map of Chicago"},{k:'h1913',name:'1913 Rand McNally New Standard Map of Chicago'},{k:'h1892',name:'1892 Rand McNally Standard Map of Chicago'}];
 const toolCtl=L.control({position:'topleft'});
 toolCtl.onAdd=()=>{const d=L.DomUtil.create('div','leaflet-bar maptools');
- d.innerHTML='<a href="#" id=aerbtn role=button class=hid title="Satellite view: Cook County 2024 aerial photos (leaf-off)" aria-label="Satellite view">'+ICON_SAT+'</a>'
-  +'<a href="#" id=histbtn role=button title="1906 map: Blanchard\'s map of Chicago laid over today\'s map" aria-label="1906 map" aria-pressed="false">'+ICON_HIST+'</a><div id=histop class=histop hidden><span>1906</span><input id=histrange type=range min=10 max=100 value=85 aria-label="1906 map opacity"><span>today</span></div>'
-  +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>';
- L.DomEvent.disableClickPropagation(d);return d};
+ d.innerHTML='<a href="#" id=laybtn role=button title="Layers: historic maps, satellite photos, present-day map, permit dots" aria-label="Layers" aria-expanded="false">'+ICON_LAYERS+'</a>'
+  +'<a href="#" id=measbtn role=button title="Measure distances, building sides and areas" aria-label="Measure">'+ICON_RULER+'</a>'
+  +'<div id=laypanel class=laypanel hidden><div class=layh><b>Layers</b><button type=button id=laypin title="Pin: keep this menu open" aria-label="Pin the layers menu open" aria-pressed="false">'+ICON_PIN+'</button></div>'
+  +'<div class=lays>Old map or photos (one at a time)</div>'
+  +'<label><input type=radio name=lay value=none> None</label>'
+  +HMAPS.map(m=>'<label><input type=radio name=lay value='+m.k+' id=lay'+m.k+'> '+m.name+'</label><div id=op'+m.k+' class=histop hidden><span>map</span><input id=rng'+m.k+' type=range min=10 max=100 value=85 aria-label="'+m.name+' opacity"><span>today</span></div>').join('')
+  +'<label><input type=radio name=lay value=sat> 2024 satellite images <small>Cook County</small></label><div id=layhint class=layhint></div>'
+  +'<div class=lays>Show</div>'
+  +'<label><input type=checkbox id=laybase> Present-day map</label>'
+  +'<label><input type=checkbox id=laydots> Permit dots</label></div>';
+ L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
 toolCtl.addTo(map);
 
 /* ---- base map. "Plain" = a self-hosted Protomaps vector map: ONE PMTiles file on our blob storage (Chicago, zoom 0-15; closer in, the same shapes are enlarged), painted in the browser by protomaps-leaflet
@@ -517,24 +527,47 @@ async function plainBuild(){if(plainLayer)return plainLayer;
   rasterLayer=new RL({tileSize:512,minZoom:RASTER_MINZ,maxZoom:21,maxNativeZoom:RASTER_MAXZ,attribution:'<a href="https://protomaps.com" target=_blank rel=noopener>Protomaps</a> \u00a9 <a href="https://openstreetmap.org/copyright" target=_blank rel=noopener>OpenStreetMap</a>'})}   // 1024 px pictures (2x2 stitched, stored one zoom lower) shown at 512 css px: sharp on high-density screens, a quarter of the requests
  return plainLayer}
 const tilesReady=(l,ms)=>new Promise(res=>{const t0=performance.now(),poll=()=>{if(performance.now()-t0>ms||(l._tiles&&Object.keys(l._tiles).length&&l._noTilesToLoad()))res();else setTimeout(poll,40)};setTimeout(poll,60)});
-async function plainSync(){if(BASE!=='plain'||!plainLayer)return;const z=map.getZoom(),pic=!!rasterLayer&&z>=RASTER_MINZ&&z<=RASTER_MAXZ,want=pic?rasterLayer:plainLayer,oth=pic?plainLayer:rasterLayer,tok=++SWAP;
+async function plainSync(){if(typeof BASEON!=='undefined'&&!BASEON)return;if(BASE!=='plain'||!plainLayer)return;const z=map.getZoom(),pic=!!rasterLayer&&z>=RASTER_MINZ&&z<=RASTER_MAXZ,want=pic?rasterLayer:plainLayer,oth=pic?plainLayer:rasterLayer,tok=++SWAP;
  if(!map.hasLayer(want))want.addTo(map);if(oth&&map.hasLayer(oth)){await tilesReady(want,2500);if(tok===SWAP&&map.hasLayer(oth))map.removeLayer(oth)}}   // the new layer is on and drawn before the old one goes: no grey flash
 map.on('zoomend',plainSync);
 async function baseSet(want){
  if(want==='plain'){try{if(!(await plainProbe()))throw 0;await plainBuild()}catch(e){PLAIN_OK=false;want='osm'}}
  BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
 baseSet('plain');   // the plain map is THE base map; OpenStreetMap's own tiles show only if the plain file cannot be read
-function aerSync(){const b=$('aerbtn');if(!b)return;
- const near=!!aerLayer&&map.getZoom()>=AERIAL_MINZ&&AERIAL_BS.some(r=>map.getBounds().intersects(r));
- b.classList.toggle('hid',!near);b.classList.toggle('on',AERON);b.setAttribute('aria-pressed',AERON);
- if(aerLayer){if(AERON&&!map.hasLayer(aerLayer))aerLayer.addTo(map);else if(!AERON&&map.hasLayer(aerLayer))map.removeLayer(aerLayer)}}
-$('aerbtn').addEventListener('click',e=>{e.preventDefault();AERON=!AERON;try{localStorage.setItem('aerialOn',AERON?'1':'0')}catch(err){}aerSync()});
-map.on('zoomend moveend',aerSync);aerSync();
-if(histLayer)histLayer.on('add',()=>{histLayer.getContainer().style.mixBlendMode='multiply'});   // multiply: the map's white paper lets today's map show through unchanged; only its ink and colours darken it. The slider fades the ink.
-function histSync(){const b=$('histbtn');if(!b)return;b.classList.toggle('on',HISTON);b.setAttribute('aria-pressed',HISTON);$('histop').hidden=!HISTON;
- if(histLayer){if(HISTON&&!map.hasLayer(histLayer))histLayer.addTo(map);else if(!HISTON&&map.hasLayer(histLayer))map.removeLayer(histLayer)}}
-if(histLayer){$('histrange').value=Math.round(HISTOP*100);$('histbtn').addEventListener('click',e=>{e.preventDefault();HISTON=!HISTON;try{localStorage.setItem('histOn',HISTON?'1':'0')}catch(err){}histSync()});
- $('histrange').addEventListener('input',e=>{HISTOP=e.target.value/100;histLayer.setOpacity(HISTOP);try{localStorage.setItem('histOp',HISTOP)}catch(err){}});histSync()}else $('histbtn').classList.add('hid');
+/* ---- the Layers menu: one button; old map / satellite are a pick-one list, present-day map and permit dots are check boxes; the pin keeps the menu open ---- */
+const HIST13_URL=(new URLSearchParams(location.search)).get('hist13')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1913.pmtiles';
+const HIST92_URL=(new URLSearchParams(location.search)).get('hist92')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1892.pmtiles',
+ OPS={h1906:HISTOP,h1913:.85,h1892:.85};try{OPS.h1913=+localStorage.getItem('histOp_h1913')||.85;OPS.h1892=+localStorage.getItem('histOp_h1892')||.85}catch(e){}
+const histUChi='(<a href="https://www.lib.uchicago.edu/" target=_blank rel=noopener>University of Chicago Library</a>)';
+const hist13Layer=new HistLayer(HIST13_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:OPS.h1913,attribution:'1913 map: Rand McNally '+histUChi}),
+ hist92Layer=new HistLayer(HIST92_URL,{minZoom:10,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:OPS.h1892,attribution:'1892 map: Rand McNally '+histUChi});
+let LAY='none',BASEON=true,DOTSON=true,PINNED=false,PTREADY=false;
+try{LAY=localStorage.getItem('laySel')||(localStorage.getItem('aerialOn')=='1'?'sat':localStorage.getItem('histOn')=='1'?'h1906':'none');BASEON=localStorage.getItem('layBase')!=='0';DOTSON=localStorage.getItem('layDots')!=='0';PINNED=localStorage.getItem('layPin')=='1'}catch(e){}
+const LAYS={h1906:histLayer,h1913:hist13Layer,h1892:hist92Layer,sat:aerLayer},HURL={h1913:HIST13_URL,h1892:HIST92_URL};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+function baseVis(){if(BASEON){baseSet(BASE)}else{[osmBase,plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)})}
+ map.getContainer().classList.toggle('base-off',!BASEON)}
+function laySync(){
+ for(const k in LAYS){const l=LAYS[k];if(!l)continue;if(k===LAY){if(!map.hasLayer(l))l.addTo(map)}else if(map.hasLayer(l))map.removeLayer(l)}
+ if(PTREADY){if(DOTSON&&!map.hasLayer(ptLayer))ptLayer.addTo(map);else if(!DOTSON&&map.hasLayer(ptLayer))map.removeLayer(ptLayer)}
+ document.querySelectorAll('input[name=lay]').forEach(r=>r.checked=r.value===LAY);$('laybase').checked=BASEON;$('laydots').checked=DOTSON;
+ HMAPS.forEach(m=>$('op'+m.k).hidden=LAY!==m.k);
+ let h='';if(LAY==='sat'){if(map.getZoom()<AERIAL_MINZ)h='Zoom in closer to see the photos.';else if(!AERIAL_BS.some(r=>map.getBounds().intersects(r)))h='No photos for this part of the city yet.'}
+ if(HMAPS.some(m=>m.k===LAY&&HOK[m.k]===false))h='This map is not online yet.';
+ $('layhint').textContent=h;$('layhint').style.display=h?'block':'none';
+ $('laybtn').classList.toggle('on',LAY!=='none'||!BASEON||!DOTSON)}
+const HOK={};['h1913','h1892'].forEach(k=>probePM(HURL[k]).then(ok=>{HOK[k]=ok;if(!ok){$('lay'+k).disabled=true;$('lay'+k).parentNode.title='Not online yet';$('lay'+k).parentNode.insertAdjacentHTML('beforeend',' <small>(not online yet)</small>');if(LAY===k){LAY='none'}}laySync()}));
+document.querySelectorAll('input[name=lay]').forEach(r=>r.addEventListener('change',()=>{LAY=r.value;lsSet('laySel',LAY);laySync()}));
+$('laybase').addEventListener('change',e=>{BASEON=e.target.checked;lsSet('layBase',BASEON?'1':'0');baseVis();laySync()});
+$('laydots').addEventListener('change',e=>{DOTSON=e.target.checked;lsSet('layDots',DOTSON?'1':'0');laySync()});
+function layOpen(on){$('laypanel').hidden=!on;$('laybtn').setAttribute('aria-expanded',on)}
+function layPin(on){PINNED=on;lsSet('layPin',on?'1':'0');$('laypin').setAttribute('aria-pressed',on);$('laypin').classList.toggle('on',on);if(on)layOpen(true)}
+$('laybtn').addEventListener('click',e=>{e.preventDefault();if(PINNED&&!$('laypanel').hidden){layPin(false);layOpen(false)}else layOpen($('laypanel').hidden)});
+$('laypin').addEventListener('click',()=>layPin(!PINNED));
+map.on('click',()=>{if(!PINNED)layOpen(false)});addEventListener('keydown',e=>{if(e.key==='Escape'&&!PINNED)layOpen(false)});
+HMAPS.forEach(m=>{const r=$('rng'+m.k);r.value=Math.round(OPS[m.k]*100);r.addEventListener('input',e=>{OPS[m.k]=e.target.value/100;LAYS[m.k].setOpacity(OPS[m.k]);lsSet(m.k==='h1906'?'histOp':'histOp_'+m.k,OPS[m.k])})});
+[histLayer,hist13Layer,hist92Layer].forEach(l=>l&&l.on('add',()=>{l.getContainer().style.mixBlendMode='multiply'}));   // multiply: the old map's white paper lets today's map show through unchanged; only its ink and colours darken it. The slider fades the ink.
+map.on('zoomend moveend',laySync);layPin(PINNED);layOpen(PINNED);if(!BASEON)baseVis();laySync();
 if(aerLayer){aerLayer.on('add',()=>map.getContainer().classList.add('aer-on'));aerLayer.on('remove',()=>map.getContainer().classList.remove('aer-on'))}   // dark ground under the photos: the hairline gaps between tiles (fractional screen scales) then show dark, not white
 {const mel=map.getContainer();mel.addEventListener('pointerdown',()=>mel.classList.add('mfocus'),true);addEventListener('keydown',()=>mel.classList.remove('mfocus'),true)}
 
@@ -704,7 +737,7 @@ function drawCA(){
  if(!caLayer){caLayer=L.geoJSON(CA,{onEachFeature:(f,l)=>{
   l.on('click',()=>{if(!commMode())return;const n=f.properties.n,pick=!AREAS.has(n);pick?AREAS.add(n):AREAS.delete(n);caLabel();if($('cap'))caList();go()});
   l.on('mouseover',()=>l.setStyle({weight:2.5,color:css('--fg')}));l.on('mouseout',()=>style(l));
-  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}<br><i>Double-click to zoom in and see every permit</i>`},{sticky:true,className:'tip'});l.on('tooltipopen',()=>{if(!commMode())l.closeTooltip()})}}).addTo(map);ptLayer.addTo(map);cityFit()}
+  l.bindTooltip(()=>{const s=stat[f.properties.n]||{n:0,c:0};return `<b>${esc(f.properties.name)}</b>${s.n} permits · ${money(s.c)}<br><i>Double-click to zoom in and see every permit</i>`},{sticky:true,className:'tip'});l.on('tooltipopen',()=>{if(!commMode())l.closeTooltip()})}}).addTo(map);PTREADY=true;laySync();cityFit()}
  const vals=Object.values(stat).map(s=>s[metric]).filter(v=>v>0).sort((a,b)=>a-b);
  brk=[.2,.4,.6,.8].map(q=>vals[Math.floor(q*(vals.length-1))]||0);
  caLayer.eachLayer(style);
