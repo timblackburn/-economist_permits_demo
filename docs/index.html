@@ -295,7 +295,7 @@ html.mob .filters .shade{display:none!important}
 html.fs #fsinfo{display:flex;align-items:flex-start;gap:8px 18px;background:var(--surface);color:var(--fg);border-top:1px solid var(--line);padding:7px 14px;font-size:13px}   /* a bar across the bottom of the map: the Map view box and the counts on the left, the filters in place filling the rest (three lines, then "more") */
 #fsview{flex:none;white-space:nowrap;cursor:pointer;font-weight:600;line-height:1.4}#fsview input{margin:0 4px 0 0;vertical-align:-2px}
 #fsn{flex:none;display:flex;gap:16px;white-space:nowrap;color:var(--mut);line-height:1.4}#fsn b{color:var(--fg);font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
-#fsf{flex:1 1 0;min-width:0;display:flex;align-items:flex-end;gap:10px;line-height:1.4}#fst{flex:1;min-width:0;max-height:4.2em;overflow:hidden}#fsf.open #fst{max-height:38vh;overflow-y:auto;scrollbar-width:thin}#fst .fl0{color:var(--mut)}#fst .sep{color:var(--mut);margin:0 5px}#fsmore{flex:none;color:var(--acc);font-size:12.5px;text-decoration:underline;cursor:pointer}#fsmore[hidden]{display:none}
+#fsf{flex:1 1 0;min-width:0;display:flex;align-items:flex-end;gap:10px;line-height:1.4}#fst{flex:1;min-width:0;max-height:4.2em;overflow:hidden}#fsf.open #fst{max-height:38vh;overflow-y:auto;scrollbar-width:thin}#fst .fl0{color:var(--mut)}#fst{display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:4px 6px}#fst .chip{padding:1px 9px;font-size:12.5px}#fst .fl0{margin-right:2px}#fsmore{flex:none;color:var(--acc);font-size:12.5px;text-decoration:underline;cursor:pointer}#fsmore[hidden]{display:none}
 #fshint{display:none}
 html.fs,html.fs body{height:100%;overflow:hidden}
 html.fs header,html.fs footer,html.fs .filters,html.fs #overview,html.fs .mapc>h2,html.fs .tbar,html.fs #tarea,html.fs #tdock,html.fs .legend,html.fs .dotkey{display:none!important}
@@ -679,7 +679,7 @@ function measOn(on){
 $('measbtn').addEventListener('click',e=>{e.preventDefault();measOn(!MEAS.on)});
 /* full screen: the filters in place (read only) and three counts under them: all permits that match the filters, those inside the map view, and those with no pin (address not placed) */
 function fsInfo(){if(!document.documentElement.classList.contains('fs'))return;
- {const t=FILT.filter(x=>x!=='In the map view');$('fst').innerHTML='<span class="fl0">Filters: </span>'+(t.length?t.map(esc).join('<span class="sep">\u00b7</span>'):'<i class="fl0">none (all permits)</i>');$('fsvw').checked=$('inview').checked;
+ {const t=CHIPL.filter(x=>x[0]!=='In the map view');const st=$('fst');st.innerHTML='<span class="fl0">Filters: </span>';if(t.length)chipEls(t).forEach(e=>st.append(e));else st.insertAdjacentHTML('beforeend','<i class="fl0">none (all permits)</i>');$('fsvw').checked=$('inview').checked;
   const f=$('fsf'),m=$('fsmore'),was=f.classList.contains('open');f.classList.remove('open');const ov=$('fst').scrollHeight>$('fst').clientHeight+2;if(ov&&was)f.classList.add('open');m.hidden=!ov;m.textContent=ov&&was?'less':'more'}
  {let h1='Pick a permit',h2='Click a dot on the map to see its details here.';
   if(!DOTSON){h1='Permit dots are off';h2='Turn them on in the Layers menu (bottom right of the map), then click a dot.'}
@@ -1242,11 +1242,14 @@ function chips(){toHash();qlocUpdate();const c=[];
  if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
  [...AREAS].forEach(n=>c.push([CAN[n]||('Area '+n),()=>{AREAS.delete(n);caLabel()},1]));if($('ar').value)c.push(['Text in architect/builder: '+$('ar').value,()=>$('ar').value='']);[...AS].forEach(k=>c.push(['Architect: '+AN[k],()=>AS.delete(k)]));[...CS].forEach(k=>c.push(['Contractor: '+(CSN[k]||k),()=>CS.delete(k)]));
  const mt=$('ar').value?Object.entries(AN).filter(([k])=>k.includes(nk($('ar').value))&&!AS.has(k)):[];if(mt.length>=2)c.push(['+ add all '+mt.length+' architects matching “'+$('ar').value+'”',()=>{mt.forEach(([k])=>AS.add(k));$('ar').value=''}]);
- FILT=c.map(x=>x[0]).filter(t=>!/^\+ add all/.test(t));
- $('chips').innerHTML='';
- if(c.length>1){const e=document.createElement('span');e.className='chip';e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};$('chips').append(e)}
- c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};$('chips').append(e)});
+ FILT=c.map(x=>x[0]).filter(t=>!/^\+ add all/.test(t));CHIPL=c;
+ $('chips').innerHTML='';chipEls(c).forEach(e=>$('chips').append(e));
  foldChips();fsInfoSoon()}
+let CHIPL=[];
+/* the filter chips (also used in the full screen bar): Clear all first when there is more than one, then one per filter, coloured by kind; clicking one removes that filter */
+function chipEls(c){const out=[];
+ if(c.length>1){const e=document.createElement('span');e.className='chip k-clear';e.style.borderStyle='dashed';e.innerHTML='Clear all<b>×</b>';e.onclick=()=>{SQ='';['q','qa','ar'].forEach(x=>$(x).value='');AREAS.clear();CS.clear();caLabel();CLO=0;CHI=Infinity;setR(null,null);AS.clear();go()};out.push(e)}
+ c.forEach(([t,fn,kd])=>{const e=document.createElement('span');e.className='chip '+(kd||/^(Street:|Address:|In the map view)/.test(t)?'k-place':/^(Architect|Contractor|Text in architect|Owner)/.test(t)?'k-who':'');e.innerHTML=esc(t)+'<b>×</b>';e.onclick=()=>{fn();go()};out.push(e)});return out}
 /* ---- saved filter sets and the filter lock ----
    A set is the filter part of the page address (text boxes, architects, contractors, areas, dates, cost, confidence, street, and the map view when "Filter by map" is on), kept in this browser.
    The lock freezes the current filters: go() (every refilter passes through it) compares the filters with the frozen ones and puts them back if anything changed them. */
