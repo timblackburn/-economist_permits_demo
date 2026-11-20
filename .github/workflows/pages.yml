@@ -1,0 +1,36 @@
+# Publishes docs/ to GitHub Pages. Replaces GitHub's managed "pages build and deployment" run
+# (Settings > Pages > Source must be "GitHub Actions"). The only step is filling two secrets into docs/index.html.
+name: Deploy site
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true          # only the newest push needs to go out
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fill in the password and storage host (repository secrets, kept out of the source)
+        env:
+          SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
+          BLOB_HOST: ${{ secrets.BLOB_HOST }}
+        run: |
+          test -n "$SITE_PASSWORD" && test -n "$BLOB_HOST"
+          sed -i "s#__SITE_PASSWORD__#$SITE_PASSWORD#; s#__BLOB_HOST__#$BLOB_HOST#g" docs/index.html
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v5

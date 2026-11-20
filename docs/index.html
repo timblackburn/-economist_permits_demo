@@ -195,7 +195,7 @@ td:first-child{white-space:nowrap}
 .platctl{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:4px;padding:3px 9px;font-size:12.5px;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer;margin:0 0 22px 10px;display:none}.platctl input{vertical-align:-2px;margin-right:3px}.plattiles{mix-blend-mode:multiply}
 
 
-/* ---- the beta login: a full-screen card until the word "beta" has been typed once (remembered in this browser) ---- */
+/* ---- the beta login: a full-screen card until the password has been typed once (remembered in this browser) ---- */
 #gate{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1200px 700px at 20% 10%,#2c5580 0,#1d3a5a 45%,#132a42 100%)}
 html.authed #gate{display:none}html:not(.authed) body{overflow:hidden}
 #gate::before{content:"";position:absolute;inset:0;background:url(banner.jpg) center bottom/min(1100px,100%) auto no-repeat;opacity:.16;pointer-events:none}
@@ -375,15 +375,15 @@ html.mob #fsbtn{display:none}
 <script src="vendor/pmtiles/pmtiles.js"></script>   <!-- PMTiles 3.2.1 (BSD-3), served from this site: reads the aerial-photo tile archive on blob storage by HTTP range requests -->
 <script>
 const $=id=>document.getElementById(id),m=$('m');
-/* the beta login: the word "beta" (any capitals), remembered in this browser; a blocked localStorage just asks again next visit */
+/* the beta login: the password (any capitals), remembered in this browser; a blocked localStorage just asks again next visit */
 (()=>{const f=document.getElementById('gform'),i=document.getElementById('gpw'),e=document.getElementById('gerr');if(!f)return;if(!document.documentElement.classList.contains('authed'))setTimeout(()=>i.focus(),50);
- f.addEventListener('submit',ev=>{ev.preventDefault();if(i.value.trim().toLowerCase()==='beta'){try{localStorage.setItem('permits-beta','1')}catch(x){}document.documentElement.classList.add('authed');i.value='';e.textContent=''}
+ f.addEventListener('submit',ev=>{ev.preventDefault();if(i.value.trim().toLowerCase()==='__SITE_PASSWORD__'){try{localStorage.setItem('permits-beta','1')}catch(x){}document.documentElement.classList.add('authed');i.value='';e.textContent=''}
   else{e.textContent='That is not the password. Please try again.';f.classList.remove('bad');void f.offsetWidth;f.classList.add('bad');i.select()}});
  i.addEventListener('input',()=>{e.textContent=''})})();
 
 if(innerWidth<=1180)document.querySelectorAll('.fgroup').forEach(d=>d.open=false);   // small screens: the filter groups start closed
 /* where the data files live: Azure Blob Storage for the published site (scripts/upload_data.sh), docs/data (a link to site_data/) when testing locally */
-const DATA=location.hostname.endsWith('github.io')?'https://chicagopermits.blob.core.windows.net/data/':'data/';
+const DATA=location.hostname.endsWith('github.io')?'https://__BLOB_HOST__/data/':'data/';
 var INVOFF=false;   /* the person switched Filter by map off while zoomed in: do not turn it back on until they zoom out */
 var POLY=null,PBB=null,STUDY={on:false,panel:false,pts:[],cur:null,drag:false,t:0,g:null,v:null,rnd:null,from:null};   /* the study area: POLY = the saved/active shape as [[lat,lng],...] (a filter like the others, kept in the page address as sa=), PBB = its bounding box; STUDY = the drawing tool's state */
 var FLOCK=null,FSETS=[],FACT='',RESTORING=0,VIEWB=null,INITVIEW=null,INITLOCK=false,VMOVE=0;   /* VIEWB = a saved map extent that the filter uses instead of the window's own view (set by a shared link or a saved set, dropped when the map is moved or Filter by map is turned off) */
@@ -482,7 +482,7 @@ const platLayer=new PlatLayer({zIndex:3,minZoom:PLAT_MINZ,maxZoom:21,maxNativeZo
    The files are listed in data/aerial_index.json (scripts/aerial_manifest.py); the host must allow Range requests and CORS. ?aerial=<url> shows a single test file instead. The button shows only over the files' bounds.
    Zoom 20 is the file's finest level: closer in, the same tile is cropped and enlarged. ---- */
 const AERIAL_OVR=(new URLSearchParams(location.search)).get('aerial'),AERIAL_MINZ=9,AERIAL_NATIVE=20,
- AERIAL_OLD={u:'https://chicagopermits.blob.core.windows.net/aerial/aerial_2024_ca72-75.pmtiles',b:[41.6746,-87.7415,41.737,-87.6313]};      // used if the manifest cannot be read
+ AERIAL_OLD={u:'https://__BLOB_HOST__/aerial/aerial_2024_ca72-75.pmtiles',b:[41.6746,-87.7415,41.737,-87.6313]};      // used if the manifest cannot be read
 /* The photos are several PMTiles files (one per group of community areas) listed with their bounds in data/aerial_index.json (scripts/aerial_manifest.py).
    A file is opened only when a tile on screen falls inside its bounds, so only the files in view are ever touched. ?aerial=<url> shows one test file instead. */
 const AERIAL_FILES=AERIAL_OVR?Promise.resolve([{u:AERIAL_OVR,b:[41.64,-87.95,42.03,-87.52]}]):fetch(DATA+'aerial_index.json').then(r=>r.json()).then(j=>j.files.map(f=>({u:j.base+f.u,b:f.b}))).catch(()=>[AERIAL_OLD]);
@@ -509,7 +509,7 @@ let AERON=false;try{AERON=localStorage.getItem('aerialOn')=='1'}catch(e){}
 const aerLayer=new AerialLayer({minZoom:AERIAL_MINZ,maxZoom:21,zIndex:2,attribution:'Imagery © <a href="https://maps.cookcountyil.gov/imagery-tile-downloader/" target=_blank rel=noopener>Cook County GIS</a>, 2024'});
 /* ---- historic map: Blanchard's map of Chicago, 1906 (public domain; Rumsey 4464.001), georeferenced by hand (scripts/historic_gcp.py, historic_tiles.py) and cut into a PMTiles file (WebP, transparent outside the map) on blob storage.
    Zoom 16 is its finest level (about 1.8 m per source pixel); closer in, the zoom-16 tile is enlarged. ?hist=<url> overrides the file. ---- */
-const HIST_URL=(new URLSearchParams(location.search)).get('hist')||'https://chicagopermits.blob.core.windows.net/aerial/blanchard_1906.pmtiles',HIST_LL=L.latLngBounds([[41.64,-87.85],[42.03,-87.52]]),HIST_NATIVE=16;
+const HIST_URL=(new URLSearchParams(location.search)).get('hist')||'https://__BLOB_HOST__/aerial/blanchard_1906.pmtiles',HIST_LL=L.latLngBounds([[41.64,-87.85],[42.03,-87.52]]),HIST_NATIVE=16;
 const HistLayer=L.GridLayer.extend({
  initialize(url,o){L.GridLayer.prototype.initialize.call(this,o);this._pm=new pmtiles.PMTiles(url)},
  createTile(c,done){
@@ -564,8 +564,8 @@ layCtl.addTo(map);
 /* ---- base map. "Plain" = a self-hosted Protomaps vector map: ONE PMTiles file on our blob storage (Chicago, zoom 0-15; closer in, the same shapes are enlarged), painted in the browser by protomaps-leaflet
    (muted grey; green open land; outlined buildings; dark street names; house numbers from zoom 18). OpenStreetMap's own tiles are only the fallback: there is no switch; if the file cannot be read, OpenStreetMap shows.
    The 128 KB library and the style file load only when the plain map is shown, and any failure leaves OpenStreetMap on the map. ?basemap=<url> overrides the file (testing). ---- */
-const BASEMAP_URL=(new URLSearchParams(location.search)).get('basemap')||'https://chicagopermits.blob.core.windows.net/aerial/chicago_basemap.pmtiles',
- RASTER_URL=(new URLSearchParams(location.search)).get('basemapr')||'https://chicagopermits.blob.core.windows.net/aerial/chicago_basemap_raster.pmtiles',RASTER_MINZ=10,RASTER_MAXZ=16;
+const BASEMAP_URL=(new URLSearchParams(location.search)).get('basemap')||'https://__BLOB_HOST__/aerial/chicago_basemap.pmtiles',
+ RASTER_URL=(new URLSearchParams(location.search)).get('basemapr')||'https://__BLOB_HOST__/aerial/chicago_basemap_raster.pmtiles',RASTER_MINZ=10,RASTER_MAXZ=16;
 /* Zoomed out (10-16) the plain map is shown as PICTURE tiles (a second PMTiles file, drawn from the same style by scripts/basemap_raster.py; WebP, sharp on high-density screens): painting vector tiles there takes
    0.3-0.4 s a screen, an image about a tenth of that. Closer in (17+) and further out (0-9) the vector tiles are used. Only one of the two layers is on the map at a time; if the picture file is missing, vector is used at every zoom. */
 let BASE='osm',PLAIN_OK=null,RASTER_OK=null,plainLayer=null,rasterLayer=null,SWAP=0;
@@ -588,16 +588,16 @@ async function baseSet(want){
  BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
 baseSet('plain');   // the plain map is THE base map; OpenStreetMap's own tiles show only if the plain file cannot be read
 /* ---- the Layers menu: one button; old map / satellite are a pick-one list, present-day map and permit dots are check boxes; the menu stays open until the button is pressed again ---- */
-const HIST13_URL=(new URLSearchParams(location.search)).get('hist13')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1913.pmtiles';
-const HIST30_URL=(new URLSearchParams(location.search)).get('hist30')||'https://chicagopermits.blob.core.windows.net/aerial/annexations_1930.pmtiles';
-const HIST92_URL=(new URLSearchParams(location.search)).get('hist92')||'https://chicagopermits.blob.core.windows.net/aerial/rand_mcnally_1892.pmtiles',
+const HIST13_URL=(new URLSearchParams(location.search)).get('hist13')||'https://__BLOB_HOST__/aerial/rand_mcnally_1913.pmtiles';
+const HIST30_URL=(new URLSearchParams(location.search)).get('hist30')||'https://__BLOB_HOST__/aerial/annexations_1930.pmtiles';
+const HIST92_URL=(new URLSearchParams(location.search)).get('hist92')||'https://__BLOB_HOST__/aerial/rand_mcnally_1892.pmtiles',
  CON={h1906:.5,h1913:.5,h1892:.5,h1930:.5};try{for(const k in CON){const v=localStorage.getItem('histS_'+k);if(v!==null)CON[k]=+v}}catch(e){}   // slider position per old map, three phases: 0 = hidden, 0.5 = the map as printed, 1 = background gone
 const histUChi='(<a href="https://www.lib.uchicago.edu/" target=_blank rel=noopener>University of Chicago Library</a>)';
 const hist13Layer=new HistLayer(HIST13_URL,{minZoom:9,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1913 map: Rand McNally '+histUChi}),
  hist92Layer=new HistLayer(HIST92_URL,{minZoom:9,maxZoom:21,bounds:HIST_LL,zIndex:2,opacity:1,attribution:'1892 map: Rand McNally '+histUChi}),
  hist30Layer=new HistLayer(HIST30_URL,{minZoom:9,maxZoom:21,bounds:L.latLngBounds([[41.55,-88.0],[42.15,-87.40]]),zIndex:2,opacity:1,attribution:'1930 (ca.) annexations map: Chicago Bureau of Maps and Plats '+histUChi});
 /* 1949-1951 Sanborn fire insurance maps: PMTiles files (one per OldInsuranceMaps volume) listed with their bounds in sanborn_index.json next to them; only the Loop so far */
-const SB_BASE=(new URLSearchParams(location.search)).get('sbbase')||'https://chicagopermits.blob.core.windows.net/aerial/',SB_MINZ=13,      // ?sbbase=<folder url> reads the manifest and files from somewhere else (testing)
+const SB_BASE=(new URLSearchParams(location.search)).get('sbbase')||'https://__BLOB_HOST__/aerial/',SB_MINZ=13,      // ?sbbase=<folder url> reads the manifest and files from somewhere else (testing)
  SB_FILES=fetch(SB_BASE+'sanborn_index.json').then(r=>r.json()).then(j=>j.files.map(f=>({u:SB_BASE+f.u,b:f.b}))).catch(()=>[]);
 let SB_BS=[];SB_FILES.then(fs=>{SB_BS=fs.map(f=>L.latLngBounds([f.b[0],f.b[1]],[f.b[2],f.b[3]]));if(typeof laySync==='function')laySync()});
 const sbLayer=new AerialLayer({files:SB_FILES,minZoom:SB_MINZ,maxZoom:21,zIndex:2,attribution:'Sanborn maps 1949-1951: Library of Congress, Geography and Map Division; georeferenced by <a href="https://oldinsurancemaps.net" target=_blank rel=noopener>OldInsuranceMaps.net</a> contributors'});
@@ -1005,7 +1005,7 @@ let mvT=null;map.on('moveend',()=>{clearTimeout(mvT);mvT=setTimeout(()=>{if($('i
 /* ---- data: a slim column-oriented index up front; detail per issue and the search text are fetched only when needed ---- */
 function unpack(ix){const c=ix.cols,dc=ix.dict,keys=Object.keys(c),out=new Array(ix.n);
  for(let i=0;i<ix.n;i++){const r={};for(const k of keys)r[k]=c[k][i];for(const k in dc)r[k]=r[k]==null?null:dc[k][r[k]];out[i]=r}return out}
-const IMG='https://chicagopermits.blob.core.windows.net/pages/';   // page images live in Azure Blob Storage (local copy: out/pages, not in the repo)
+const IMG='https://__BLOB_HOST__/pages/';   // page images live in Azure Blob Storage (local copy: out/pages, not in the repo)
 const DETC={};
 async function loadDetail(r){if(r._det)return;const sh=DETC[r.d]??=fetch(DATA+'d/'+r.d+'.json').then(x=>x.json());const dt=(await sh)[r.id];if(dt)Object.assign(r,dt);r._det=1}
 /* ---- progressive data: counts.json (everything the zoomed-out view needs) and dict.json up front; permit rows arrive per community area (data/areas/<n>.json) only when something needs them ---- */
