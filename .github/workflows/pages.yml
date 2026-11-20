@@ -1,3 +1,4 @@
+# redeploy after fixing the BLOB_HOST secret
 # Publishes docs/ to GitHub Pages. Replaces GitHub's managed "pages build and deployment" run
 # (Settings > Pages > Source must be "GitHub Actions"). The only step is filling two secrets into docs/index.html.
 name: Deploy site
