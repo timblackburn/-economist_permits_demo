@@ -963,7 +963,10 @@ function mapNote(){fsInfoSoon();const f=$('inview').checked,n=(AGG?TOT.n:cur.len
 function filtersOn(){return !!($('q').value.trim()||$('qa').value.trim()||$('ar').value.trim()||AREAS.size||AS.size||CS.size||cfOn()||R.a||R.b||costOn()||POLY)}
 let AUTOID=null;
 function autoOpen(){   // exactly one permit in the results (an address or a building search): show its details without a click; closing the panel keeps it closed for that same result
- if(AGG||cur.length!=1){AUTOID=null;return}const r=cur[0];if(AUTOID===r.id||(CURR&&CURR.id===r.id&&!$('detail').hidden))return;AUTOID=r.id;dock(false);show(r)}   // no table is shown for a single result, so the panel stays in the right-hand column
+ if(AGG||cur.length!=1){AUTOID=null;return}const r=cur[0];if(AUTOID===r.id||(CURR&&CURR.id===r.id&&!$('detail').hidden))return;AUTOID=r.id;dock(false);show(r);
+ if($('qa').value.trim()||$('q').value.trim())setTimeout(()=>{if(CURR!==r)return;$('qa').value='';$('q').value='';      // the search only found this permit: once it is open, drop the search so the map shows everything around it (and the link is just this permit, not a one-permit filter)
+  if(r.lat&&(map.getZoom()<=CA_ZOOM||!map.getBounds().contains([r.lat,r.lon])))map.setView([r.lat,r.lon],Math.max(map.getZoom(),17),{animate:false});
+  go().then(()=>{if(CURR!==r)return;const L=order(),ix=L.indexOf(r);$('pos').textContent=ix>=0?`${(ix+1).toLocaleString()} of ${L.length.toLocaleString()}`:'';$('prv').disabled=ix<=0;$('nxt').disabled=ix<0||ix>=L.length-1})},0)}   // the panel's 'n of N' counter, as for the new list   // no table is shown for a single result, so the panel stays in the right-hand column
 const slLoad=()=>SLP??=fetch(DATA+'streets.json?v=20261106').then(r=>r.json()).then(j=>{SL=j}).catch(()=>{SL={}});
 let STFIT=false;
 function streetLine(){   // the picked street's centre line, highlighted at every zoom (the area shading or the dots sit on top of it)
