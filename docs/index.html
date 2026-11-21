@@ -375,9 +375,11 @@ html.mob #fsbtn{display:none}
 <script src="vendor/pmtiles/pmtiles.js"></script>   <!-- PMTiles 3.2.1 (BSD-3), served from this site: reads the aerial-photo tile archive on blob storage by HTTP range requests -->
 <script>
 const $=id=>document.getElementById(id),m=$('m');
-/* the beta login: the password (any capitals), remembered in this browser; a blocked localStorage just asks again next visit */
+/* the beta login: the password (any capitals), remembered in this browser; a blocked localStorage just asks again next visit.
+   The page holds only a SHA-256 hash of 'permits-beta:' + the password in lower case (filled in at deploy from the SITE_PASSWORD secret), never the word itself */
 (()=>{const f=document.getElementById('gform'),i=document.getElementById('gpw'),e=document.getElementById('gerr');if(!f)return;if(!document.documentElement.classList.contains('authed'))setTimeout(()=>i.focus(),50);
- f.addEventListener('submit',ev=>{ev.preventDefault();if(i.value.trim().toLowerCase()==='__SITE_PASSWORD__'){try{localStorage.setItem('permits-beta','1')}catch(x){}document.documentElement.classList.add('authed');i.value='';e.textContent=''}
+ const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+ f.addEventListener('submit',async ev=>{ev.preventDefault();if(await sha('permits-beta:'+i.value.trim().toLowerCase())==='__SITE_PASSWORD_SHA256__'){try{localStorage.setItem('permits-beta','1')}catch(x){}document.documentElement.classList.add('authed');i.value='';e.textContent=''}
   else{e.textContent='That is not the password. Please try again.';f.classList.remove('bad');void f.offsetWidth;f.classList.add('bad');i.select()}});
  i.addEventListener('input',()=>{e.textContent=''})})();
 

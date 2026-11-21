@@ -1,6 +1,6 @@
 # redeploy (Pages source set to GitHub Actions)
 # Publishes docs/ to GitHub Pages. Replaces GitHub's managed "pages build and deployment" run
-# (Settings > Pages > Source must be "GitHub Actions"). The only step is filling two secrets into docs/index.html.
+# (Settings > Pages > Source must be "GitHub Actions"). The only step is filling the password's hash and the storage host (repository secrets) into docs/index.html.
 name: Deploy site
 on:
   push:
@@ -23,13 +23,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
-      - name: Fill in the password and storage host (repository secrets, kept out of the source)
+      - name: Fill in the password hash and storage host (repository secrets, kept out of the source)
         env:
           SITE_PASSWORD: ${{ secrets.SITE_PASSWORD }}
           BLOB_HOST: ${{ secrets.BLOB_HOST }}
         run: |
           test -n "$SITE_PASSWORD" && test -n "$BLOB_HOST"
-          sed -i "s#__SITE_PASSWORD__#$SITE_PASSWORD#; s#__BLOB_HOST__#$BLOB_HOST#g" docs/index.html
+          HASH=$(printf '%s' "permits-beta:$(printf '%s' "$SITE_PASSWORD" | tr '[:upper:]' '[:lower:]')" | sha256sum | cut -d' ' -f1)      # the page holds only this hash, not the password
+          sed -i "s#__SITE_PASSWORD_SHA256__#$HASH#; s#__BLOB_HOST__#$BLOB_HOST#g" docs/index.html
+          ! grep -q "__SITE_PASSWORD" docs/index.html      # the hash must be filled in, or nobody could log in
       - uses: actions/upload-pages-artifact@v5
         with:
           path: docs
