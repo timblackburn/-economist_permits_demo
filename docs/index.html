@@ -49,8 +49,11 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph .pins .btn.pstop{border-style:dashed}
 #ph .pins.nbrow{flex-wrap:nowrap;align-items:stretch}
 #ph .pins.nbrow .btn{flex:1 1 0;min-width:0;white-space:normal;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;position:relative;padding-left:22px;padding-right:22px}
-#ph .pins.nbrow .btn .arw{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;line-height:1}
-#ph .pins.nbrow .btn .arw.l{left:7px}
+#ph .pins.cnrow{justify-content:center;margin-bottom:6px}
+#ph .pins.cnrow:empty{display:none}
+#ph .pins.cnrow .btn{width:calc((100% - 12px)/3);white-space:normal;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;position:relative;padding-left:22px;padding-right:22px}
+#ph .pins.cnrow .btn .arw,#ph .pins.nbrow .btn .arw{position:absolute;top:50%;transform:translateY(-50%);font-size:12px;line-height:1}
+#ph .pins.nbrow .btn .arw.l,#ph .pins.cnrow .btn .arw.l{left:7px}
 #ph .pins.nbrow .btn .arw.r{right:7px}   /* the arrow keeps its place at the edge, centred top to bottom, whatever the text does */   /* the street walk: one line of equal buttons; long addresses wrap inside their button */
 #ph .samead{font-size:13px;color:var(--mut);margin:-2px 0 8px}
 #ph .samead a{margin-right:6px}
@@ -1571,7 +1574,18 @@ function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
 const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & Building');
 /* the street walk beside the photo: each arrow goes to the nearest stop on this side of the street, a County address (it has a photo) or another permit (often no County parcel today);
    permits come from those already loaded for the map, same street, same odd/even side, within NB_M of this permit's spot. Permits at this same address (other years) are listed under the row. */
-const NB_M=150,PSC={},PLC={};
+const NB_M=150,PSC={},PLC={},CNC={};
+/* a corner house: the nearest County address on a street running the other way (N/S against E/W, from the prefix) is within CN_M, and of all the addresses on the permit's own street this building is the one nearest to it (so the house next to the corner does not count); the button goes there */
+const CN_M=50,stCore=l=>String(l||'').replace(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/,'').trim(),axOf=c=>(c.match(/^([NSEW])\s/)||[])[1]?(/^[NS]/.test(c)?'ns':'ew'):null;
+async function cornerOf(r){if(r.id in CNC)return CNC[r.id];if(!r.lat||!r.mod)return null;
+ const pts=await nearPts(r);const myC=stCore(r.now||r.mod),myK=streetKey(myC),myA=axOf(myC),mine=new Set([r.pin,...(r.pins||[]).map(x=>x[1])].filter(Boolean));
+ if(!myA)return CNC[r.id]=null;
+ const kx=Math.cos(r.lat*Math.PI/180)*111320,ky=110574,dd=(a,b)=>Math.hypot((a.lat-b.lat)*ky,(a.lng-b.lng)*kx),P={lat:r.lat,lng:r.lon};
+ const own=pts.filter(p=>streetKey(stCore(p.label))===myK&&!mine.has(p.pin));
+ const cand=pts.filter(p=>/^\d/.test(p.label)&&!mine.has(p.pin)&&axOf(stCore(p.label))&&axOf(stCore(p.label))!==myA).map(p=>({p,d:dd(p,P)})).filter(x=>x.d<=CN_M).sort((a,b)=>a.d-b.d);
+ for(const x of cand){if(own.some(o=>dd(o,x.p)<x.d))continue;return CNC[r.id]={pin:x.p.pin,label:x.p.label}}
+ return CNC[r.id]=null}
+const cnBtn=(c,pin)=>`<button class="btn${c.pin==pin?' on':''}" data-pin="${c.pin}" data-label="${esc(c.label)}" title="Corner house: the nearest house around the corner, on ${esc(stCore(c.label))}"><span class="arw l">▲</span>${esc(c.label)}</button>`;
 const NBC=()=>css('--s1')||'#2c6fbb';     // the neighbour's colour: the blue of the street-walk buttons
 /* where a County parcel's address point is (for a neighbour shown in the photo panel): from the small map's points if loaded, else one small query to the County's address points */
 async function pinLL(pin){if(!pin)return null;if(pin in PLC)return PLC[pin];for(const k in NPC){const p=(NPC[k]||[]).find(x=>x.pin==pin);if(p)return PLC[pin]={lat:p.lat,lng:p.lng,label:p.label}}
@@ -1606,7 +1620,9 @@ function phView(r,pin,label,stop){
  const pstop=(pm,left)=>{const x=pm.x,t=left?'<span class="arw l">◀</span>'+esc(x.mod):esc(x.mod)+'<span class="arw r">▶</span>';return `<button class="btn pstop${stop&&stop.id===x.id?' on':''}" data-pid="${x.id}" title="Another permit (${esc(x.d)}) on this side of the street. The County has no parcel at this address today, so there is no photo; shows where it stands.">${t}</button>`};
  const side=(s,left)=>!s?'':s.c?one(s.c,left):pstop(s.p,left),sL=pickSide((nbL||[])[0],pLe[0],!hiRight),sR=pickSide((nbR||[])[0],pRi[0],hiRight);      // the left list is the higher numbers unless hiRight
  const same=PS_.same.length?`<div class=samead>Other permits at this address: ${PS_.same.slice(0,12).map(x=>`<a class=lk data-open="${x.id}" title="${esc(x.d)} · ${esc((x.st?x.st+'-story ':'')+(x.bld||''))}">${esc(x.d.slice(0,4))}</a>`).join('')}${PS_.same.length>12?` and ${PS_.same.length-12} more`:''}</div>`:'';
- const nb=`<div class="pins nbrow">${side(sL,true)} <button class="btn${own?' on':''}" data-pin="${r.pin||''}" data-label="" title="${r.pin?"Back to the permit's own building":"The permit's own building: the County has no parcel record at this address, so there is no photo"}">This building</button> ${side(sR,false)}</div>`+same;
+ const cn=CNC[r.id],cnr=`<div class="pins cnrow">${cn?cnBtn(cn,pin):''}</div>`;
+ if(!(r.id in CNC)&&!stop)cornerOf(r).then(c=>{if(!c||CURR!==r)return;const el=$('ph').querySelector('.cnrow');if(el&&!el.innerHTML)el.innerHTML=cnBtn(c,pin)});
+ const nb=cnr+`<div class="pins nbrow">${side(sL,true)} <button class="btn${own?' on':''}" data-pin="${r.pin||''}" data-label="" title="${r.pin?"Back to the permit's own building":"The permit's own building: the County has no parcel record at this address, so there is no photo"}">This building</button> ${side(sR,false)}</div>`+same;
  const real=!stop&&pin&&pin!=='__loading';
  const imgBox=stop?(()=>{const ph0=document.querySelector('#ph .phbox'),bh=Math.max(220,(ph0&&ph0.offsetHeight>60)?ph0.offsetHeight:270),x=stop,dt=new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),bl=((x.st?x.st+'-story ':'')+(x.bld||'')).trim(),
   kv=[['Owner',x.own],['Cost',x.cost!=null?money(x.cost):''],['Architect',arch(x)]].filter(q=>q[1]);
@@ -1689,11 +1705,12 @@ async function phMini(r,pin,label,stop){PMKEY=PMUPD=null;if(PMRO){PMRO.disconnec
  const toFrame=pt=>{const x=pt.x-S/2,y=pt.y-S/2;return {x:W/2+x*cs-y*sn,y:H/2+x*sn+y*cs}};
  const overlay=()=>{box.querySelectorAll('.pmov').forEach(e=>e.remove());
   [ring,ring2,nline].forEach(l=>l&&PMM.removeLayer(l));ring=ring2=nline=null;
-  const mark=(pt,col)=>{const f=toFrame(PMM.latLngToContainerPoint(L.latLng(pt.lat,pt.lng)));       // a ring when it is in the frame, else an arrow at the edge pointing to it
+  const mark=(pt,col,noArrow)=>{const f=toFrame(PMM.latLngToContainerPoint(L.latLng(pt.lat,pt.lng)));       // a ring when it is in the frame, else an arrow at the edge pointing to it (not for a neighbour: its dashed line already points there)
    if(f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H)return L.circleMarker([pt.lat,pt.lng],{radius:13,weight:3,color:col,fill:false,interactive:false}).addTo(PMM);
+   if(noArrow)return null;
    const vx=f.x-W/2,vy=f.y-H/2,inset=16,t=Math.min((W/2-inset)/Math.max(1e-6,Math.abs(vx)),(H/2-inset)/Math.max(1e-6,Math.abs(vy))),ang=Math.atan2(vy,vx)*180/Math.PI,a=document.createElement('div');
    a.className='pmov pmarrow';a.style.cssText=`left:${W/2+vx*t-13}px;top:${H/2+vy*t-13}px`;a.innerHTML=`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;a.title=pt.label||'';box.append(a);return null};
-  if(me&&nbSel){nline=L.polyline([[home.lat,home.lng],[me.lat,me.lng]],{color:NBC(),weight:2.5,dashArray:'6 6',interactive:false}).addTo(PMM);ring=mark(home,css('--acc'));ring2=mark(me,NBC())}   // a neighbour: the permit keeps its red ring, the neighbour gets a blue one and a dashed line
+  if(me&&nbSel){nline=L.polyline([[home.lat,home.lng],[me.lat,me.lng]],{color:NBC(),weight:2.5,dashArray:'6 6',interactive:false}).addTo(PMM);ring=mark(home,css('--acc'));ring2=mark(me,NBC(),true)}   // a neighbour: the permit keeps its red ring, the neighbour gets a blue one and a dashed line
   else if(me)ring=mark(me,css('--acc'))
   const k=document.createElement('div');k.className='pmov pmcomp';k.title='North';   // just an arrow: it points north on this turned map
   k.innerHTML=`<svg viewBox="0 0 34 34" width="30" height="30"><g transform="rotate(${phi} 17 17)"><path d="M17 5L24 28L17 22.5L10 28Z" fill="#c0392b" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke"/></g><text x="${17+13.5*Math.sin(rad)}" y="${17-13.5*Math.cos(rad)+3.2}" font-size="10" font-weight="700" text-anchor="middle" fill="#222" stroke="#fff" stroke-width="2.4" paint-order="stroke" font-family="system-ui,sans-serif">N</text></svg>`;box.append(k)};
