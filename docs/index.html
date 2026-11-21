@@ -34,6 +34,9 @@ th{cursor:pointer;color:var(--mut);font-weight:600;position:sticky;top:0;backgro
 #m .bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.2)}#m .in{max-width:1300px;margin:0 auto;padding:8px 16px;display:flex;align-items:center;gap:10px}#m .hint{color:var(--mut);font-size:12px;margin-left:auto}#m .close{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}#pos{color:var(--mut);font-size:13px;min-width:70px;text-align:center}@media(max-width:600px){#m .hint{display:none}#m .close{margin-left:auto}}#pg{width:100%;min-width:0;justify-self:stretch;position:sticky;top:64px;overflow:auto;max-height:calc(100vh - 72px);border:1px solid var(--line);border-radius:4px;background:#fff;cursor:zoom-in;-webkit-user-select:none;user-select:none}#pg.zout{cursor:zoom-in}#pg.zin{cursor:zoom-out}.pgi{position:relative;display:inline-block;vertical-align:top;min-width:100%}.pgi img{display:block;max-width:none;-webkit-user-drag:none}.zh{color:var(--mut);font-size:12px;margin-left:8px}
 .hl{position:absolute;background:rgba(255,214,0,.30);mix-blend-mode:multiply;border-radius:3px;pointer-events:none}
 a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{text-decoration:underline}
+#cfshow{font:inherit;font-size:15px;font-weight:600;line-height:1.2;color:var(--s1);background:color-mix(in srgb,var(--s1) 9%,var(--surface));border:1.5px solid var(--s1);border-radius:6px;padding:3px 11px;margin:2px 0 2px 4px;cursor:pointer;white-space:nowrap}
+#cfshow:hover{background:color-mix(in srgb,var(--s1) 18%,var(--surface))}
+#cfshow:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
 .all{max-height:300px;overflow:auto}.more{margin-top:6px;font-size:13px;color:var(--s1);cursor:pointer;background:none;border:0;padding:0;font:inherit;font-size:13px}
 #pnav{float:right;display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin:10px 12px 4px 10px;position:relative;z-index:2}#pnav .pn{display:inline-flex;align-items:center;gap:6px}#pnav .btn{padding:2px 11px;font-size:17px;font-weight:600;line-height:1.1;min-height:32px;min-width:36px;border-radius:7px}#pnav #pos{color:var(--mut);font-size:13.5px;min-width:0;text-align:center}#pnav .pn{gap:8px}#pcan .harea{float:none;margin:0}
 .ar{font-size:1.6em;line-height:0;vertical-align:-.1em;font-weight:700;margin-right:2px}
@@ -187,12 +190,6 @@ header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:
 #ld .lnote{font-size:13px;font-style:italic;margin-top:3px}
 #detail{position:relative}
 #dsave.on{background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
-#lmenu{position:absolute;right:12px;top:44px;z-index:30;width:270px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:10px 12px;font-size:13.5px}
-#lmenu .lmh{font-weight:600;margin-bottom:6px}
-#lmenu .lmi{display:block;padding:3px 0;cursor:pointer}
-#lmenu .lmn{display:flex;gap:6px;margin-top:8px}
-#lmenu .lmn input{flex:1;min-width:0;font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:4px}
-#lmenu .lmo{display:inline-block;margin-top:8px;font-size:13px}
 #fbd .ah{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px}
 #fbd .fbh{display:flex;align-items:center;gap:12px}
 #fbd .fbh a{color:#fff;font-size:13px}
@@ -247,7 +244,22 @@ td:first-child{white-space:nowrap}
 .measpanel .mtot{margin-top:3px;color:var(--mut);font-size:11.5px}.measpanel .mtot b{color:var(--fg);font-size:13px}
 .measpanel .mact{display:flex;gap:4px}.measpanel .mact button{flex:1;padding:1px 2px}
 .measuring,.measuring .leaflet-grab,.measuring .leaflet-interactive,.studying,.studying .leaflet-grab,.studying .leaflet-interactive{cursor:crosshair!important}
-.studypanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.3 system-ui,sans-serif;width:222px;margin-bottom:22px;margin-right:10px}.studypanel[hidden]{display:none}.studypanel button{font:inherit;font-size:11.5px;padding:2px 7px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.studypanel button:hover:not(:disabled){border-color:var(--acc)}.studypanel button:disabled{opacity:.45;cursor:default}
+.studypanel{background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;box-shadow:0 1px 6px rgba(0,0,0,.3);font:12px/1.3 system-ui,sans-serif;width:256px;margin-bottom:22px;margin-right:10px}.studypanel[hidden]{display:none}
+.studypanel .sth{display:flex;gap:4px;border-top:1px solid var(--line);padding-top:6px;margin-top:2px}
+.studypanel .sth select,.studypanel .sth input{flex:1;min-width:0;font:inherit;font-size:12.5px;font-weight:600;padding:3px 4px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--fg)}
+.studypanel .sta{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:6px;color:var(--mut)}
+.studypanel .sta span{margin-right:2px}
+.studypanel .stp{margin-top:6px}
+.studypanel .stl{color:var(--mut);font-size:11.5px;margin:2px 0}
+.studypanel .stp a.lk{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.studypanel .stp a.sall{font-weight:600;margin-top:4px}
+.studypanel .sact{margin:7px 0 4px}
+.studypanel .sfoot{display:flex;flex-wrap:wrap;gap:4px 12px;border-top:1px solid var(--line);padding-top:4px}
+.studypanel .sfoot button,.studypanel button.sim,.studypanel .sta button.slink{border:0;background:none;padding:0;color:var(--mut);text-decoration:underline dotted;font-size:11.5px}
+.studypanel .sfoot button.sure{color:#c0392b}
+.studypanel button.sim{margin-top:4px}
+html.mob .studypanel{margin-bottom:calc(var(--mtb,64px) + 10px);margin-right:60px;width:auto;max-width:256px;max-height:calc(100vh - var(--mtb,64px) - 140px);overflow-y:auto}
+.studypanel button{font:inherit;font-size:11.5px;padding:2px 7px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px;cursor:pointer}.studypanel button:hover:not(:disabled){border-color:var(--acc)}.studypanel button:disabled{opacity:.45;cursor:default}
 .studypanel .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}.studypanel .sh button{border:0;background:none;font-size:16px;line-height:1;padding:0 2px;color:var(--mut)}.studypanel .sout{color:var(--mut);margin-bottom:5px}.studypanel .sout b{color:var(--fg)}.studypanel .srow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}.studypanel .srow button{flex:1 1 auto}.studypanel .srow .pri{background:var(--s1);color:#fff;border-color:var(--s1)}
 .studypanel .ssave{display:flex;gap:4px;margin-bottom:5px}.studypanel .ssave input{flex:1;min-width:0;font:inherit;font-size:12px;padding:2px 5px;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:4px}.studypanel .slh{color:var(--mut);font-size:11px;border-top:1px solid var(--line);padding-top:4px;margin-top:2px}.studypanel .sl{display:flex;gap:4px;align-items:center;margin-top:3px}.studypanel .sl .sn{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.studypanel .sl .sx{border:0;background:none;color:var(--mut);font-size:14px;padding:0 3px}.studypanel .sl .sx.sure{color:#c0392b;font-size:11px}
 .svert{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #e8590c;box-sizing:border-box;cursor:move!important;box-shadow:0 0 0 1px rgba(0,0,0,.45)}.svert.first{width:20px;height:20px;margin:-3px 0 0 -3px;background:#ffe8cc;cursor:pointer!important}
@@ -389,10 +401,10 @@ html.mob #fsbtn{display:none}
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
-<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a> &middot; <a href="#" id="wnlink" title="Changes to the site, newest first">What&rsquo;s new<span class="wndot" hidden></span></a> &middot; <a href="#" id="llink" title="Your research lists: permits you saved with ☆ Save">Lists</a></p>
+<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a> &middot; <a href="#" id="wnlink" title="Changes to the site, newest first">What&rsquo;s new<span class="wndot" hidden></span></a> &middot; <a href="#" id="llink" title="Your studies: an area and the permits you picked with ☆ Add to study, with notes">Studies</a></p>
 </header>
 <dialog id="wnd" aria-labelledby="wnt"><div class="ah"><b id="wnt">What&rsquo;s new</b><button class="btn" id="wnclose" aria-label="Close">Close &#10005;</button></div><div id="wnbody"></div></dialog>
-<dialog id="ld" aria-labelledby="ldt"><div class="ah"><b id="ldt">Research lists</b><button class="btn" id="lclose" aria-label="Close">Close &#10005;</button></div><div id="lbody"></div></dialog>
+<dialog id="ld" aria-labelledby="ldt"><div class="ah"><b id="ldt">Study</b><button class="btn" id="lclose" aria-label="Close">Close &#10005;</button></div><div id="lbody"></div></dialog><input type="file" id="simpf" accept=".json,application/json" hidden>
 <dialog id="fbd" aria-labelledby="fbt"><div class="ah"><b id="fbt">Send feedback</b><span class="fbh"><a id="fbnew" href="#" target="_blank" rel="noopener">Open in a new tab ↗</a><button class="btn" id="fbclose" aria-label="Close">Close &#10005;</button></span></div><iframe id="fbif" title="Feedback form" loading="lazy"></iframe></dialog>
 <dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
 <div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
@@ -418,8 +430,8 @@ html.mob #fsbtn{display:none}
   <div class="card"><h2 class="wkh"><span class="htl">Architects</span><span class="mtog" title="Order the list: busiest first, or alphabetical by last name (A–Z shows every architect)"><button id="asm" class="on">Most</button><button id="asa">A–Z</button></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><button class="btn" id="dmap" hidden title="Centre the map on this permit's building"><span class="ar">⌖</span> Show on map</button><button class="btn" id="dsave" title="Add this permit to a research list">☆ Save</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
-   <div id="lmenu" hidden role="dialog" aria-label="Add to a research list"></div>
+   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><button class="btn" id="dmap" hidden title="Centre the map on this permit's building"><span class="ar">⌖</span> Show on map</button><button class="btn" id="dsave" title="Add this permit to a study">☆ Add to study</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
+   
    <div id="pnav"><span class="pn"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span><span id="pcan"></span></div>
    <div id="mt"></div>
   </div>
@@ -848,31 +860,69 @@ function studyUse(sa){if(FLOCK){fsAskUnlock();return}const p=polyDec(sa);if(!p)r
 function studyExport(){if(!POLY)return;const ring=POLY.map(([la,lo])=>[lo,la]);ring.push(ring[0]);   /* GeoJSON is [longitude, latitude] and a ring closes on its first point */
  saveBlob([JSON.stringify({type:'FeatureCollection',name:'study_area',features:[{type:'Feature',properties:{name:'study_area',corners:POLY.length},geometry:{type:'Polygon',coordinates:[ring]}}]})],'application/geo+json','study_area.geojson')}
 function studyRemove(){if(FLOCK){fsAskUnlock();return}polySet(null);go()}
-let STUDYSAVED=(()=>{try{const a=JSON.parse(localStorage.getItem('permits-study-areas')||'[]');return Array.isArray(a)?a.filter(x=>x&&x.name&&polyDec(x.sa)):[]}catch(e){return[]}})();
-const studyStore=()=>{try{localStorage.setItem('permits-study-areas',JSON.stringify(STUDYSAVED))}catch(e){}};
-function studySave(name){name=(name||'').trim().slice(0,40);if(!name||!POLY)return;const i=STUDYSAVED.findIndex(x=>x.name===name),o={name,sa:polyEnc(POLY)};if(i>=0)STUDYSAVED[i]=o;else STUDYSAVED.push(o);studyStore();studyUI('Saved as “'+name+'”.')}
+/* ---- studies: a study is a name with an optional area (sa, coded as in links) and optional permits picked by hand with ☆ Add to study, each with a note (items).
+   Until Nov 2026 these were two things, saved study areas and research lists (#12); both are read once into studies. Kept in this browser; shared as a link, or as a small file when the link would be too long. ---- */
+var LISTS=(()=>{let a=null;try{a=JSON.parse(localStorage.getItem('permits-studies')||'null')}catch(e){}
+ if(Array.isArray(a))return a.filter(x=>x&&x.name).map(x=>({name:String(x.name).slice(0,50),sa:polyDec(x.sa)?x.sa:'',items:Array.isArray(x.items)?x.items:[]}));
+ const out=[];try{(JSON.parse(localStorage.getItem('permits-lists')||'[]')||[]).forEach(l=>{if(l&&l.name)out.push({name:String(l.name).slice(0,50),sa:'',items:Array.isArray(l.items)?l.items:[]})})}catch(e){}
+ try{(JSON.parse(localStorage.getItem('permits-study-areas')||'[]')||[]).forEach(s=>{if(!s||!s.name||!polyDec(s.sa))return;const o=out.find(x=>x.name===s.name);if(o&&!o.sa)o.sa=s.sa;else out.push({name:o?s.name+' (area)':s.name,sa:s.sa,items:[]})})}catch(e){}
+ return out})();
+var LCUR=(LISTS[0]||{}).name||'',LSHARED=null,LISTQ=null,SREN=false,SNEW=false;      // var: the start-up code (fromHash) may set LISTQ
+function studyNew(name){name=(name||'').trim().slice(0,50);if(!name)return;let l=lFind(name);if(!l){l={name,sa:POLY?polyEnc(POLY):'',items:[]};LISTS.push(l)}LCUR=name;SNEW=false;lStore()}
+function studyPick(name){const prev=lFind(LCUR),n=lFind(name);if(!n)return;LCUR=name;SNEW=SREN=false;lUI();
+ if(n.sa){if(!POLY||polyEnc(POLY)!==n.sa)studyUse(n.sa);else studyUI()}else if(prev&&prev.sa&&POLY&&polyEnc(POLY)===prev.sa)studyRemove();else studyUI()}   /* a study's area becomes the map filter; leaving a study takes its area off the map */
+function studyOpen(e){if(e)e.preventDefault();SNEW=false;studyPanel(true);studyUI();const m=$('map');if(m&&m.getBoundingClientRect().top<0)m.scrollIntoView({block:'start'})}
 const studyCtl=L.control({position:'bottomright'});
 studyCtl.onAdd=()=>{const d=L.DomUtil.create('div','studypanel');
- d.innerHTML='<div class=sh><b>Study area</b><button type=button id=studyx title="Close" aria-label="Close the study area panel">×</button></div><div class=sout id=studyout></div><div class=srow id=studyr1></div>'
-  +'<div class=ssave id=studysv><input id=studynm maxlength=40 placeholder="Name this area to save it…" aria-label="Name for the saved study area"><button type=button id=studysb>Save</button></div><div id=studylist></div>';
+ d.innerHTML='<div class=sh><b>Study</b><button type=button id=studyx title="Close" aria-label="Close the study panel">×</button></div><div class=sout id=studyout></div><div class=srow id=studyr1></div>'
+  +'<div class=ssave id=studysv><input id=studynm maxlength=50 placeholder="Name a new study…" aria-label="Name for the new study"><button type=button id=studysb>Save</button></div><div id=studylist></div>';
  L.DomEvent.disableClickPropagation(d);L.DomEvent.disableScrollPropagation(d);return d};
 function studyPanel(on){if(on===STUDY.panel)return;STUDY.panel=on;
- if(on){studyCtl.addTo(map);$('studyx').onclick=()=>{if(STUDY.on)studyCancel();studyPanel(false)};
-  const sv=()=>{studySave($('studynm').value)};$('studysb').onclick=sv;$('studynm').onkeydown=e=>{if(e.key=='Enter')sv();e.stopPropagation()};studyUI()}
+ if(on){if(window.setT&&document.documentElement.classList.contains('mob'))setT('peek');   /* phones: lower the permit tray so the panel and the map show */
+  studyCtl.addTo(map);$('studyx').onclick=()=>{if(STUDY.on)studyCancel();studyPanel(false)};
+  const sv=()=>{studyNew($('studynm').value)};$('studysb').onclick=sv;$('studynm').onkeydown=e=>{if(e.key=='Enter')sv();else if(e.key=='Escape'){SNEW=false;studyUI()}e.stopPropagation()};studyUI()}
  else map.removeControl(studyCtl);
  $('studybtn').classList.toggle('on',on);$('studybtn').setAttribute('aria-pressed',on)}
-function studyUI(msg){const el=$('studyout');if(!STUDY.panel||!el)return;
- const mk=(t,c,x,f)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;if(f){e.type='button';e.onclick=f}return e},r=$('studyr1');r.textContent='';let n,save=false;
+function studySay(t){STUDY.msg=t;clearTimeout(STUDY.mt);if(t)STUDY.mt=setTimeout(()=>{STUDY.msg='';studyUI()},9000);studyPanel(true);studyUI()}   /* a message in the panel that outlives the next refresh */
+function studyUI(msg){const el=$('studyout');if(!STUDY.panel||!el)return;msg=msg||STUDY.msg;
+ const mk=(t,c,x,f)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;if(f){e.type='button';e.onclick=f}return e},r=$('studyr1');r.textContent='';let n;
  if(STUDY.on){n=STUDY.pts.length;el.innerHTML=msg?esc(msg):n<3?'Click the map to place corners. Drag the map to pan and scroll to zoom, then keep clicking.':'<b>'+n+'</b> corners. Click the first corner, double-click or press Enter to finish.';
   const f=mk('button','pri','Finish (↵)',studyFinish);f.disabled=n<3;r.append(f,mk('button','','Undo (⌫)',studyUndo),mk('button','','Clear',()=>{STUDY.pts=[];polyDraw();studyUI()}),mk('button','','Cancel (Esc)',studyCancel))}
- else if(POLY){const t=typeof TOT!=='undefined'&&TOT&&TOT.n!=null?' · <b>'+TOT.n.toLocaleString()+'</b> permits match':'';el.innerHTML=msg?esc(msg):'<b>'+POLY.length+'</b> corners'+t;save=true;
-  r.append(mk('button','','Edit corners',()=>studyStart(true)),mk('button','','Redraw',()=>studyStart(false)),mk('button','','Zoom to it',polyFit),mk('button','','Export GeoJSON',studyExport),mk('button','','Remove',studyRemove))}
- else{el.innerHTML=msg?esc(msg):'Draw a shape on the map to keep only the permits inside it.';r.append(mk('button','pri','Draw an area',()=>studyStart(false)))}
- $('studysv').style.display=save?'':'none';
- const L2=$('studylist');L2.textContent='';if(STUDYSAVED.length){L2.append(mk('div','slh','Saved study areas'));
-  STUDYSAVED.forEach(s=>{const row=mk('div','sl'),b=mk('button','sn',s.name,()=>studyUse(s.sa)),x=mk('button','sx','×');b.title='Use this area as a filter ('+polyDec(s.sa).length+' corners)';x.type='button';x.title='Delete this saved area';let sure=0;
-   x.onclick=()=>{if(!sure){sure=1;x.textContent='delete?';x.classList.add('sure');setTimeout(()=>{if(x.isConnected){sure=0;x.textContent='×';x.classList.remove('sure')}},2500);return}STUDYSAVED=STUDYSAVED.filter(y=>y!==s);studyStore();studyUI()};row.append(b,x);L2.append(row)})}}
-$('studybtn').addEventListener('click',e=>{e.preventDefault();if(STUDY.panel){if(STUDY.on)studyCancel();studyPanel(false)}else{studyPanel(true);if(!POLY&&!STUDYSAVED.length)studyStart(false)}});
+ else if(POLY){const t=typeof TOT!=='undefined'&&TOT&&TOT.n!=null?' · <b>'+TOT.n.toLocaleString()+'</b> permits match':'';el.innerHTML=msg?esc(msg):'Area on the map: <b>'+POLY.length+'</b> corners'+t;
+  r.append(mk('button','','Edit corners',()=>studyStart(true)),mk('button','','Redraw',()=>studyStart(false)),mk('button','','Zoom to it',polyFit),mk('button','','GeoJSON',studyExport),mk('button','','Remove',studyRemove))}
+ else{el.innerHTML=msg?esc(msg):'Draw a shape to keep only the permits inside it.';r.append(mk('button','pri','Draw an area',()=>studyStart(false)))}
+ const L2=$('studylist'),sv=$('studysv'),l=lFind(LCUR)||LISTS[0];L2.textContent='';
+ const showNew=!STUDY.on&&(SNEW||!l);sv.style.display=showNew?'':'none';$('studynm').placeholder=POLY?'Name a study to keep this area…':'Name a new study…';
+ if(STUDY.on)return;
+ if(!l){L2.append(mk('div','stl','A study keeps an area and the permits you pick (☆ Add to study on any permit), with your notes, and shares them as a link.'),mk('button','sim','Open a study file…',()=>$('simpf').click()));return}
+ LCUR=l.name;
+ const h=mk('div','sth');
+ if(SREN){const i=mk('input');i.value=l.name;i.maxLength=50;i.setAttribute('aria-label','New name for this study');let gone=0;
+  const done=ok=>{if(gone++)return;SREN=false;const v=i.value.trim().slice(0,50);if(ok&&v&&v!==l.name&&!lFind(v)){l.name=v;LCUR=v;lStore()}else studyUI()};
+  i.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')done(1);else if(e.key=='Escape')done(0)};i.onblur=()=>done(1);h.append(i);setTimeout(()=>{i.focus();i.select()},0)}
+ else{const s=mk('select');s.setAttribute('aria-label','Which study');LISTS.forEach(x=>{const o=mk('option',null,x.name);o.value=x.name;o.selected=x===l;s.append(o)});
+  const o=mk('option',null,'+ New study…');o.value='\u0001new';s.append(o);
+  s.onchange=()=>{if(s.value=='\u0001new'){SNEW=true;studyUI();setTimeout(()=>$('studynm').focus(),0)}else studyPick(s.value)};h.append(s)}
+ L2.append(h);
+ const enc=POLY?polyEnc(POLY):'',a=mk('div','sta');
+ if(l.sa&&l.sa===enc)a.append(mk('span',null,'Its area is on the map.'));
+ else if(l.sa)a.append(mk('span',null,'Area: '+polyDec(l.sa).length+' corners'),mk('button','','Show it',()=>studyUse(l.sa)));
+ else a.append(mk('span',null,'No area.'));
+ if(POLY&&enc!==l.sa){const k=mk('button','',l.sa?'Use the map’s area':'Keep the map’s area',()=>{l.sa=enc;lStore()});k.title=l.sa?'Replace this study’s area with the one on the map':'Save the area on the map in this study';a.append(k)}
+ if(l.sa){const x=mk('button','slink','Drop area',()=>{l.sa='';lStore()});x.title='Take the area out of this study (the map keeps it until you remove it)';a.append(x)}
+ L2.append(a);
+ const p=mk('div','stp'),c=l.items.length;
+ p.append(mk('div','stl',c?c+' permit'+(c==1?'':'s')+' picked':'No permits yet: open one and click ☆ Add to study.'));
+ l.items.slice(0,4).forEach(x=>{const k=mk('a','lk',x.a+' · '+String(x.d||'').slice(0,4));k.href='#';k.title=[x.d,x.bld,x.own&&'for '+x.own,x.note].filter(Boolean).join(' · ');k.onclick=e=>{e.preventDefault();lOpenPermit(x.id,x.ca)};p.append(k)});
+ if(c){const k=mk('a','lk sall',(c>4?'All '+c:'Open them')+' with notes →');k.href='#';k.onclick=e=>{e.preventDefault();lOpen()};p.append(k)}
+ L2.append(p);
+ const b=mk('div','srow sact'),cl=mk('button','','Copy link',ev=>lShare(l,cl,studySay)),cv=mk('button','','CSV',()=>lCSV(l)),pr=mk('button','','Print',()=>lPrint(l));
+ cl.title='Copy a link that opens this study (area, permits and notes) for someone else';cv.title='Download the picked permits as a spreadsheet';pr.title='A printable page of the picked permits with sources and notes';cv.disabled=pr.disabled=!c;cl.disabled=!c&&!l.sa;b.append(cl,cv,pr);L2.append(b);
+ const f=mk('div','sfoot'),dl=mk('button','','Delete');let sure=0;
+ dl.onclick=()=>{if(!sure){sure=1;dl.textContent='Delete “'+l.name+'”?';dl.classList.add('sure');setTimeout(()=>{if(dl.isConnected){sure=0;dl.textContent='Delete';dl.classList.remove('sure')}},2500);return}
+  LISTS=LISTS.filter(y=>y!==l);LCUR=(LISTS[0]||{}).name||'';lStore()};
+ f.append(mk('button','','Rename',()=>{SREN=true;studyUI()}),dl,mk('button','','Open a study file…',()=>$('simpf').click()));L2.append(f)}
+$('studybtn').addEventListener('click',e=>{e.preventDefault();if(STUDY.panel){if(STUDY.on)studyCancel();studyPanel(false)}else{studyPanel(true);if(!POLY&&!LISTS.length)studyStart(false)}});
 map.on('click',e=>{if(!STUDY.on)return;STUDY.t=Date.now();const P=STUDY.pts,l=P[P.length-1];
  if(l&&map.latLngToContainerPoint(l).distanceTo(e.containerPoint)<5)return;   // the second click of a double-click
  P.push([e.latlng.lat,e.latlng.lng]);polyDraw();studyUI()});
@@ -1414,81 +1464,73 @@ function aboutHTML(a){const f=n=>n.toLocaleString(),yr=d=>d.slice(0,4),fd=d=>d;
  <h3>Credit</h3><p>Compiled by Tim Blackburn.</p>`}
 function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('abody').innerHTML=aboutHTML(ABOUTD);return}
  fetch(DATA+'about.json').then(r=>r.json()).then(j=>{ABOUTD=j;$('abody').innerHTML=aboutHTML(j)}).catch(()=>{$('abody').innerHTML='<p>The summary could not be loaded. Try again in a moment.</p>'})}
-/* ---- research lists (issue #12): permits collected by hand into named lists, each with a note; kept in this browser like the saved filters; export, print and share ---- */
-var LISTS=[];try{LISTS=JSON.parse(localStorage.getItem('permits-lists')||'[]')}catch(e){LISTS=[]}
-var LCUR=(LISTS[0]||{}).name||'',LSHARED=null,LISTQ=null;      // var: the start-up code (fromHash) may set LISTQ
-const lStore=()=>{try{localStorage.setItem('permits-lists',JSON.stringify(LISTS))}catch(e){}lUI()};
+/* ---- a study's picked permits (☆ Add to study), the full list with notes, export, print and sharing; the studies themselves (LISTS) and their panel are with the study area code above ---- */
+const lStore=()=>{try{localStorage.setItem('permits-studies',JSON.stringify(LISTS))}catch(e){}lUI();studyUI()};
 const lFind=n=>LISTS.find(l=>l.name===n);
 const lHas=(l,id)=>l.items.some(x=>x.id==id);
 function lSnap(r){return {id:r.id,ca:r.ca||null,d:r.d,a:r.mod||r.site||'',own:r.own||'',bld:((r.st?r.st+'-story ':'')+(r.bld||'')).trim(),ar:arch(r)||'',cost:r.cost??null,src:(ppName(r.pp)||'The Economist')+(r.pg?', p. '+r.pg:''),note:''}}
-function lUI(){const n=LISTS.reduce((a,l)=>a+l.items.length,0),t=LISTS.length?`Lists (${LISTS.length})`:'Lists';
+const lShort=s=>s.length>18?s.slice(0,17)+'…':s;
+function lUI(){const t=LISTS.length?`Studies (${LISTS.length})`:'Studies';
  ['llink','flists'].forEach(id=>{const e=$(id);if(e)e.textContent=t});
- const b=$('dsave');if(b&&CURR){const on=LISTS.some(l=>lHas(l,CURR.id));b.innerHTML=(on?'★ Saved':'☆ Save');b.classList.toggle('on',on);b.title=on?'In '+LISTS.filter(l=>lHas(l,CURR.id)).map(l=>'“'+l.name+'”').join(', ')+': click to change':'Add this permit to a research list'}}
-/* the ☆ Save menu on a permit: tick the lists it belongs in, or start a new one */
-function lMenu(){const m=$('lmenu'),r=CURR;if(!r)return;if(!m.hidden){m.hidden=true;return}m.textContent='';const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
- m.append(mk('div','lmh','Add to a research list'));
- LISTS.forEach(l=>{const lab=mk('label','lmi'),cb=mk('input');cb.type='checkbox';cb.checked=lHas(l,r.id);cb.onchange=()=>{if(cb.checked){if(!lHas(l,r.id))l.items.push(lSnap(r))}else l.items=l.items.filter(x=>x.id!=r.id);LCUR=l.name;lStore()};lab.append(cb,document.createTextNode(' '+l.name+' ('+l.items.length+')'));m.append(lab)});
- const f=mk('div','lmn'),i=mk('input'),b=mk('button','btn','Add');i.placeholder=LISTS.length?'or a new list…':'Name a new list…';i.maxLength=50;b.type='button';
- const add=()=>{const n=i.value.trim().slice(0,50);if(!n)return;let l=lFind(n);if(!l){l={name:n,items:[]};LISTS.push(l)}if(!lHas(l,r.id))l.items.push(lSnap(r));LCUR=n;lStore();m.hidden=true};
- b.onclick=add;i.onkeydown=e=>{if(e.key=='Enter')add();e.stopPropagation()};f.append(i,b);m.append(f);
- const o=mk('a','lk lmo','Open my lists →');o.href='#';o.onclick=e=>{e.preventDefault();m.hidden=true;lOpen()};m.append(o);
- m.hidden=false;if(!LISTS.length)i.focus()}
-document.addEventListener('click',e=>{const m=$('lmenu');if(m&&!m.hidden&&!e.target.closest('#lmenu')&&!e.target.closest('#dsave'))m.hidden=true});
-/* the lists panel */
+ const b=$('dsave');if(b&&CURR){const l=lFind(LCUR)||LISTS[0],on=!!l&&lHas(l,CURR.id);b.textContent=on?'★ In “'+lShort(l.name)+'”':'☆ Add to study';b.classList.toggle('on',on);
+  b.title=on?'In the study “'+l.name+'”: click to take it out':l?'Add this permit to the study “'+l.name+'” (choose the study in the Study panel on the map)':'Start a study with this permit'}}
+/* ☆ Add to study: in or out of the current study, with no menu; the first click ever starts "My study" and opens its panel */
+function lToggle(){const r=CURR;if(!r)return;let l=lFind(LCUR)||LISTS[0],made=false;if(!l){l={name:'My study',sa:'',items:[]};LISTS.push(l);made=true}LCUR=l.name;
+ if(lHas(l,r.id))l.items=l.items.filter(x=>x.id!=r.id);else l.items.push(lSnap(r));lStore();if(made)studyPanel(true)}
+/* the full list of a study's permits with notes (or a study someone shared) */
 function lOpen(shared){const d=$('ld');LSHARED=shared||null;lRender();if(!d.open)d.showModal()}
-const LIMP='<button class=btn id=limp title="Open a list file someone sent you (.permits-list.json)">Import list</button><input type=file id=limpf accept=".json,application/json" hidden>';
 function lRender(){const b=$('lbody'),sh=LSHARED,l=sh||lFind(LCUR)||LISTS[0];b.textContent='';
- if(!l){b.innerHTML='<p class=mut>No lists yet. Open a permit and click <b>☆ Save</b> to start one: a walking tour, a nomination, one architect’s houses…</p><p>'+LIMP+'</p><p class=lmsg id=lmsg hidden></p>';return}
- if(!sh)LCUR=l.name;
+ if(!l){b.innerHTML='<p class=mut>No studies yet. Open a permit and click <b>☆ Add to study</b>, or draw an area with the study button on the map.</p>';return}
  const top=document.createElement('div');top.className='lhead';
- top.innerHTML=sh?`<span>Shared list: <b>${esc(l.name)}</b> · ${l.items.length} permits</span><button class=btn id=lkeep>Save a copy</button>`
-  :`<select id=lsel aria-label="Which list">${LISTS.map(x=>`<option${x===l?' selected':''}>${esc(x.name)}</option>`).join('')}</select><span class=mut>${l.items.length} permit${l.items.length==1?'':'s'}</span><span class=lact><button class=btn id=lcsv title="Download this list as a CSV spreadsheet">CSV</button><button class=btn id=lprint title="A printable page: address, date, owner, architect, source and your notes">Print</button><button class=btn id=lshare title="Copy a link that opens this list (with its notes) for someone else">Copy link</button><button class=btn id=lren>Rename</button><button class=btn id=ldel>Delete</button>${LIMP}</span>`;
+ top.innerHTML=sh?`<span>Shared study: <b>${esc(l.name)}</b> · ${l.items.length} permit${l.items.length==1?'':'s'}${sh.sa?' · its area is on the map':''}</span><button class=btn id=lkeep>Save a copy</button>`
+  :`<b>${esc(l.name)}</b><span class=mut>${l.items.length} permit${l.items.length==1?'':'s'}</span><span class=lact><button class=btn id=lcsv title="Download these permits as a CSV spreadsheet">CSV</button><button class=btn id=lprint title="A printable page: address, date, owner, architect, source and your notes">Print</button><button class=btn id=lshare title="Copy a link that opens this study (area, permits and notes) for someone else">Copy link</button></span>`;
  b.append(top);const msg=document.createElement('p');msg.className='lmsg';msg.id='lmsg';msg.hidden=true;b.append(msg);
  const t=document.createElement('div');t.className='litems';
- t.innerHTML=l.items.length?l.items.map((x,k)=>`<div class=li data-k="${k}"><div class=lit><a class=lk data-lopen="${x.id}" data-ca="${x.ca||''}" href="#">${esc(x.a)}</a> <span class=mut>${esc(x.d)}</span>${sh?'':`<button class=lx data-ldel="${k}" title="Remove from this list" aria-label="Remove">×</button>`}</div><div class=lsub>${esc([x.bld,x.own&&'for '+x.own,x.ar&&'archt '+x.ar,x.cost!=null?money(x.cost):''].filter(Boolean).join(' · '))}</div>${sh?(x.note?`<div class=lnote>${esc(x.note)}</div>`:''):`<textarea class=lnt data-lnote="${k}" rows=1 placeholder="Note…">${esc(x.note||'')}</textarea>`}</div>`).join(''):'<p class=mut>This list is empty.</p>';
+ t.innerHTML=l.items.length?l.items.map((x,k)=>`<div class=li data-k="${k}"><div class=lit><a class=lk data-lopen="${x.id}" data-ca="${x.ca||''}" href="#">${esc(x.a)}</a> <span class=mut>${esc(x.d)}</span>${sh?'':`<button class=lx data-ldel="${k}" title="Take it out of this study" aria-label="Remove">×</button>`}</div><div class=lsub>${esc([x.bld,x.own&&'for '+x.own,x.ar&&'archt '+x.ar,x.cost!=null?money(x.cost):''].filter(Boolean).join(' · '))}</div>${sh?(x.note?`<div class=lnote>${esc(x.note)}</div>`:''):`<textarea class=lnt data-lnote="${k}" rows=1 placeholder="Note…">${esc(x.note||'')}</textarea>`}</div>`).join(''):'<p class=mut>No permits picked in this study.</p>';
  b.append(t)}
+const lFileName=n=>n.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')||'study';
 function lCSV(l){const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
  const rows=[['permit_id','issue_date','address','owner','building','architect','cost','source','link','note'],...l.items.map(x=>[x.id,x.d,x.a,x.own,x.bld,x.ar,x.cost??'',x.src,location.origin+location.pathname+'#open='+x.id,x.note||''])];
- const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}));a.download=l.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.csv';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}));a.download=lFileName(l.name)+'.csv';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 function lPrint(l){const w=window.open('','_blank');if(!w)return;const base=location.origin+location.pathname;
  w.document.write(`<!doctype html><meta charset=utf-8><title>${esc(l.name)}</title><style>body{font:14px Georgia,serif;margin:28px;color:#222}h1{font-size:22px;margin:0 0 4px}p.m{color:#666;margin:0 0 18px}.i{border-top:1px solid #ccc;padding:10px 0;break-inside:avoid}.a{font-weight:bold;font-size:15px}.s{color:#444}.n{margin-top:4px;font-style:italic}.c{color:#777;font-size:12px}</style><h1>${esc(l.name)}</h1><p class=m>${l.items.length} building permits · Chicago building permits, 1883–1930 · printed ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p>`+
   l.items.map(x=>`<div class=i><div class=a>${esc(x.a)}</div><div class=s>${esc(new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}))} · ${esc([x.bld,x.own&&'owner '+x.own,x.ar&&'architect '+x.ar,x.cost!=null?money(x.cost):''].filter(Boolean).join(' · '))}</div>${x.note?`<div class=n>${esc(x.note)}</div>`:''}<div class=c>${esc(x.src)}, ${esc(x.d)} · ${esc(base)}#open=${x.id}</div></div>`).join(''));
  w.document.close();setTimeout(()=>w.print(),300)}
 const b64e=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),b64d=s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))));
-/* share links: the list is packed into the link itself (ids as differences, the browser's deflate, base64url, prefix z), so no server is needed; past LMAX characters a link breaks in mail and chat apps, so Copy link hands over a small list file instead, which Import list opens */
+/* share links: the study is packed into the link itself (ids as differences, its area as in filter links, the browser's deflate, base64url, prefix z), so no server is needed; past LMAX characters a link breaks in mail and chat apps, so Copy link hands over a small study file instead, which "Open a study file" reads */
 const LMAX=2000;
 const zipB=async s=>new Uint8Array(await new Response(new Blob([s]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()),
  unzipB=async u=>new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text(),
  u8b64=u=>{let s='';for(const b of u)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
  b64u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
-function lPack(l){let p=0;const i=[],c=[],t={};l.items.forEach((x,k)=>{i.push(x.id-p);p=x.id;c.push(+x.ca||0);if(x.note)t[k]=x.note});return JSON.stringify({n:l.name,i,c,t})}
+function lPack(l){let p=0;const i=[],c=[],t={};l.items.forEach((x,k)=>{i.push(x.id-p);p=x.id;c.push(+x.ca||0);if(x.note)t[k]=x.note});const o={n:l.name,i,c,t};if(l.sa)o.a=l.sa;return JSON.stringify(o)}
 async function lLink(l){const base=location.origin+location.pathname+'#list=';
- try{return base+'z'+u8b64(await zipB(lPack(l)))}catch(e){return base+b64e(JSON.stringify({n:l.name,i:l.items.map(x=>x.note?[x.id,x.ca||0,x.note]:[x.id,x.ca||0])}))}}
-function lFile(l){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({type:'chicago-permits-list',v:1,name:l.name,items:l.items.map(x=>({id:x.id,ca:x.ca||null,note:x.note||''}))},null,1)],{type:'application/json'}));a.download=l.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.permits-list.json';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-async function lShowShared(name,arr){const cas=[...new Set(arr.map(x=>String(x[1]||'')).filter(Boolean))];busy(1);try{await loadShards(cas)}catch(e){}busy(-1);
+ try{return base+'z'+u8b64(await zipB(lPack(l)))}catch(e){return base+b64e(JSON.stringify({n:l.name,a:l.sa||undefined,i:l.items.map(x=>x.note?[x.id,x.ca||0,x.note]:[x.id,x.ca||0])}))}}
+function lFile(l){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({type:'chicago-permits-study',v:2,name:l.name,sa:l.sa||'',items:l.items.map(x=>({id:x.id,ca:x.ca||null,note:x.note||''}))},null,1)],{type:'application/json'}));a.download=lFileName(l.name)+'.permits-study.json';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function lShare(l,btn,say){lLink(l).then(u=>{if(u.length<=LMAX){fsCopy(u,btn,'Link copied');say('')}else{lFile(l);say('This study is too long for a link that survives email and chat ('+u.length.toLocaleString()+' characters), so it was saved as a file instead. Send that file; the other person opens it with “Open a study file”.')}})}
+async function lShowShared(name,arr,sa){const cas=[...new Set(arr.map(x=>String(x[1]||'')).filter(Boolean))];busy(1);try{await loadShards(cas)}catch(e){}busy(-1);
  const items=arr.map(([id,ca,note])=>{const r=D.find(x=>x.id==id);if(!r)return null;const s=lSnap(r);s.note=String(note||'').slice(0,1000);return s}).filter(Boolean);
- lOpen({name:String(name||'Shared list').slice(0,50),items})}
+ sa=polyDec(sa)?sa:'';if(sa)studyUse(sa);
+ lOpen({name:String(name||'Shared study').slice(0,50),sa,items})}
 async function lFromLink(q){let o;try{if(q[0]=='z'){o=JSON.parse(await unzipB(b64u8(q.slice(1))));let p=0;o.i=o.i.map((d,k)=>[p+=d,(o.c||[])[k]||0,(o.t||{})[k]||''])}else o=JSON.parse(b64d(q))}catch(e){return}
- if(!o||!Array.isArray(o.i))return;lShowShared(o.n,o.i)}
+ if(!o||!Array.isArray(o.i))return;lShowShared(o.n,o.i,o.a)}
 function lImport(f){if(!f)return;f.text().then(t=>{let o;try{o=JSON.parse(t)}catch(e){o=null}
- if(!o||o.type!='chicago-permits-list'||!Array.isArray(o.items)){lMsg('That file is not a list saved from this site.');return}
- lShowShared(o.name,o.items.map(x=>[+x.id,x.ca||0,x.note||'']))})}
+ if(!o||!/^chicago-permits-(list|study)$/.test(o.type)||!Array.isArray(o.items)){studySay('That file is not a study saved from this site.');return}
+ lShowShared(o.name,o.items.map(x=>[+x.id,x.ca||0,x.note||'']),o.sa)})}
 function lMsg(t){const e=$('lmsg');if(e){e.textContent=t;e.hidden=!t}}
 async function lOpenPermit(id,ca){$('ld').close();if(ca)await loadShards([String(ca)]);else await loadAll();const r=D.find(x=>x.id==id);if(!r)return;if(r.lat)map.setView([r.lat,r.lon],Math.max(map.getZoom(),17),{animate:false});show(r)}
 $('ld').addEventListener('click',e=>{const t=e.target,l=LSHARED||lFind(LCUR);
  const o=t.closest('[data-lopen]');if(o){e.preventDefault();lOpenPermit(+o.dataset.lopen,o.dataset.ca);return}
- if(t.id=='limp'){$('limpf').click();return}
  if(!l)return;
  if(t.dataset.ldel!=null){l.items.splice(+t.dataset.ldel,1);lStore();lRender();return}
- if(t.id=='lcsv')lCSV(l);else if(t.id=='lprint')lPrint(l);else if(t.id=='lshare')lLink(l).then(u=>{if(u.length<=LMAX){fsCopy(u,t,'Link copied');lMsg('')}else{lFile(l);lMsg('This list is too long for a link that survives email and chat ('+u.length.toLocaleString()+' characters), so it was saved as a file instead. Send that file; the other person opens it with Import list.')}});
- else if(t.id=='lren'){const n=(prompt('New name for this list',l.name)||'').trim().slice(0,50);if(n&&!lFind(n)){l.name=n;LCUR=n;lStore();lRender()}}
- else if(t.id=='ldel'){if(t.dataset.sure){LISTS=LISTS.filter(x=>x!==l);LCUR=(LISTS[0]||{}).name||'';lStore();lRender()}else{t.dataset.sure=1;t.textContent='Delete list?';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='Delete'}},2500)}}
- else if(t.id=='lkeep'){let n=l.name;while(lFind(n))n+=' (copy)';LISTS.push({name:n,items:l.items.map(x=>({...x}))});LCUR=n;LSHARED=null;lStore();lRender()}});
-$('ld').addEventListener('change',e=>{if(e.target.id=='lsel'){LCUR=e.target.value;lRender()}else if(e.target.id=='limpf'){lImport(e.target.files[0]);e.target.value=''}});
-$('ld').addEventListener('input',e=>{const k=e.target.dataset.lnote;if(k==null)return;const l=lFind(LCUR);if(!l||!l.items[+k])return;l.items[+k].note=e.target.value.slice(0,1000);clearTimeout(lRender.t);lRender.t=setTimeout(()=>{try{localStorage.setItem('permits-lists',JSON.stringify(LISTS))}catch(err){}},400)});
+ if(t.id=='lcsv')lCSV(l);else if(t.id=='lprint')lPrint(l);else if(t.id=='lshare')lShare(l,t,lMsg);
+ else if(t.id=='lkeep'){let n=l.name;while(lFind(n))n+=' (copy)';LISTS.push({name:n,sa:l.sa||'',items:l.items.map(x=>({...x}))});LCUR=n;LSHARED=null;lStore();lRender();studyPanel(true);studyUI()}});
+$('simpf').addEventListener('change',e=>{lImport(e.target.files[0]);e.target.value=''});
+$('ld').addEventListener('input',e=>{const k=e.target.dataset.lnote;if(k==null)return;const l=lFind(LCUR);if(!l||!l.items[+k])return;l.items[+k].note=e.target.value.slice(0,1000);clearTimeout(lRender.t);lRender.t=setTimeout(()=>{try{localStorage.setItem('permits-studies',JSON.stringify(LISTS))}catch(err){}},400)});
+$('ld').addEventListener('close',()=>studyUI());
 $('lclose').onclick=()=>$('ld').close();
-$('dsave').onclick=e=>{e.stopPropagation();lMenu()};
-$('llink').addEventListener('click',e=>{e.preventDefault();lOpen()});
+$('dsave').onclick=e=>{e.stopPropagation();lToggle()};
+$('llink').addEventListener('click',studyOpen);
 setTimeout(lUI,0);      // once the rest of the page's code has run (CURR is declared further down)
 
 
@@ -1699,7 +1741,7 @@ function tnote(){sortUI();const n=AGG?TOT.n:cur.length,el=$('tnote'),sn=SORTN[sk
 function cfHint(){if(cfAll()||!($('qa').value.trim()||$('q').value.trim()||$('ar').value.trim()||SQ||AS.size||CS.size))return '';
  const hid=[3,2,1].filter(l=>!CF.has(l)&&CCNT[l]>0);if(!hid.length)return '';
  const t=hid.map(l=>'<b>'+CCNT[l].toLocaleString()+'</b> at '+CFN[l]).join(' and ');
- return (cur.length?'More matches are hidden by the Confidence filter: ':'No matches at the confidence levels shown, but ')+t+(cur.length?' ':' match. ')+'<button type="button" class="lk" id="cfshow">Show them</button>'}
+ return (cur.length?'More matches are hidden by the Confidence filter: ':'No matches at the confidence levels shown, but ')+t+(cur.length?' ':' match. ')+'<button type="button" id="cfshow">Show them</button>'}
 document.addEventListener('click',e=>{if(e.target&&e.target.id==='cfshow'){[3,2,1].forEach(l=>{if(CCNT[l]>0)CF.add(l)});syncCF();go()}});
 /* an address search with no permits: today's County address numbers (site_data/addr_ranges.json, 0.15 MB, fetched only now) say whether that address exists, or what the nearest numbers are */
 let ARP=null,ARX=null,CNTOK=0;
@@ -2087,10 +2129,10 @@ LEGACY?legacyBoot():boot();
  const qfg=$('qa').closest('.fg'),qw=$('qa').closest('.sgw');$('mpill').insertBefore(qw,$('mfb'));$('qa').placeholder='Search permits: address, street…';$('qa').enterKeyHint='search';
  $('mchips').appendChild($('chipbar'));if(qfg){qfg.hidden=true;if($('qloc'))$('mchips').appendChild($('qloc'))}document.body.appendChild($('geoq'));
  /* filter sheet */
- const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><a class="lk" id="flists" href="#">Lists</a><a class="lk" id="fwn" href="#">What&rsquo;s new<span class="wndot" hidden></span></a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
+ const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><a class="lk" id="flists" href="#">Studies</a><a class="lk" id="fwn" href="#">What&rsquo;s new<span class="wndot" hidden></span></a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
  const fb=document.querySelector('.mapc .shade');if(fb){$('fsep').after(fb)}
  const fopen=on=>{root.classList.toggle('fopen',on);if(!on&&document.activeElement&&document.activeElement.blur)document.activeElement.blur()};
- $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>fbOpen(e,fbURL(null)));$('flists').addEventListener('click',e=>{e.preventDefault();fopen(false);lOpen()});$('fwn').addEventListener('click',e=>{fopen(false);wnOpen(e)});if(WN)wnDot();setTimeout(lUI,0);
+ $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>fbOpen(e,fbURL(null)));$('flists').addEventListener('click',e=>{fopen(false);studyOpen(e)});$('fwn').addEventListener('click',e=>{fopen(false);wnOpen(e)});if(WN)wnDot();setTimeout(lUI,0);
  fl.addEventListener('click',e=>{if(e.target.closest('.qsug [data-i],#sg [data-i]'))setTimeout(()=>{fopen(false);setT('half')},200)});
  const badge=()=>{[...$('chips').children].forEach(c=>{c.hidden=/^In the map view/.test(c.textContent)});const n=[...$('chips').children].filter(c=>!c.hidden).length,b=$('mfn');b.hidden=!n;b.textContent=n};new MutationObserver(badge).observe($('chips'),{childList:true});badge();
  /* trays */
