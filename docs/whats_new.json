@@ -1,0 +1,54 @@
+[
+ {"date": "2026-11-20", "title": "Research lists, feedback, and a better look at the neighbours",
+  "items": [
+   "<b>Research lists.</b> Click <b>☆ Save</b> on any permit to collect it into a named list (a walking tour, a nomination, one architect's houses) and add a note to each one. <b>Lists</b> in the header opens them: download a CSV, print a page with sources and notes, or copy a link that opens the list (notes included) for someone else. Very long lists are passed on as a small file instead, opened with <b>Import list</b>.",
+   "<b>Send feedback</b> in the header, and <b>Report a problem with this permit</b> on each permit, open a short form over the page with the permit already filled in.",
+   "Building counts: entries that spell out large numbers (\"forty-two 1-story br res\", \"eighteen …\") now show the right number of buildings; about 210 permits were overcounted. Stores, garages and other kinds of building are counted too (\"three 1-story brick stores\" was shown as 7). When a permit's addresses cover more house numbers than it has buildings, the permit says both, e.g. <i>42 buildings · 60 house numbers</i>.",
+   "Permits for several buildings group their building buttons by the address ranges as printed, and the red ring on the main map follows the building you pick.",
+   "Photo panel: the arrows walk along the street to the next house on either side, past the ends of a range. A neighbour you show gets a blue ring and a dashed line from the permit, on both maps. Corner houses get a ▲ button for the house around the corner. A neighbour that is only known from a permit shows a short card instead of a photo, and the small map no longer jumps.",
+   "Map dot colours by decade are now easier to tell apart for colour-blind readers, and each dot's hover says its decade.",
+   "Searching an address or owner that finds a single permit opens it straight away.",
+   "Sizes with fractions (\"44x99 1/2\") no longer confuse the address: 684 permits were placed again."
+  ]},
+ {"date": "2026-11-17", "title": "Study areas, full screen and more old maps",
+  "items": [
+   "<b>Study area:</b> draw a shape on the map and keep only the permits inside it. It can be saved with your filters, shared in a link, and exported as GeoJSON.",
+   "<b>Full screen</b> button: the map and permit details fill the screen, with the filters and a legend kept in view.",
+   "New map layers: the 1949–1951 Sanborn fire-insurance maps (the Loop so far) and a ca. 1930 annexations map.",
+   "Permits for several buildings say how many buildings, in the table and the permit panel; where the entry doesn't say, they show how many addresses it covers.",
+   "A search hidden by the Confidence filter now says how many matches are at Medium or Low, with a button to show them. An address with no permits says whether the address exists today.",
+   "The page scan and the enlarged Assessor photo open over the left side, so the permit stays in view.",
+   "Downloads include a confidence column (High / Medium / Low)."
+  ]},
+ {"date": "2026-11-16", "title": "One Layers menu",
+  "items": [
+   "All the maps are in one <b>Layers</b> menu at the bottom right: the 1892, 1906 and 1913 maps, the plat map, 2024 satellite photos, the present-day map and the permit dots. Old maps have a slider from the original to the background removed.",
+   "The map's title says how many permits are showing, how many are hidden by your filters, and has a Clear filters link.",
+   "The whole city fits on first load; selected community areas are highlighted."
+  ]},
+ {"date": "2026-11-15", "title": "Confidence you can see",
+  "items": [
+   "Each dot shows how sure we are of its place: a solid disc (High), a disc with a hole (Medium) or a small pale dot (Low). The Confidence key explains each.",
+   "The 1906 Blanchard map is available as a layer.",
+   "Permits that print a street corner instead of a house number are placed at that corner.",
+   "A new, cleaner base map, hosted with the site."
+  ]},
+ {"date": "2026-11-13", "title": "Satellite view, measuring, better text",
+  "items": [
+   "2024 Cook County satellite photos as a map layer.",
+   "<b>Measure</b> tool for distances and lot sizes, in feet.",
+   "Every permit's text was re-read from its scan, so fewer misread names and numbers. Where a cost was hard to read, the permit says so and gives the second reading.",
+   "Condo buildings now get their Assessor photo and year built."
+  ]},
+ {"date": "2026-11-09", "title": "Confidence filter and phones",
+  "items": [
+   "<b>Confidence</b> filter: only High-confidence locations show by default; tick Medium and Low to see the rest.",
+   "Phones and upright tablets get their own layout: a full-screen map, a search bar, and one pull-up panel for the list and the permit.",
+   "Pressing Enter in the address box goes straight to the address.",
+   "Architect names that differ only in spacing or periods (A.G. Lund, A G Lund, AG Lund) are treated as one."
+  ]},
+ {"date": "2026-11-06", "title": "Beta opens",
+  "items": [
+   "The beta site opens to testers. Thank you for trying it! Please use <b>Send feedback</b> for anything that looks wrong or could work better."
+  ]}
+]

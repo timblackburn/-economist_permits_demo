@@ -46,6 +46,8 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph .pins .btn.on{background:var(--s1);color:#fff;cursor:default;box-shadow:none}
 #ph .pins .btn:disabled{color:var(--mut);background:var(--surface);border-color:var(--line);box-shadow:none;font-weight:400;cursor:not-allowed}
 #ph .pins .cl{font-size:13px;font-weight:600;color:var(--fg)}
+#ph .pins .pgrp{display:inline-flex;align-items:center;gap:4px;padding:3px 4px 3px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+#ph .pins .pgl{font-size:12px;color:var(--mut);margin-right:2px;white-space:nowrap}
 #ph .pins .btn.pstop{border-style:dashed}
 #ph .pins.nbrow{flex-wrap:nowrap;align-items:stretch}
 #ph .pins.nbrow .btn{flex:1 1 0;min-width:0;white-space:normal;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;position:relative;padding-left:22px;padding-right:22px}
@@ -157,9 +159,40 @@ tbody tr.r.sel,tbody tr.r.sel:nth-child(even),tbody tr.r.sel:hover{background:va
  #tarea.docked col:nth-child(1){width:10%!important}#tarea.docked col:nth-child(3){width:15%!important}#tarea.docked col:nth-child(4){width:20%!important}#tarea.docked col:nth-child(6){width:13%!important}#tarea.docked col:nth-child(8){width:8%!important}#tarea.docked col:nth-child(9){width:15%!important}#tarea.docked col:nth-child(10){width:19%!important}
  #tdock{position:sticky;top:calc(var(--tbh,52px) + 10px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto;margin-top:12px;border-radius:6px}#tdock>#detail{position:static;max-height:none;overflow:visible;margin:0}}
 header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:3px;margin-left:4px;white-space:nowrap}header .sub a:hover{text-decoration:underline}
-#about{border:1px solid var(--line);border-radius:8px;max-width:780px;width:calc(100% - 32px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}#about::backdrop,#fbd::backdrop{background:rgba(0,0,0,.45)}
+#about{border:1px solid var(--line);border-radius:8px;max-width:780px;width:calc(100% - 32px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}#wnd::backdrop,#ld::backdrop,#about::backdrop,#fbd::backdrop{background:rgba(0,0,0,.45)}
 #fbd{border:1px solid var(--line);border-radius:8px;max-width:680px;width:calc(100% - 32px);height:min(88vh,900px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden}
 #fbd[open]{display:flex;flex-direction:column}
+#wnd{border:1px solid var(--line);border-radius:8px;max-width:680px;width:calc(100% - 32px);max-height:88vh;padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#wnd .ah{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px;position:sticky;top:0;z-index:1}
+#wnbody{padding:6px 18px 16px;font-size:14px;line-height:1.5}
+#wnbody section{border-top:1px solid var(--line);padding:10px 0 4px}#wnbody section:first-child{border-top:0}
+#wnbody h3{font-size:15px;margin:0 0 4px}#wnbody h3 small{font-weight:normal;color:var(--mut);margin-left:6px}
+#wnbody ul{margin:4px 0 6px;padding-left:20px}#wnbody li{margin:3px 0}
+#wnbody .wnnew{display:inline-block;font-size:11px;font-weight:600;color:#fff;background:var(--acc);border-radius:3px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.wndot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e34948;margin-left:4px;vertical-align:5px}.wndot[hidden]{display:none}
+#ld{border:1px solid var(--line);border-radius:8px;max-width:760px;width:calc(100% - 32px);max-height:88vh;padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+#ld .ah{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px;position:sticky;top:0;z-index:1}
+#lbody{padding:12px 16px 16px}
+#ld .lhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px;font-size:14px}
+#ld .lhead select{font:inherit;padding:4px 6px;max-width:260px}
+#ld .lact{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+#ld .lact .btn,#ld .lhead .btn{font-size:12.5px;padding:3px 10px}
+#ld .li{border-top:1px solid var(--line);padding:8px 0}
+#ld .lit{display:flex;align-items:baseline;gap:8px}
+#ld .lit .lk{font-weight:600}
+#ld .lx{margin-left:auto;border:0;background:none;color:var(--mut);font-size:17px;cursor:pointer;line-height:1}
+#ld .lsub{font-size:12.5px;color:var(--mut);margin-top:2px}
+#ld .lnt{width:100%;box-sizing:border-box;margin-top:5px;font:13px/1.4 inherit;font-family:inherit;padding:4px 6px;border:1px solid var(--line);border-radius:4px;resize:vertical;background:var(--surface);color:var(--fg)}
+#ld .lmsg{font-size:13px;background:color-mix(in srgb,var(--acc) 10%,var(--surface));padding:6px 10px;border-radius:4px;margin:0 0 8px}
+#ld .lnote{font-size:13px;font-style:italic;margin-top:3px}
+#detail{position:relative}
+#dsave.on{background:color-mix(in srgb,var(--acc) 14%,var(--surface))}
+#lmenu{position:absolute;right:12px;top:44px;z-index:30;width:270px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:10px 12px;font-size:13.5px}
+#lmenu .lmh{font-weight:600;margin-bottom:6px}
+#lmenu .lmi{display:block;padding:3px 0;cursor:pointer}
+#lmenu .lmn{display:flex;gap:6px;margin-top:8px}
+#lmenu .lmn input{flex:1;min-width:0;font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:4px}
+#lmenu .lmo{display:inline-block;margin-top:8px;font-size:13px}
 #fbd .ah{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px}
 #fbd .fbh{display:flex;align-items:center;gap:12px}
 #fbd .fbh a{color:#fff;font-size:13px}
@@ -356,8 +389,10 @@ html.mob #fsbtn{display:none}
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
-<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a></p>
+<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a> &middot; <a href="#" id="wnlink" title="Changes to the site, newest first">What&rsquo;s new<span class="wndot" hidden></span></a> &middot; <a href="#" id="llink" title="Your research lists: permits you saved with ☆ Save">Lists</a></p>
 </header>
+<dialog id="wnd" aria-labelledby="wnt"><div class="ah"><b id="wnt">What&rsquo;s new</b><button class="btn" id="wnclose" aria-label="Close">Close &#10005;</button></div><div id="wnbody"></div></dialog>
+<dialog id="ld" aria-labelledby="ldt"><div class="ah"><b id="ldt">Research lists</b><button class="btn" id="lclose" aria-label="Close">Close &#10005;</button></div><div id="lbody"></div></dialog>
 <dialog id="fbd" aria-labelledby="fbt"><div class="ah"><b id="fbt">Send feedback</b><span class="fbh"><a id="fbnew" href="#" target="_blank" rel="noopener">Open in a new tab ↗</a><button class="btn" id="fbclose" aria-label="Close">Close &#10005;</button></span></div><iframe id="fbif" title="Feedback form" loading="lazy"></iframe></dialog>
 <dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
 <div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
@@ -383,7 +418,8 @@ html.mob #fsbtn{display:none}
   <div class="card"><h2 class="wkh"><span class="htl">Architects</span><span class="mtog" title="Order the list: busiest first, or alphabetical by last name (A–Z shows every architect)"><button id="asm" class="on">Most</button><button id="asa">A–Z</button></span></h2><div id="archs"></div></div>
   </div>
   <div class="card" id="detail" hidden>
-   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><button class="btn" id="dmap" hidden title="Centre the map on this permit's building"><span class="ar">⌖</span> Show on map</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
+   <div class="dbar"><span class="dtitle">Permit details</span><button class="btn" id="dtable" hidden title="Scroll down to this permit's row in the table"><span class="ar">↓</span> Table row</button><button class="btn" id="dmap" hidden title="Centre the map on this permit's building"><span class="ar">⌖</span> Show on map</button><button class="btn" id="dsave" title="Add this permit to a research list">☆ Save</button><span class="dnav"><button class="btn" id="dback" title="Close this panel (Esc)">&#10005; Close</button></span></div>
+   <div id="lmenu" hidden role="dialog" aria-label="Add to a research list"></div>
    <div id="pnav"><span class="pn"><button class="btn" id="prv" title="Previous permit (&larr;)">&lsaquo;</button><span id="pos"></span><button class="btn" id="nxt" title="Next permit (&rarr;)">&rsaquo;</button></span><span id="pcan"></span></div>
    <div id="mt"></div>
   </div>
@@ -434,8 +470,8 @@ const arch=r=>r.ar||'';const OWNERISH=/^(owners?|same|self)\b/i,ownerOf=(t,r)=>O
 const ownName=r=>(r.own||'').split(';')[0].trim(),ownerLink=(t,r)=>{const n=ownName(r);return n?`Owner (<a class=lk data-c="${esc(n)}">${esc(n)}</a>)`:esc(ownerOf(t,r))};
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const BLB={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};
-const blTag=r=>{const b=r.bl;   // "N buildings" only where the description itself gives the count (it counts them, or says "each"); otherwise how many addresses the printed list or range holds
- if(b&&b[0]>1&&(b[1]=='count'||b[1]=='each'))return `<span class=nbld title="${esc('This entry is for '+b[0]+' buildings: '+(BLB[b[1]]||'')+'.')}">${b[0]} buildings</span>`;
+const blTag=(r,full)=>{const b=r.bl;   // "N buildings" only where the description itself gives the count (it counts them, or says "each"); otherwise how many addresses the printed list or range holds
+ if(b&&b[0]>1&&(b[1]=='count'||b[1]=='each'))return `<span class=nbld title="${esc('This entry is for '+b[0]+' buildings: '+(BLB[b[1]]||'')+'.'+(b[2]?' Its addresses cover '+b[2]+' house numbers, so which numbers the buildings stood on is not known.':''))}">${b[0]} buildings${full&&b[2]?' · '+b[2]+' house numbers':''}</span>`;      // full (the permit panel): also how many numbers the printed range covers, when that is more than the buildings
  return r.ad>1?`<span class=nbld title="${esc('The printed address holds '+r.ad+' house numbers (a list or a range). The description does not say how many buildings.')}">${r.ad} addresses</span>`:''};
 const num=r=>{let t=0;for(const m of (r.sz||'').replace(/½/g,'.5').replace(/(\d+)\s+(\d)\/(\d)(?!\d)/g,(_,a,b,c)=>String(+a+b/c)).matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
@@ -1038,7 +1074,7 @@ function drawDots(low){
  const posOf=r=>PL.get(r)||[r.lat,r.lon];
  vis.forEach(r=>{const rad=radOf(r);
    const cf=confOf(r),c=new L.ShapeMarker(posOf(r),{conf:cf,radius:rad,weight:1.5,fillColor:dotColor(r),fillOpacity:.9,color:css('--ring')});
-   c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i>`,{className:'tip'}).openTooltip()});
+   c.once('mouseover',()=>{c.bindTooltip(`<b>${esc(r.own)}</b>${esc(r.mod||r.site)}${r.a9&&r.a9o?`<br><small>Pre-${r.a9y||1909} address${r.a9e&&r.a9y?' (estimated)':''}: ${esc(pre1909(r))}</small>`:''}<br>${esc((r.st?r.st+'-story ':'')+(r.bld||''))} ${dims(r.sz)} · ${money(r.cost)}<br><i>${esc(arch(r))}</i><br><small>${esc(r.d)}${DOTC=='time'?' · '+esc(r.d.slice(0,3))+'0s':''}</small>`,{className:'tip'}).openTooltip()});
    c.on('click',e=>{L.DomEvent.stop(e);if(MEAS.on||studyBusy())return;const p=e.layerPoint||map.latLngToLayerPoint(e.latlng);let best=r,bd=1e9;for(const q of vis){const d=map.latLngToLayerPoint(posOf(q)).distanceTo(p);if(d<bd-.5||(d<bd+.5&&radOf(q)<radOf(best))){bd=d;best=q}}dock(false);show(best,true);paneTop()});c.addTo(ptLayer)});
   if(low)return sampled;
   mapNote()}
@@ -1118,7 +1154,7 @@ async function boot(){
  ISS=cj.issues.map(e=>e[0]);
  caInit();
  suggestInit();fromHash();caInit();await go();fsInit();fsInitView();
- if(OPEN){if(OPENA)await loadShards([OPENA]);else await loadAll();const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}}
+ if(OPEN){if(OPENA)await loadShards([OPENA]);else await loadAll();const r=D.find(x=>x.id==OPEN);r&&show(r,OPENPH)}if(LISTQ)lFromLink(LISTQ)}
 /* ---- filtering ---- */
 function legacyBoot(){
  ALLKEYS=['*'];LOADED=new Set(['*']);
@@ -1235,7 +1271,7 @@ function render(rk){
  chips();fsRefresh();drawCA();archs();weeks();drawPts();noMapNote();streetLine();dotKey();table();dlUpdate();autoOpen();
  const pts=cur.filter(r=>r.lat);if(!AGG&&!$('inview').checked&&($('ar').value||AS.size||AREAS.size)&&pts.length&&pts.length<600){const b=L.latLngBounds(pts.map(r=>[r.lat,r.lon]));if(b.isValid())map.fitBounds(b.pad(.2),{maxZoom:CA_ZOOM+2})}}
 const KEYS0=0;const KEYS={q:'q',qa:'qa',ar:'ar'};
-let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');OPENA=p.get('oa');SQ=p.get('st')||'';if(/\(now /.test(SQ))osLoad().then(()=>{OQK='';go()});OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});{const cf=p.get('cf')?p.get('cf').split('').map(ch=>({h:3,m:2,l:1})[ch]).filter(Boolean):(p.get('open')?[3,2,1]:[]);if(cf.length){CF.clear();cf.forEach(v=>CF.add(v))}}   // a link to one permit shows every level so its dot is there
+let OPEN=null,OPENA=null,OPENPH=false;function fromHash(){const p=new URLSearchParams(location.hash.slice(1));OPEN=p.get('open');LISTQ=p.get('list');OPENA=p.get('oa');SQ=p.get('st')||'';if(/\(now /.test(SQ))osLoad().then(()=>{OQK='';go()});OPENPH=p.get('photo')=='1';for(const [id,k] of Object.entries(KEYS))if(p.get(k))$(id).value=p.get(k);if(['cost','arch','time'].includes(p.get('dots')))DOTC=p.get('dots');if(p.get('ca'))p.get('ca').split(/[,+ ]/).map(Number).filter(Boolean).forEach(n=>AREAS.add(n));p.getAll('a').forEach(a=>{const k=nk(a);AN[k]??=a;AS.add(k)});p.getAll('c').forEach(c=>{const k=cn(c);CSN[k]=c;CS.add(k)});{const cf=p.get('cf')?p.get('cf').split('').map(ch=>({h:3,m:2,l:1})[ch]).filter(Boolean):(p.get('open')?[3,2,1]:[]);if(cf.length){CF.clear();cf.forEach(v=>CF.add(v))}}   // a link to one permit shows every level so its dot is there
  if(p.get('min')||p.get('max')){CLO=+p.get('min')||0;CHI=p.get('max')?+p.get('max'):Infinity}if(p.get('from')&&p.get('to'))R={a:p.get('from'),b:p.get('to')};else legacyRange(p);POLY=polyDec(p.get('sa'));polyBox();autoZoom();if(p.get('avg')=='1'){perIssue=true;$('mv').checked=true}if(p.get('by')=='c')(metric='c',$('mk').classList.add('on'),$('mc').classList.remove('on'));
  {const vw=(p.get('vw')||'').split(',').map(Number);INITVIEW=vw.length==4&&vw.every(isFinite)?vw:null;INITLOCK=p.get('lk')=='1'}}   /* a link made with Copy link carries lk=1: it opens with the filters locked */   /* a shared link with "Filter by map" on: applied once the page has loaded (fsInitView), because the start-up code moves the map */
 function toHash(){const p=new URLSearchParams();if(SQ)p.set('st',SQ);for(const [id,k] of Object.entries(KEYS))if($(id).value)p.set(k,$(id).value);[...AS].forEach(k=>p.append('a',AN[k]));[...CS].forEach(k=>p.append('c',CSN[k]||k));if(AREAS.size)p.set('ca',[...AREAS].join(','));if(DOTC!='time')p.set('dots',DOTC);if(R.a){p.set('from',R.a);p.set('to',R.b)}if(cfOn())p.set('cf',[...CF].sort((a,b)=>b-a).map(v=>'xlmh'[v]).join(''));if(CLO>0)p.set('min',CLO);if(CHI<Infinity)p.set('max',CHI);if(metric=='c')p.set('by','c');if(perIssue)p.set('avg','1');{const n=new URLSearchParams(fsNow().h);['vw','sa'].forEach(k=>n.get(k)&&p.set(k,n.get(k)))}if(typeof CURR!=='undefined'&&CURR&&!$('detail').hidden){p.set('open',CURR.id);p.set('oa',CURR.ca?String(CURR.ca):(CURR.lat?'out':'none'))}history.replaceState(null,'','#'+p)}
@@ -1340,7 +1376,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('#cap')&&e.target!==$
 document.addEventListener('keydown',e=>{if(e.key=='Escape'&&!$('cap').hidden){$('cap').hidden=true;$('cab').focus()}});
 /* ---- colouring the dots: by cost (default), by architect or by time; the chart and the architect list use the same colours ---- */
 let DOTC='time',ARCHCOL={},ARCHTOP=[],CHART={gran:'d',key:d=>d,ks:[]};
-const OTHERC='#9aa0a6',COSTBR=[3000,6000,12000,25000,75000],COSTC=['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026','#7a0019'],ARCHPAL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e','#17becf','#8c564b','#e377c2'],TIMEPAL=['#30123b','#4662d7','#36aaf9','#1ae4b6','#72fe5e','#c7ef34','#fabb20','#f66b19','#cb2a04','#7a0403'],DECC={'1880s':'#6a3d9a','1890s':'#1f78b4','1900s':'#33a02c','1910s':'#e6ab02','1920s':'#e31a1c','1930s':'#8c564b'};
+const OTHERC='#9aa0a6',COSTBR=[3000,6000,12000,25000,75000],COSTC=['#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026','#7a0019'],ARCHPAL=['#1f77b4','#d62728','#2ca02c','#9467bd','#ff7f0e','#17becf','#8c564b','#e377c2'],TIMEPAL=['#30123b','#4662d7','#36aaf9','#1ae4b6','#72fe5e','#c7ef34','#fabb20','#f66b19','#cb2a04','#7a0403'],DECC={'1880s':'#1baf7a','1890s':'#6250d6','1900s':'#e34948','1910s':'#eda100','1920s':'#008300','1930s':'#e87ba4'};
 const rampC=t=>{const x=Math.max(0,Math.min(1,t))*(TIMEPAL.length-1),i=Math.floor(x),f=x-i,h=c=>[1,3,5].map(j=>parseInt(c.slice(j,j+2),16)),a=h(TIMEPAL[i]),b=h(TIMEPAL[Math.min(i+1,TIMEPAL.length-1)]);return'#'+a.map((v,j)=>Math.round(v+(b[j]-v)*f).toString(16).padStart(2,'0')).join('')};
 const timeColor=(k,i)=>CHART.gran=='d'?(DECC[k]||OTHERC):rampC(CHART.ks.length>1?i/(CHART.ks.length-1):.5);
 function setArchPalette(all){ARCHCOL={};ARCHTOP=[];const seen=new Set();for(const nm of [...[...AS].map(k=>AN[k]||k),...all.map(x=>x[0])]){const k=nk(nm);if(!k||seen.has(k))continue;seen.add(k);if(ARCHTOP.length<8){ARCHCOL[k]=ARCHPAL[ARCHTOP.length];ARCHTOP.push({k,name:AN[k]||nm,color:ARCHCOL[k]})}}}
@@ -1378,6 +1414,95 @@ function aboutHTML(a){const f=n=>n.toLocaleString(),yr=d=>d.slice(0,4),fd=d=>d;
  <h3>Credit</h3><p>Compiled by Tim Blackburn.</p>`}
 function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('abody').innerHTML=aboutHTML(ABOUTD);return}
  fetch(DATA+'about.json').then(r=>r.json()).then(j=>{ABOUTD=j;$('abody').innerHTML=aboutHTML(j)}).catch(()=>{$('abody').innerHTML='<p>The summary could not be loaded. Try again in a moment.</p>'})}
+/* ---- research lists (issue #12): permits collected by hand into named lists, each with a note; kept in this browser like the saved filters; export, print and share ---- */
+var LISTS=[];try{LISTS=JSON.parse(localStorage.getItem('permits-lists')||'[]')}catch(e){LISTS=[]}
+var LCUR=(LISTS[0]||{}).name||'',LSHARED=null,LISTQ=null;      // var: the start-up code (fromHash) may set LISTQ
+const lStore=()=>{try{localStorage.setItem('permits-lists',JSON.stringify(LISTS))}catch(e){}lUI()};
+const lFind=n=>LISTS.find(l=>l.name===n);
+const lHas=(l,id)=>l.items.some(x=>x.id==id);
+function lSnap(r){return {id:r.id,ca:r.ca||null,d:r.d,a:r.mod||r.site||'',own:r.own||'',bld:((r.st?r.st+'-story ':'')+(r.bld||'')).trim(),ar:arch(r)||'',cost:r.cost??null,src:(ppName(r.pp)||'The Economist')+(r.pg?', p. '+r.pg:''),note:''}}
+function lUI(){const n=LISTS.reduce((a,l)=>a+l.items.length,0),t=LISTS.length?`Lists (${LISTS.length})`:'Lists';
+ ['llink','flists'].forEach(id=>{const e=$(id);if(e)e.textContent=t});
+ const b=$('dsave');if(b&&CURR){const on=LISTS.some(l=>lHas(l,CURR.id));b.innerHTML=(on?'★ Saved':'☆ Save');b.classList.toggle('on',on);b.title=on?'In '+LISTS.filter(l=>lHas(l,CURR.id)).map(l=>'“'+l.name+'”').join(', ')+': click to change':'Add this permit to a research list'}}
+/* the ☆ Save menu on a permit: tick the lists it belongs in, or start a new one */
+function lMenu(){const m=$('lmenu'),r=CURR;if(!r)return;if(!m.hidden){m.hidden=true;return}m.textContent='';const mk=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+ m.append(mk('div','lmh','Add to a research list'));
+ LISTS.forEach(l=>{const lab=mk('label','lmi'),cb=mk('input');cb.type='checkbox';cb.checked=lHas(l,r.id);cb.onchange=()=>{if(cb.checked){if(!lHas(l,r.id))l.items.push(lSnap(r))}else l.items=l.items.filter(x=>x.id!=r.id);LCUR=l.name;lStore()};lab.append(cb,document.createTextNode(' '+l.name+' ('+l.items.length+')'));m.append(lab)});
+ const f=mk('div','lmn'),i=mk('input'),b=mk('button','btn','Add');i.placeholder=LISTS.length?'or a new list…':'Name a new list…';i.maxLength=50;b.type='button';
+ const add=()=>{const n=i.value.trim().slice(0,50);if(!n)return;let l=lFind(n);if(!l){l={name:n,items:[]};LISTS.push(l)}if(!lHas(l,r.id))l.items.push(lSnap(r));LCUR=n;lStore();m.hidden=true};
+ b.onclick=add;i.onkeydown=e=>{if(e.key=='Enter')add();e.stopPropagation()};f.append(i,b);m.append(f);
+ const o=mk('a','lk lmo','Open my lists →');o.href='#';o.onclick=e=>{e.preventDefault();m.hidden=true;lOpen()};m.append(o);
+ m.hidden=false;if(!LISTS.length)i.focus()}
+document.addEventListener('click',e=>{const m=$('lmenu');if(m&&!m.hidden&&!e.target.closest('#lmenu')&&!e.target.closest('#dsave'))m.hidden=true});
+/* the lists panel */
+function lOpen(shared){const d=$('ld');LSHARED=shared||null;lRender();if(!d.open)d.showModal()}
+const LIMP='<button class=btn id=limp title="Open a list file someone sent you (.permits-list.json)">Import list</button><input type=file id=limpf accept=".json,application/json" hidden>';
+function lRender(){const b=$('lbody'),sh=LSHARED,l=sh||lFind(LCUR)||LISTS[0];b.textContent='';
+ if(!l){b.innerHTML='<p class=mut>No lists yet. Open a permit and click <b>☆ Save</b> to start one: a walking tour, a nomination, one architect’s houses…</p><p>'+LIMP+'</p><p class=lmsg id=lmsg hidden></p>';return}
+ if(!sh)LCUR=l.name;
+ const top=document.createElement('div');top.className='lhead';
+ top.innerHTML=sh?`<span>Shared list: <b>${esc(l.name)}</b> · ${l.items.length} permits</span><button class=btn id=lkeep>Save a copy</button>`
+  :`<select id=lsel aria-label="Which list">${LISTS.map(x=>`<option${x===l?' selected':''}>${esc(x.name)}</option>`).join('')}</select><span class=mut>${l.items.length} permit${l.items.length==1?'':'s'}</span><span class=lact><button class=btn id=lcsv title="Download this list as a CSV spreadsheet">CSV</button><button class=btn id=lprint title="A printable page: address, date, owner, architect, source and your notes">Print</button><button class=btn id=lshare title="Copy a link that opens this list (with its notes) for someone else">Copy link</button><button class=btn id=lren>Rename</button><button class=btn id=ldel>Delete</button>${LIMP}</span>`;
+ b.append(top);const msg=document.createElement('p');msg.className='lmsg';msg.id='lmsg';msg.hidden=true;b.append(msg);
+ const t=document.createElement('div');t.className='litems';
+ t.innerHTML=l.items.length?l.items.map((x,k)=>`<div class=li data-k="${k}"><div class=lit><a class=lk data-lopen="${x.id}" data-ca="${x.ca||''}" href="#">${esc(x.a)}</a> <span class=mut>${esc(x.d)}</span>${sh?'':`<button class=lx data-ldel="${k}" title="Remove from this list" aria-label="Remove">×</button>`}</div><div class=lsub>${esc([x.bld,x.own&&'for '+x.own,x.ar&&'archt '+x.ar,x.cost!=null?money(x.cost):''].filter(Boolean).join(' · '))}</div>${sh?(x.note?`<div class=lnote>${esc(x.note)}</div>`:''):`<textarea class=lnt data-lnote="${k}" rows=1 placeholder="Note…">${esc(x.note||'')}</textarea>`}</div>`).join(''):'<p class=mut>This list is empty.</p>';
+ b.append(t)}
+function lCSV(l){const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const rows=[['permit_id','issue_date','address','owner','building','architect','cost','source','link','note'],...l.items.map(x=>[x.id,x.d,x.a,x.own,x.bld,x.ar,x.cost??'',x.src,location.origin+location.pathname+'#open='+x.id,x.note||''])];
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}));a.download=l.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.csv';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function lPrint(l){const w=window.open('','_blank');if(!w)return;const base=location.origin+location.pathname;
+ w.document.write(`<!doctype html><meta charset=utf-8><title>${esc(l.name)}</title><style>body{font:14px Georgia,serif;margin:28px;color:#222}h1{font-size:22px;margin:0 0 4px}p.m{color:#666;margin:0 0 18px}.i{border-top:1px solid #ccc;padding:10px 0;break-inside:avoid}.a{font-weight:bold;font-size:15px}.s{color:#444}.n{margin-top:4px;font-style:italic}.c{color:#777;font-size:12px}</style><h1>${esc(l.name)}</h1><p class=m>${l.items.length} building permits · Chicago building permits, 1883–1930 · printed ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</p>`+
+  l.items.map(x=>`<div class=i><div class=a>${esc(x.a)}</div><div class=s>${esc(new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}))} · ${esc([x.bld,x.own&&'owner '+x.own,x.ar&&'architect '+x.ar,x.cost!=null?money(x.cost):''].filter(Boolean).join(' · '))}</div>${x.note?`<div class=n>${esc(x.note)}</div>`:''}<div class=c>${esc(x.src)}, ${esc(x.d)} · ${esc(base)}#open=${x.id}</div></div>`).join(''));
+ w.document.close();setTimeout(()=>w.print(),300)}
+const b64e=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''),b64d=s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))));
+/* share links: the list is packed into the link itself (ids as differences, the browser's deflate, base64url, prefix z), so no server is needed; past LMAX characters a link breaks in mail and chat apps, so Copy link hands over a small list file instead, which Import list opens */
+const LMAX=2000;
+const zipB=async s=>new Uint8Array(await new Response(new Blob([s]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer()),
+ unzipB=async u=>new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text(),
+ u8b64=u=>{let s='';for(const b of u)s+=String.fromCharCode(b);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')},
+ b64u8=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+function lPack(l){let p=0;const i=[],c=[],t={};l.items.forEach((x,k)=>{i.push(x.id-p);p=x.id;c.push(+x.ca||0);if(x.note)t[k]=x.note});return JSON.stringify({n:l.name,i,c,t})}
+async function lLink(l){const base=location.origin+location.pathname+'#list=';
+ try{return base+'z'+u8b64(await zipB(lPack(l)))}catch(e){return base+b64e(JSON.stringify({n:l.name,i:l.items.map(x=>x.note?[x.id,x.ca||0,x.note]:[x.id,x.ca||0])}))}}
+function lFile(l){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({type:'chicago-permits-list',v:1,name:l.name,items:l.items.map(x=>({id:x.id,ca:x.ca||null,note:x.note||''}))},null,1)],{type:'application/json'}));a.download=l.name.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')+'.permits-list.json';document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+async function lShowShared(name,arr){const cas=[...new Set(arr.map(x=>String(x[1]||'')).filter(Boolean))];busy(1);try{await loadShards(cas)}catch(e){}busy(-1);
+ const items=arr.map(([id,ca,note])=>{const r=D.find(x=>x.id==id);if(!r)return null;const s=lSnap(r);s.note=String(note||'').slice(0,1000);return s}).filter(Boolean);
+ lOpen({name:String(name||'Shared list').slice(0,50),items})}
+async function lFromLink(q){let o;try{if(q[0]=='z'){o=JSON.parse(await unzipB(b64u8(q.slice(1))));let p=0;o.i=o.i.map((d,k)=>[p+=d,(o.c||[])[k]||0,(o.t||{})[k]||''])}else o=JSON.parse(b64d(q))}catch(e){return}
+ if(!o||!Array.isArray(o.i))return;lShowShared(o.n,o.i)}
+function lImport(f){if(!f)return;f.text().then(t=>{let o;try{o=JSON.parse(t)}catch(e){o=null}
+ if(!o||o.type!='chicago-permits-list'||!Array.isArray(o.items)){lMsg('That file is not a list saved from this site.');return}
+ lShowShared(o.name,o.items.map(x=>[+x.id,x.ca||0,x.note||'']))})}
+function lMsg(t){const e=$('lmsg');if(e){e.textContent=t;e.hidden=!t}}
+async function lOpenPermit(id,ca){$('ld').close();if(ca)await loadShards([String(ca)]);else await loadAll();const r=D.find(x=>x.id==id);if(!r)return;if(r.lat)map.setView([r.lat,r.lon],Math.max(map.getZoom(),17),{animate:false});show(r)}
+$('ld').addEventListener('click',e=>{const t=e.target,l=LSHARED||lFind(LCUR);
+ const o=t.closest('[data-lopen]');if(o){e.preventDefault();lOpenPermit(+o.dataset.lopen,o.dataset.ca);return}
+ if(t.id=='limp'){$('limpf').click();return}
+ if(!l)return;
+ if(t.dataset.ldel!=null){l.items.splice(+t.dataset.ldel,1);lStore();lRender();return}
+ if(t.id=='lcsv')lCSV(l);else if(t.id=='lprint')lPrint(l);else if(t.id=='lshare')lLink(l).then(u=>{if(u.length<=LMAX){fsCopy(u,t,'Link copied');lMsg('')}else{lFile(l);lMsg('This list is too long for a link that survives email and chat ('+u.length.toLocaleString()+' characters), so it was saved as a file instead. Send that file; the other person opens it with Import list.')}});
+ else if(t.id=='lren'){const n=(prompt('New name for this list',l.name)||'').trim().slice(0,50);if(n&&!lFind(n)){l.name=n;LCUR=n;lStore();lRender()}}
+ else if(t.id=='ldel'){if(t.dataset.sure){LISTS=LISTS.filter(x=>x!==l);LCUR=(LISTS[0]||{}).name||'';lStore();lRender()}else{t.dataset.sure=1;t.textContent='Delete list?';setTimeout(()=>{if(t.isConnected){delete t.dataset.sure;t.textContent='Delete'}},2500)}}
+ else if(t.id=='lkeep'){let n=l.name;while(lFind(n))n+=' (copy)';LISTS.push({name:n,items:l.items.map(x=>({...x}))});LCUR=n;LSHARED=null;lStore();lRender()}});
+$('ld').addEventListener('change',e=>{if(e.target.id=='lsel'){LCUR=e.target.value;lRender()}else if(e.target.id=='limpf'){lImport(e.target.files[0]);e.target.value=''}});
+$('ld').addEventListener('input',e=>{const k=e.target.dataset.lnote;if(k==null)return;const l=lFind(LCUR);if(!l||!l.items[+k])return;l.items[+k].note=e.target.value.slice(0,1000);clearTimeout(lRender.t);lRender.t=setTimeout(()=>{try{localStorage.setItem('permits-lists',JSON.stringify(LISTS))}catch(err){}},400)});
+$('lclose').onclick=()=>$('ld').close();
+$('dsave').onclick=e=>{e.stopPropagation();lMenu()};
+$('llink').addEventListener('click',e=>{e.preventDefault();lOpen()});
+setTimeout(lUI,0);      // once the rest of the page's code has run (CURR is declared further down)
+
+
+/* What's new: release notes from whats_new.json (newest first); a red dot on the link until the newest notes have been opened in this browser */
+let WN=null;const WNK='permits-notes-seen';
+async function wnLoad(){if(WN)return WN;try{const r=await fetch('whats_new.json?t='+Math.floor(Date.now()/36e5),{cache:'no-cache'});WN=r.ok?await r.json():[]}catch(e){WN=[]}return WN}
+function wnDot(){const seen=localStorage.getItem(WNK)||'',top=(WN&&WN[0]||{}).date||'';document.querySelectorAll('.wndot').forEach(e=>e.hidden=!(top&&top>seen))}
+async function wnOpen(e){e&&e.preventDefault();const n=await wnLoad(),seen=localStorage.getItem(WNK)||'',d=$('wnd');
+ const fmt=x=>new Date(x+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+ $('wnbody').innerHTML=n.length?n.map(s=>`<section><h3>${esc(s.title||'')}<small>${fmt(s.date)}</small>${seen&&s.date>seen?'<span class=wnnew>New</span>':''}</h3><ul>${(s.items||[]).map(i=>`<li>${i}</li>`).join('')}</ul></section>`).join(''):'<p class=mut>No notes yet.</p>';
+ if(n[0])localStorage.setItem(WNK,n[0].date);wnDot();if(!d.open)d.showModal();$('wnbody').scrollTop=0}
+$('wnlink').addEventListener('click',wnOpen);      // the phone sheet's link (fwn) is wired where that sheet is built
+$('wnclose').onclick=()=>$('wnd').close();
+wnLoad().then(wnDot);
 $('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});
 function fbOpen(e,url){e.currentTarget.href=url;if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1)return;e.preventDefault();      // the form in a panel over the page (a modified click still opens a new tab)
  const d=$('fbd');$('fbnew').href=url;$('fbif').src=url+'&embedded=true';if(!d.open)d.showModal()}
@@ -1606,6 +1731,14 @@ const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & 
 /* the street walk beside the photo: each arrow goes to the nearest stop on this side of the street, a County address (it has a photo) or another permit (often no County parcel today);
    permits come from those already loaded for the map, same street, same odd/even side, within NB_M of this permit's spot. Permits at this same address (other years) are listed under the row. */
 const NB_M=150,PSC={},PLC={},CNC={};
+/* the printed address as its groups ('9215 to 9219, 9231 to 9235 and 9238 Loomis'): the lots of the permit sorted under the range they were printed in, so a building of several lots reads as one; null when there is only one group */
+function pGroups(r,ps){if(ps.length<2)return null;const out=[];let prev=null;
+ for(const piece of String(r.site||'').split(/\s*(?:,|;|&|\band\b)\s*/)){const m=piece.match(/^(\d+)(?:\s*(?:to|-|–)\s*(\d+))?/);if(!m)continue;
+  const fix=t=>{let v=+t;if(prev!==null&&t.length<String(prev).length)v=+(String(prev).slice(0,String(prev).length-t.length)+t);return v};   // '7138 and 40' -> 7140
+  const lo=fix(m[1]);prev=lo;const hi=m[2]?fix(m[2]):lo;prev=hi;out.push({lo,hi,t:m[2]?m[1]+'–'+m[2]:m[1],ps:[]})}
+ if(out.length<2)return null;const rest=[];
+ for(const x of ps){const g=out.find(g=>x[0]>=g.lo&&x[0]<=g.hi);(g?g.ps:rest).push(x)}
+ const G=out.filter(g=>g.ps.length);if(rest.length)G.push({t:'other',ps:rest});return G.length>1?G:null}
 /* a corner house: the nearest County address on a street running the other way (N/S against E/W, from the prefix) is within CN_M, and of all the addresses on the permit's own street this building is the one nearest to it (so the house next to the corner does not count); the button goes there */
 const CN_M=50,stCore=l=>String(l||'').replace(/^[\d\s,\-–&]*(?:(?:and|to)\s+[\d\-–]+\s*)*/,'').trim(),axOf=c=>(c.match(/^([NSEW])\s/)||[])[1]?(/^[NS]/.test(c)?'ns':'ew'):null;
 async function cornerOf(r){if(r.id in CNC)return CNC[r.id];if(!r.lat||!r.mod)return null;
@@ -1641,8 +1774,9 @@ function permitStops(r){if(PSC[r.id])return PSC[r.id];const o=numsOf(r.mod),out=
  if(out.lo.length||out.hi.length||out.same.length)PSC[r.id]=out;return out}      // not cached while empty: more permits may still be loading
 function phView(r,pin,label,stop){
  const ps=r.pins||[],st0=String(r.now||'').replace(/^[\d\s,&\-–]+(and\s+)?/,'').trim(),plab=x=>x[2]||(ps.some(y=>y[2])&&st0?x[0]+' '+st0:String(x[0])),      // a lot with no address of its own: its number on the permit's street (spelled out when another lot is on another street)
-  multiSt=new Set(ps.map(x=>plab(x).replace(/^\d+\s*/,'').toLowerCase())).size>1,
-  lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]&&!multiSt?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:(r.ad>1&&bl[1]!='count'&&bl[1]!='each'?`<span class=cl title="The description does not say how many buildings">${r.ad} addresses:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`)):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(x=>`<button class="btn${x[1]==pin?' on':''}" data-pin="${x[1]}" data-label="">${esc(plab(x))}</button>`).join(' ')}</div>`:'';
+  G0=pGroups(r,ps),multiSt=new Set(ps.map(x=>plab(x).replace(/^\d+\s*/,'').toLowerCase())).size>1,
+  lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]&&!multiSt&&!(G0&&G0.length===bl[0])?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:(r.ad>1&&bl[1]!='count'&&bl[1]!='each'?`<span class=cl title="The description does not say how many buildings">${r.ad} addresses:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`)):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${(()=>{const B=x=>`<button class="btn${x[1]==pin?' on':''}" data-pin="${x[1]}" data-label="">${esc(plab(x))}</button>`,G=G0;
+   return G?G.map(g=>`<span class=pgrp title="Printed as ${esc(g.t)}">${g.ps.length==1&&String(g.ps[0][0])===g.t?'':`<span class=pgl>${esc(g.t)}</span>`}${g.ps.map(B).join('')}</span>`).join(''):ps.map(B).join(' ')})()}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'<span class="arw l">◀</span>'+esc(l):esc(l)+'<span class="arw r">▶</span>';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
  const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\b.*?\s([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),look=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[look];return g==right})();   // as seen from the street, looking at the building (the small map's turn): odd numbers are on the east side of N-S streets and the south side of E-W streets, so you look east or south at them; higher numbers run toward the street's direction letter (g)
  const rng_=numsOf(r.mod),nbF=a=>(a||[]).filter(x=>!ps.some(y=>y[1]==x[1])&&!(rng_&&x[0]>=rng_.lo&&x[0]<=rng_.hi));   // the arrows step off the whole range: the permit's own lots are its buttons above, not its neighbours
@@ -1825,7 +1959,7 @@ const placeSoon=()=>{if(!adT)adT=setTimeout(placeDetail,30)};
 window.addEventListener('scroll',placeSoon,{passive:true});
 function markRow(){document.querySelectorAll('#tb tr.sel').forEach(x=>x.classList.remove('sel'));const id=CURR&&CURR.id;let tr=null;if(id!=null){const k=cur.findIndex(r=>r.id===id);tr=k>=0?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;if(tr){tr.classList.add('sel');keepRowInView(tr)}}updTableBtn()}
 /* the "Table row" button: shown whenever the open permit has a row in the table, unless that row is already on screen (below the frozen bar); it can jump to another page of the table */
-function updTableBtn(){updTableBtn0();const t=$('dtable'),m=$('dmap');if(m)m.hidden=!(CURR&&CURR.lat&&t&&t.hidden)}   // "Show on map" takes the place of "Table row" whenever that one is not shown
+function updTableBtn(){updTableBtn0();if(typeof lUI=='function')lUI();const t=$('dtable'),m=$('dmap');if(m)m.hidden=!(CURR&&CURR.lat&&t&&t.hidden)}   // "Show on map" takes the place of "Table row" whenever that one is not shown
 function updTableBtn0(){const b=$('dtable');if(!b)return;const k=(CURR&&!AGG&&!$('tarea').hidden)?cur.findIndex(r=>r.id===CURR.id):-1;
  if(k<0){b.hidden=true;return}
  const tr=k>=PAGE*PS&&k<PAGE*PS+PS?$('tb').querySelector(`tr.r[data-k="${k}"]`):null;
@@ -1862,7 +1996,7 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  const py=(r.d||'').slice(0,4);
  const yb={older:`County Assessor records give ${r.yb} for the building at this address, earlier than this permit: it may have been alterations or an addition, or a different building.`}[r.ext]||'';
  const bd=(r.st?r.st+'-story ':'')+(r.bld||'');
- const facts=[blTag(r),bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?(r.calt?`<span class=ptdot title="The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.">${money(r.cost)}</span>`:money(r.cost))+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
+ const facts=[blTag(r,1),bd.trim()?'<b>'+esc(bd)+'</b>':'',r.sz?dims(r.sz)+' ft':'',r.cost!=null?(r.calt?`<span class=ptdot title="The cost was hard to read in the scan: a second reading gave ${money(r.calt)}.">${money(r.cost)}</span>`:money(r.cost))+(r.tot?' <span class=mut>(total for all buildings)</span>':''):''].filter(x=>x.trim()).join(' <span class=sep>·</span> ');
  const whoAll=[...(r.own?[['owner',r.own,r.oa]]:[]),...r.roles,...(r.are&&r.ar&&!r.roles.some(x=>/^arch/i.test(x[0]||''))?[['architect',r.ar,null,1]]:[])].filter(x=>x[1]&&!/^(total|contracts)/i.test(x[0]));
  const whoCells=x=>`<span class=wl>${esc(x[0])}</span><span class=wv>${x[0]!='owner'&&OWNERISH.test(x[1])?(x[0]=='architect'||!ownName(r)?esc(ownerOf(x[1],r)):`Owner (<a class=lk onclick='pickPerson("c",this.textContent)'>${esc(ownName(r))}</a>)`):x[0]=='architect'?`<a class=lk onclick='pickPerson("a",this.textContent)'>${esc(x[1])}</a>`:esc(x[1])}${x[2]?`<span class=wa>${esc(x[2])}</span>`:''}${x[3]?`<span class=wa>from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>; not in the scan</span>`:''}</span>`,whoRow=x=>`<div class=wr>${whoCells(x)}</div>`;
  const isMain=x=>x[0]=='owner'||/^arch/i.test(x[0]||''),wMain=whoAll.filter(isMain),wTr=whoAll.filter(x=>!isMain(x));
@@ -1953,10 +2087,10 @@ LEGACY?legacyBoot():boot();
  const qfg=$('qa').closest('.fg'),qw=$('qa').closest('.sgw');$('mpill').insertBefore(qw,$('mfb'));$('qa').placeholder='Search permits: address, street…';$('qa').enterKeyHint='search';
  $('mchips').appendChild($('chipbar'));if(qfg){qfg.hidden=true;if($('qloc'))$('mchips').appendChild($('qloc'))}document.body.appendChild($('geoq'));
  /* filter sheet */
- const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
+ const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><a class="lk" id="flists" href="#">Lists</a><a class="lk" id="fwn" href="#">What&rsquo;s new<span class="wndot" hidden></span></a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
  const fb=document.querySelector('.mapc .shade');if(fb){$('fsep').after(fb)}
  const fopen=on=>{root.classList.toggle('fopen',on);if(!on&&document.activeElement&&document.activeElement.blur)document.activeElement.blur()};
- $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>fbOpen(e,fbURL(null)));
+ $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>fbOpen(e,fbURL(null)));$('flists').addEventListener('click',e=>{e.preventDefault();fopen(false);lOpen()});$('fwn').addEventListener('click',e=>{fopen(false);wnOpen(e)});if(WN)wnDot();setTimeout(lUI,0);
  fl.addEventListener('click',e=>{if(e.target.closest('.qsug [data-i],#sg [data-i]'))setTimeout(()=>{fopen(false);setT('half')},200)});
  const badge=()=>{[...$('chips').children].forEach(c=>{c.hidden=/^In the map view/.test(c.textContent)});const n=[...$('chips').children].filter(c=>!c.hidden).length,b=$('mfn');b.hidden=!n;b.textContent=n};new MutationObserver(badge).observe($('chips'),{childList:true});badge();
  /* trays */
