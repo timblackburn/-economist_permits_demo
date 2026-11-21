@@ -5,6 +5,7 @@
    "On any permit, <b>☆ Add to study</b> adds it to the study you are working on, with no menu. Choose or start a study in the Study panel on the map.",
    "<b>Copy link</b> shares the whole study: its area, permits and notes. A very long one is passed on as a small file instead, opened with <b>Open a study file…</b>. Older list links and files still open.",
    "Your saved study areas and lists were moved into studies automatically.",
+   "The links at the top are now shorter: <b>About</b>, <b>Feedback</b>, <b>Updates</b> (this page) and <b>Studies</b>.",
    "The <b>Show them</b> button (for matches hidden by the Confidence filter) now looks like the site's other buttons."
   ]},
  {"date": "2026-11-20", "title": "Research lists, feedback, and a better look at the neighbours",
