@@ -1,6 +1,8 @@
 [
  {"date": "2026-11-20", "title": "Research lists, feedback, and a better look at the neighbours",
   "items": [
+   "Decade colours on the map and chart are easier to tell apart, including for colour-blind visitors (same order as before: 1880s purple, 1890s blue, 1900s green, 1910s gold, 1920s red, 1930s brown).",
+   "Fixed: with <b>Filter by map</b> on, the map could keep redrawing by itself after zooming (the heading above the map kept wrapping and unwrapping).",
    "<b>Research lists.</b> Click <b>☆ Save</b> on any permit to collect it into a named list (a walking tour, a nomination, one architect's houses) and add a note to each one. <b>Lists</b> in the header opens them: download a CSV, print a page with sources and notes, or copy a link that opens the list (notes included) for someone else. Very long lists are passed on as a small file instead, opened with <b>Import list</b>.",
    "<b>Send feedback</b> in the header, and <b>Report a problem with this permit</b> on each permit, open a short form over the page with the permit already filled in.",
    "Building counts: entries that spell out large numbers (\"forty-two 1-story br res\", \"eighteen …\") now show the right number of buildings; about 210 permits were overcounted. Stores, garages and other kinds of building are counted too (\"three 1-story brick stores\" was shown as 7). When a permit's addresses cover more house numbers than it has buildings, the permit says both, e.g. <i>42 buildings · 60 house numbers</i>.",
