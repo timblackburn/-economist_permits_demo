@@ -157,7 +157,14 @@ tbody tr.r.sel,tbody tr.r.sel:nth-child(even),tbody tr.r.sel:hover{background:va
  #tarea.docked col:nth-child(1){width:10%!important}#tarea.docked col:nth-child(3){width:15%!important}#tarea.docked col:nth-child(4){width:20%!important}#tarea.docked col:nth-child(6){width:13%!important}#tarea.docked col:nth-child(8){width:8%!important}#tarea.docked col:nth-child(9){width:15%!important}#tarea.docked col:nth-child(10){width:19%!important}
  #tdock{position:sticky;top:calc(var(--tbh,52px) + 10px);max-height:calc(100vh - var(--tbh,52px) - 24px);overflow:auto;margin-top:12px;border-radius:6px}#tdock>#detail{position:static;max-height:none;overflow:visible;margin:0}}
 header .sub a{color:#fff;text-decoration:underline dotted;text-underline-offset:3px;margin-left:4px;white-space:nowrap}header .sub a:hover{text-decoration:underline}
-#about{border:1px solid var(--line);border-radius:8px;max-width:780px;width:calc(100% - 32px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}#about::backdrop{background:rgba(0,0,0,.45)}
+#about{border:1px solid var(--line);border-radius:8px;max-width:780px;width:calc(100% - 32px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35)}#about::backdrop,#fbd::backdrop{background:rgba(0,0,0,.45)}
+#fbd{border:1px solid var(--line);border-radius:8px;max-width:680px;width:calc(100% - 32px);height:min(88vh,900px);padding:0;background:var(--surface);color:var(--fg);box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden}
+#fbd[open]{display:flex;flex-direction:column}
+#fbd .ah{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px}
+#fbd .fbh{display:flex;align-items:center;gap:12px}
+#fbd .fbh a{color:#fff;font-size:13px}
+#fbd iframe{flex:1;width:100%;border:0;background:#fff}
+@media (max-width:640px){#fbd{width:100%;max-width:none;height:100%;max-height:none;margin:0;border-radius:0}}
 #about .ah{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--wh);color:#fff;font-size:15px;position:sticky;top:0}#about .ab{padding:14px 18px 18px;font-size:14px;line-height:1.5;max-height:calc(100vh - 140px);overflow:auto}
 #about h3{margin:16px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}#about h3:first-child{margin-top:0}#about table{width:100%;min-width:0;table-layout:auto;font-size:13px;margin:6px 0}#about th{position:static;background:var(--th);color:#fff;font-size:12px;cursor:default;top:auto;padding:5px 8px}#about td{padding:5px 8px;border-bottom:1px solid var(--line)}#about td.n,#about th.n{text-align:right}#about ul{margin:4px 0;padding-left:20px}#about li{margin:2px 0}
 footer .credit{white-space:nowrap}
@@ -351,6 +358,7 @@ html.mob #fsbtn{display:none}
 <h1>Chicago building permits, 1883&ndash;1930</h1>
 <p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a></p>
 </header>
+<dialog id="fbd" aria-labelledby="fbt"><div class="ah"><b id="fbt">Send feedback</b><span class="fbh"><a id="fbnew" href="#" target="_blank" rel="noopener">Open in a new tab ↗</a><button class="btn" id="fbclose" aria-label="Close">Close &#10005;</button></span></div><iframe id="fbif" title="Feedback form" loading="lazy"></iframe></dialog>
 <dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
 <div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
 <div id="busy" hidden role="progressbar" aria-label="Loading"></div>
@@ -868,12 +876,12 @@ new MutationObserver(lbSync).observe($('mt'),{childList:true,subtree:true,attrib
 addEventListener('keydown',e=>{if($('lbox').hidden||(e.key!='ArrowLeft'&&e.key!='ArrowRight'))return;e.preventDefault();e.stopPropagation();const b=lbNeighbour(e.key=='ArrowLeft'?-1:1);if(b)b.click()},true);
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
 let HOUSE=null;const HOUSE_MINZ=17;   // clicking a property (County lookup) only works at close zoom
-/* feedback: a Google form (answers go to a private sheet and are checked by hand); the link fills in the permit, the page and the device, nothing personal */
+/* feedback: a Google form (answers go to a private sheet and are checked by hand); the link fills in the permit, the page and the device, nothing personal. The feedback-type value must match the form's choice word for word */
 const FBF='https://docs.google.com/forms/d/e/1FAIpQLSckmE8bWNWRswNAxVRM-aJjLofk4M4dqTCOKi41N_3i2RhO6w/viewform';
 function fbDevice(){const u=navigator.userAgent,b=/Edg\//.test(u)?'Edge':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'other browser',o=/iPhone|iPad/.test(u)?'iOS':/Android/.test(u)?'Android':/Mac/.test(u)?'Mac':/Windows/.test(u)?'Windows':/Linux/.test(u)?'Linux':'';
  return [b,o,innerWidth+'×'+innerHeight,document.documentElement.classList.contains('mob')?'phone layout':''].filter(Boolean).join(' · ')}
 function fbURL(r){const q=new URLSearchParams({usp:'pp_url'}),base=location.origin+location.pathname;
- if(r){q.set('entry.352201979','A permit has a mistake (wrong name, address, date, place on the map…)');q.set('entry.69618690',r.id+' · '+(r.mod||r.site||'')+' · '+r.d);q.set('entry.207533177',base+'#open='+r.id)}
+ if(r){q.set('entry.352201979','Data issue - permit has a mistake (wrong name, address, date, place on the map…)');q.set('entry.69618690',r.id+' · '+(r.mod||r.site||'')+' · '+r.d);q.set('entry.207533177',base+'#open='+r.id)}
  else q.set('entry.207533177',location.href);
  q.set('entry.576733769',fbDevice());return FBF+'?'+q}
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
@@ -1371,7 +1379,11 @@ function aboutHTML(a){const f=n=>n.toLocaleString(),yr=d=>d.slice(0,4),fd=d=>d;
 function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('abody').innerHTML=aboutHTML(ABOUTD);return}
  fetch(DATA+'about.json').then(r=>r.json()).then(j=>{ABOUTD=j;$('abody').innerHTML=aboutHTML(j)}).catch(()=>{$('abody').innerHTML='<p>The summary could not be loaded. Try again in a moment.</p>'})}
 $('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});
-$('fblink').addEventListener('click',e=>{e.currentTarget.href=fbURL(CURR&&!$('detail').hidden?CURR:null)});      // filled in at the moment of the click: the permit open now, or the page as it stands$('aclose').onclick=()=>$('about').close();
+function fbOpen(e,url){e.currentTarget.href=url;if(e.ctrlKey||e.metaKey||e.shiftKey||e.button===1)return;e.preventDefault();      // the form in a panel over the page (a modified click still opens a new tab)
+ const d=$('fbd');$('fbnew').href=url;$('fbif').src=url+'&embedded=true';if(!d.open)d.showModal()}
+$('fbclose').onclick=()=>{$('fbd').close();$('fbif').src='about:blank'};
+$('fblink').addEventListener('click',e=>fbOpen(e,fbURL(CURR&&!$('detail').hidden?CURR:null)));
+$('detail').addEventListener('click',e=>{const a=e.target.closest('#fbperm');if(a&&CURR)fbOpen({currentTarget:a,preventDefault:()=>e.preventDefault(),ctrlKey:e.ctrlKey,metaKey:e.metaKey,shiftKey:e.shiftKey,button:e.button},fbURL(CURR))});      // filled in at the moment of the click: the permit open now, or the page as it stands$('aclose').onclick=()=>$('about').close();
 $('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
  if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(POLY)c.push(['Study area ('+POLY.length+' corners)',()=>polySet(null)]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
@@ -1944,7 +1956,7 @@ LEGACY?legacyBoot():boot();
  const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
  const fb=document.querySelector('.mapc .shade');if(fb){$('fsep').after(fb)}
  const fopen=on=>{root.classList.toggle('fopen',on);if(!on&&document.activeElement&&document.activeElement.blur)document.activeElement.blur()};
- $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>{e.currentTarget.href=fbURL(null)});
+ $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>fbOpen(e,fbURL(null)));
  fl.addEventListener('click',e=>{if(e.target.closest('.qsug [data-i],#sg [data-i]'))setTimeout(()=>{fopen(false);setT('half')},200)});
  const badge=()=>{[...$('chips').children].forEach(c=>{c.hidden=/^In the map view/.test(c.textContent)});const n=[...$('chips').children].filter(c=>!c.hidden).length,b=$('mfn');b.hidden=!n;b.textContent=n};new MutationObserver(badge).observe($('chips'),{childList:true});badge();
  /* trays */
