@@ -405,7 +405,7 @@ const BLB={listed:'each number is printed on its own',each:'the description says
 const blTag=r=>{const b=r.bl;   // "N buildings" only where the description itself gives the count (it counts them, or says "each"); otherwise how many addresses the printed list or range holds
  if(b&&b[0]>1&&(b[1]=='count'||b[1]=='each'))return `<span class=nbld title="${esc('This entry is for '+b[0]+' buildings: '+(BLB[b[1]]||'')+'.')}">${b[0]} buildings</span>`;
  return r.ad>1?`<span class=nbld title="${esc('The printed address holds '+r.ad+' house numbers (a list or a range). The description does not say how many buildings.')}">${r.ad} addresses</span>`:''};
-const num=r=>{let t=0;for(const m of (r.sz||'').matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
+const num=r=>{let t=0;for(const m of (r.sz||'').replace(/½/g,'.5').replace(/(\d+)\s+(\d)\/(\d)(?!\d)/g,(_,a,b,c)=>String(+a+b/c)).matchAll(/(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)/g))t+=m[1]*m[2];return t};   // footprint in sq ft: width x depth (several buildings in one entry are added up)
 const median=a=>{a=a.slice().sort((x,y)=>x-y);return a.length?a[a.length>>1]:0};
 const fmtDate=s=>new Date(s+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 const nk=a=>{a=a||'';if(/[a-z]/.test(a))a=a.replace(/(^|[\s.])([A-Z]{2,3})(?=[\s.,]|$)/g,(m,p,t)=>p+t.split('').join(' '));return a.replace(/[.,]/g,' ').replace(/\s+/g,' ').trim().toLowerCase()};   // one key for "A.G. Lund", "A. G. Lund", "A G Lund" and "AG Lund" (initials run together are split; all-capital names are left alone)
@@ -568,12 +568,12 @@ const BASEMAP_URL=(new URLSearchParams(location.search)).get('basemap')||'https:
  RASTER_URL=(new URLSearchParams(location.search)).get('basemapr')||'https://__BLOB_HOST__/aerial/chicago_basemap_raster.pmtiles',RASTER_MINZ=10,RASTER_MAXZ=16;
 /* Zoomed out (10-16) the plain map is shown as PICTURE tiles (a second PMTiles file, drawn from the same style by scripts/basemap_raster.py; WebP, sharp on high-density screens): painting vector tiles there takes
    0.3-0.4 s a screen, an image about a tenth of that. Closer in (17+) and further out (0-9) the vector tiles are used. Only one of the two layers is on the map at a time; if the picture file is missing, vector is used at every zoom. */
-let BASE='osm',PLAIN_OK=null,RASTER_OK=null,plainLayer=null,rasterLayer=null,SWAP=0;
+let PLAIN_ST=null,BASE='osm',PLAIN_OK=null,RASTER_OK=null,plainLayer=null,rasterLayer=null,SWAP=0;
 const loadJS=src=>new Promise((ok,no)=>{const e=document.createElement('script');e.src=src;e.onload=ok;e.onerror=()=>no(new Error('load '+src));document.head.appendChild(e)});
 const probePM=async url=>{try{const r=await fetch(url,{headers:{Range:'bytes=0-6'}});return r.ok&&new TextDecoder().decode(await r.arrayBuffer()).slice(0,7)==='PMTiles'}catch(e){return false}};
 async function plainProbe(){if(PLAIN_OK===null){PLAIN_OK=await probePM(BASEMAP_URL);RASTER_OK=PLAIN_OK?await probePM(RASTER_URL):false}return PLAIN_OK}
 async function plainBuild(){if(plainLayer)return plainLayer;
- await loadJS('vendor/protomaps-leaflet/protomaps-leaflet.js');await loadJS('vendor/protomaps-leaflet/plain_style.js');const st=await plainStyle('vendor/protomaps-leaflet/flavor_plain.json');
+ await loadJS('vendor/protomaps-leaflet/protomaps-leaflet.js');await loadJS('vendor/protomaps-leaflet/plain_style.js');const st=PLAIN_ST=await plainStyle('vendor/protomaps-leaflet/flavor_plain.json');
  plainLayer=protomapsL.leafletLayer({url:BASEMAP_URL,maxDataZoom:15,maxZoom:21,...st});
  if(RASTER_OK){const pm=new pmtiles.PMTiles(RASTER_URL),RL=L.GridLayer.extend({createTile(c,done){const cv=document.createElement('canvas');cv.width=cv.height=1024;   /* the pictures' outer 3 px are a lighter band (a white hairline at every tile edge): repaint them from the row/column just inside */
    pm.getZxy(c.z-1,c.x,c.y).then(r=>{if(!r)return done(null,cv);const u=URL.createObjectURL(new Blob([r.data],{type:'image/webp'})),img=new Image();img.onload=()=>{URL.revokeObjectURL(u);const W=cv.width=img.naturalWidth,H=cv.height=img.naturalHeight,x=cv.getContext('2d'),k=3;x.drawImage(img,0,0);x.drawImage(cv,0,k,W,1,0,0,W,k);x.drawImage(cv,0,H-k-1,W,1,0,H-k,W,k);x.drawImage(cv,k,0,1,H,0,0,k,H);x.drawImage(cv,W-k-1,0,1,H,W-k,0,k,H);done(null,cv)};img.onerror=()=>{URL.revokeObjectURL(u);done(null,cv)};img.src=u}).catch(()=>done(null,cv));return cv}});
@@ -583,6 +583,10 @@ const tilesReady=(l,ms)=>new Promise(res=>{const t0=performance.now(),poll=()=>{
 async function plainSync(){if(typeof BASEON!=='undefined'&&!BASEON)return;if(BASE!=='plain'||!plainLayer)return;const z=map.getZoom(),pic=!!rasterLayer&&z>=RASTER_MINZ&&z<=RASTER_MAXZ,want=pic?rasterLayer:plainLayer,oth=pic?plainLayer:rasterLayer,tok=++SWAP;
  if(!map.hasLayer(want))want.addTo(map);if(oth&&map.hasLayer(oth)){await tilesReady(want,2500);if(tok===SWAP&&map.hasLayer(oth))map.removeLayer(oth)}}   // the new layer is on and drawn before the old one goes: no grey flash
 map.on('zoomend',plainSync);
+/* the small maps (photo panel, detail) use the same vector map, each with its own layer (a Leaflet layer belongs to one map); OpenStreetMap's tiles only if the file cannot be read */
+function miniBase(m,attr){const osm=()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles',attribution:attr?'© OpenStreetMap':''});
+ (async()=>{let lay=null;try{if(await plainProbe()){await plainBuild();lay=protomapsL.leafletLayer({url:BASEMAP_URL,maxDataZoom:15,maxZoom:21,...PLAIN_ST,attribution:attr?'<a href="https://protomaps.com" target=_blank rel=noopener>Protomaps</a> © <a href="https://openstreetmap.org/copyright" target=_blank rel=noopener>OpenStreetMap</a>':''})}}catch(e){lay=null}
+  if(m!==MM&&m!==PMM)return;(lay||osm()).addTo(m)})()}      // the small map may have been replaced while the file was checked
 async function baseSet(want){
  if(want==='plain'){try{if(!(await plainProbe()))throw 0;await plainBuild()}catch(e){PLAIN_OK=false;want='osm'}}
  BASE=want;if(want==='plain'){if(map.hasLayer(osmBase))map.removeLayer(osmBase);plainSync()}else{[plainLayer,rasterLayer].forEach(l=>{if(l&&map.hasLayer(l))map.removeLayer(l)});if(!map.hasLayer(osmBase))osmBase.addTo(map)}}
@@ -1538,7 +1542,7 @@ const ovUrl=r=>`https://maps.cookcountyil.gov/nearmapOpenlayers/?map=19.00/${r.l
 let MM=null;
 function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
  MM=L.map('mm',{attributionControl:true}).setView([r.lat,r.lon],18);
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19,className:'tiles'}).addTo(MM);
+ miniBase(MM,true);
  if(r.geo=='exact')L.circleMarker([r.lat,r.lon],{radius:8,weight:2,color:css('--ring'),fillColor:css('--s2'),fillOpacity:.95}).addTo(MM);
  else L.circle([r.lat,r.lon],{radius:60,color:css('--s2'),weight:2,dashArray:'5 5',fillOpacity:.1}).addTo(MM);
  setTimeout(()=>MM&&MM.invalidateSize(),50)}
@@ -1546,7 +1550,7 @@ const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & 
 function phView(r,pin,label){
  const ps=r.pins||[],lots=(ps.length>1||(r.bl&&r.bl[0]>1&&ps.length))?`<div class=pins>${(()=>{const bl=r.bl,B={listed:'each number is printed on its own',each:'the description says "each"',count:'the description counts the buildings',range:'a plain range of numbers'};return bl&&bl[0]>1?(bl[2]?`<span class=cl title="The entry prints ${bl[0]} buildings, but its addresses cover ${bl[2]} house numbers (both sides of the street, or a loose range). Which numbers the buildings stood on is not known, so every address that has a lot today is shown.">${bl[0]} buildings as printed · ${bl[2]} numbers in the range:</span>`:(r.ad>1&&bl[1]!='count'&&bl[1]!='each'?`<span class=cl title="The description does not say how many buildings">${r.ad} addresses:</span>`:`<span class=cl title="${B[bl[1]]||''}">${bl[0]} buildings:</span>`)):ps.some(x=>x[2])?'Lots at these addresses:':'Lots in this range:'})()} ${ps.map(([n,p,l])=>`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="">${esc(l||n)}</button>`).join(' ')}</div>`:'';
  const one=(a,left)=>{if(!a)return'';const [n,p,l]=a,t=left?'◀ '+esc(l):esc(l)+' ▶';return p?`<button class="btn${p==pin?' on':''}" data-pin="${p}" data-label="${esc(l)}" title="Nearest address on this side of the street. Shows its photo — not part of the permit.">${t}</button>`:`<button class=btn disabled title="No parcel record for ${esc(l)}">${t}</button>`};
- const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\b.*?\s([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),face=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[face];return g==right})();
+ const hiRight=(()=>{const m=(r.mod||'').match(/^(\d+)\b.*?\s([NSEW])\s/);if(!m)return true;const odd=(+m[1])%2==1,g=m[2],ns=/[NS]/.test(g),look=ns?(odd?'E':'W'):(odd?'S':'N'),right={E:'S',W:'N',S:'W',N:'E'}[look];return g==right})();   // as seen from the street, looking at the building (the small map's turn): odd numbers are on the east side of N-S streets and the south side of E-W streets, so you look east or south at them; higher numbers run toward the street's direction letter (g)
  const nbL=hiRight?(r.nb||{}).lo:(r.nb||{}).hi,nbR=hiRight?(r.nb||{}).hi:(r.nb||{}).lo;
  const own=r.pin?(pin==r.pin||(r.pins||[]).some(x=>x[1]==pin)):!pin;   // a permit with no County parcel still gets the button: it shows the permit's own spot (no photo) again
  const nb=`<div class=pins>${one((nbL||[])[0],true)} <button class="btn${own?' on':''}" data-pin="${r.pin||''}" data-label="" title="${r.pin?"Back to the permit's own building":"The permit's own building: the County has no parcel record at this address, so there is no photo"}">This building</button> ${one((nbR||[])[0],false)}</div>`;
@@ -1612,7 +1616,7 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
  box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
  const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
  PMM=L.map(inner,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false,zoomSnap:.5,maxZoom:19});
- L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,className:'tiles'}).addTo(PMM);
+ miniBase(PMM,false);
  const c=L.latLng(so.lat,so.lon);PMM.setView(c,PMZ,{animate:false});   // always the same view, centred on the permit's building, whichever building is selected
  ptsF.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  D.forEach(x=>{if(x.lat&&Math.abs(x.lat-rr.lat)<.0006&&Math.abs(x.lon-rr.lon)<.0008)L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
@@ -1637,7 +1641,7 @@ async function phMini(r,pin,label){if(PMM){PMM.remove();PMM=null}const box=$('pm
   let best=null,bd=1e9;ptsF.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});if(best&&bd<=22)phView(r,best.pin,best.label)};
  const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,PMZ,{animate:false});overlay()};
  fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
-$('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin,b.dataset.label)});
+$('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin||null,b.dataset.label)});   // '' (a permit with no County parcel) must be null, as when the panel opened, or the map loses its ring
 const order=()=>cur;
 let MOVEBYCODE=0;
 /* zooming in past the community-area view (zoom > CA_ZOOM) with community areas selected: the areas are dropped, Filter by map is switched on, and a note says so.
