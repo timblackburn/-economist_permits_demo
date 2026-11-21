@@ -2,7 +2,7 @@
  {"date": "2026-11-21", "title": "Study areas and research lists become Studies",
   "items": [
    "<b>Studies</b> bring study areas and research lists together. A study has a name, an area drawn on the map (optional), and permits you pick (optional), each with a note. Open them from <b>Studies</b> in the header or the study button on the map.",
-   "On any permit, <b>☆ Add to study</b> adds it to the study you are working on, with no menu. Choose or start a study in the Study panel on the map.",
+   "On any permit, <b>☆ Add to study</b> adds it to the study you are working on, with no menu, and so does the ☆ in each row of the permit table. Choose or start a study in the Study panel on the map.",
    "<b>Copy link</b> shares the whole study: its area, permits and notes. A very long one is passed on as a small file instead, opened with <b>Open a study file…</b>. Older list links and files still open.",
    "Your saved study areas and lists were moved into studies automatically.",
    "The links at the top are now shorter: <b>About</b>, <b>Feedback</b>, <b>Updates</b> (this page) and <b>Studies</b>.",
