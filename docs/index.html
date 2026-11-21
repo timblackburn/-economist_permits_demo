@@ -56,6 +56,7 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph .pins.nbrow .btn .arw.l,#ph .pins.cnrow .btn .arw.l{left:7px}
 #ph .pins.nbrow .btn .arw.r{right:7px}   /* the arrow keeps its place at the edge, centred top to bottom, whatever the text does */   /* the street walk: one line of equal buttons; long addresses wrap inside their button */
 #ph .samead{font-size:13px;color:var(--mut);margin:-2px 0 8px}
+.fbp{font-size:13px;margin:14px 0 4px}
 #ph .samead a{margin-right:6px}
 #ph .phbox .pcard{align-self:stretch;width:100%;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-start;gap:6px;padding:12px 16px;font-size:13.5px;line-height:1.4;color:var(--fg)}
 #ph .pcard .pk0{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
@@ -265,7 +266,8 @@ html.mob.fopen .layout .filters{transform:none;visibility:visible;transition:tra
 #fsh{display:none}
 html.mob #fsh{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;background:var(--hd,#2b3a4a);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
 #fsh b{flex:1;font-size:17px}#fsh button{border:0;border-radius:18px;background:#fff;color:#222;font:600 14px system-ui,sans-serif;padding:8px 16px;cursor:pointer}
-#fsh button.lk{background:transparent;color:#fff;text-decoration:underline;padding:8px 4px;font-weight:400}
+#fsh button.lk,#fsh a.lk{background:transparent;color:#fff;text-decoration:underline;padding:8px 4px;font-weight:400}
+#fsh a.lk{font:400 14px system-ui,sans-serif}
 html.mob .filters .fbox{margin:10px 12px!important}
 html.mob .filters .sgrow:empty{display:none}
 html.mob .filters .shade{display:flex!important;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;margin:0 0 6px!important;font-size:14px;white-space:normal}html.mob .filters .shade input{width:auto;margin:0;flex:0 0 auto}
@@ -347,7 +349,7 @@ html.mob #fsbtn{display:none}
 <div id="gate" role="dialog" aria-modal="true" aria-labelledby="gt"><form id="gform" autocomplete="off"><div class="gbody"><p class="gkick">Beta preview</p><h1 id="gt">Chicago building permits, 1883&ndash;1930</h1><p class="gsub">Enter the password to continue.</p><input id="gpw" type="password" placeholder="Password" aria-label="Password" autocomplete="off" autocapitalize="off" spellcheck="false"><button type="submit">Enter</button><div class="gerr" id="gerr" role="alert" aria-live="polite"></div></div></form></div>
 <header>
 <h1>Chicago building permits, 1883&ndash;1930</h1>
-<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a></p>
+<p class="sub">Building permits published in weekly Chicago trade papers. <a href="#about" id="aboutlink">What&rsquo;s included &amp; how to read it</a> &middot; <a href="#" id="fblink" target="_blank" rel="noopener" title="Report a mistake, something that does not work, or an idea (opens a short Google form)">Send feedback</a></p>
 </header>
 <dialog id="about" aria-labelledby="abt"><div class="ah"><b id="abt">About this site</b><button class="btn" id="aclose" aria-label="Close">Close &#10005;</button></div>
 <div class="ab" id="abody"><p class="mut">Loading&hellip;</p></div></dialog>
@@ -866,6 +868,14 @@ new MutationObserver(lbSync).observe($('mt'),{childList:true,subtree:true,attrib
 addEventListener('keydown',e=>{if($('lbox').hidden||(e.key!='ArrowLeft'&&e.key!='ArrowRight'))return;e.preventDefault();e.stopPropagation();const b=lbNeighbour(e.key=='ArrowLeft'?-1:1);if(b)b.click()},true);
 function lbClose(){$('lbox').hidden=true;$('lbimg').removeAttribute('src');document.body.classList.remove('lbopen')}
 let HOUSE=null;const HOUSE_MINZ=17;   // clicking a property (County lookup) only works at close zoom
+/* feedback: a Google form (answers go to a private sheet and are checked by hand); the link fills in the permit, the page and the device, nothing personal */
+const FBF='https://docs.google.com/forms/d/e/1FAIpQLSckmE8bWNWRswNAxVRM-aJjLofk4M4dqTCOKi41N_3i2RhO6w/viewform';
+function fbDevice(){const u=navigator.userAgent,b=/Edg\//.test(u)?'Edge':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'other browser',o=/iPhone|iPad/.test(u)?'iOS':/Android/.test(u)?'Android':/Mac/.test(u)?'Mac':/Windows/.test(u)?'Windows':/Linux/.test(u)?'Linux':'';
+ return [b,o,innerWidth+'×'+innerHeight,document.documentElement.classList.contains('mob')?'phone layout':''].filter(Boolean).join(' · ')}
+function fbURL(r){const q=new URLSearchParams({usp:'pp_url'}),base=location.origin+location.pathname;
+ if(r){q.set('entry.352201979','A permit has a mistake (wrong name, address, date, place on the map…)');q.set('entry.69618690',r.id+' · '+(r.mod||r.site||'')+' · '+r.d);q.set('entry.207533177',base+'#open='+r.id)}
+ else q.set('entry.207533177',location.href);
+ q.set('entry.576733769',fbDevice());return FBF+'?'+q}
 const tc=t=>(t||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase()),pinD=p=>`${p.slice(0,2)}-${p.slice(2,4)}-${p.slice(4,7)}-${p.slice(7,10)}-${p.slice(10)}`;
 /* a property picked on the map: scroll so the search, map and permit panes fill the top of the window (on narrow screens, the map) */
 function paneTop(){const el=document.querySelector(innerWidth>=1181?'.layout':'.mapc');if(!el)return;const y=el.getBoundingClientRect().top+scrollY-8;if(Math.abs(scrollY-y)>6)window.scrollTo({top:Math.max(0,y),behavior:'smooth'})}
@@ -1360,7 +1370,8 @@ function aboutHTML(a){const f=n=>n.toLocaleString(),yr=d=>d.slice(0,4),fd=d=>d;
  <h3>Credit</h3><p>Compiled by Tim Blackburn.</p>`}
 function openAbout(){const d=$('about');if(!d.open)d.showModal();if(ABOUTD){$('abody').innerHTML=aboutHTML(ABOUTD);return}
  fetch(DATA+'about.json').then(r=>r.json()).then(j=>{ABOUTD=j;$('abody').innerHTML=aboutHTML(j)}).catch(()=>{$('abody').innerHTML='<p>The summary could not be loaded. Try again in a moment.</p>'})}
-$('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});$('aclose').onclick=()=>$('about').close();
+$('aboutlink').addEventListener('click',e=>{e.preventDefault();openAbout()});
+$('fblink').addEventListener('click',e=>{e.currentTarget.href=fbURL(CURR&&!$('detail').hidden?CURR:null)});      // filled in at the moment of the click: the permit open now, or the page as it stands$('aclose').onclick=()=>$('about').close();
 $('about').addEventListener('click',e=>{if(e.target===$('about'))$('about').close()});
 function chips(){toHash();qlocUpdate();const c=[];
  if(SQ)c.push(['Street: '+SQ,()=>{SQ=''}]);if($('qa').value)c.push(['Address: “'+$('qa').value+'”',()=>$('qa').value='']);if($('q').value)c.push(['Owner/building: “'+$('q').value+'”',()=>$('q').value='']);if($('inview').checked)c.push(['In the map view',()=>$('inview').checked=false]);if(POLY)c.push(['Study area ('+POLY.length+' corners)',()=>polySet(null)]);if(R.a)c.push([rangeLabel(),()=>setR(null,null)]);if(costOn())c.push(['Cost '+(CLO>0?fmtC(CLO):'any')+' – '+(CHI<Infinity?fmtC(CHI):'no limit'),()=>{CLO=0;CHI=Infinity}]);if(cfOn())c.push(['Confidence: '+(cfAll()?'Any':[...CF].sort((a,b)=>b-a).map(v=>CFN[v]).join(' + ')),()=>{CF.clear();CF.add(3);syncCF()}]);
@@ -1862,7 +1873,8 @@ async function show(r,withPhoto){CURR=r;await loadDetail(r);if(CURR!==r)return;c
  ${(r.pp||'').startsWith('The American Contractor index')?`<h3>${esc(ppName(String(r.pp).replace(' (Chicago History Museum)','')))} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><p class=chmnote>This record comes from the Chicago History Museum&rsquo;s index of <i>The American Contractor</i>, which has no image of the page. To request one, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a> and request the image for ${esc(r.ix?r.ix[0]:'this address')} on Page ${esc(r.pg||'?')} of the issue from ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}.${r.ix?` The index for this permit has the following: address: ${esc(r.ix[0]||'(none)')}; owner: ${esc(r.ix[1]||'(none)')}; architect: ${esc(r.ix[2]||'(none)')}; date of issue: ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(r.pg||'?')}.`:''}</p>`:`<h3>${esc(ppName(r.pp)||'The printed list')} &middot; Page ${esc(r.pg||'?')} &middot; ${new Date(r.d+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><div id=crops></div><p class=ov><button class=btn id=scanbtn>View the full page scan ↗</button></p>
  <p class=rawtxt>${esc(r.text)}</p>`}
  ${r.rep&&r.rep.length?(()=>{const it=r.rep.map(x=>new Date(x[0]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})+(x[1]?' (page '+esc(x[1])+')':'')),list=it.length==1?it[0]:it.length==2?it[0]+' and '+it[1]:it.slice(0,-1).join('; ')+'; and '+it[it.length-1];return `<p class=chmnote>The same entry was printed again in the ${it.length>1?'issues':'issue'} of ${list}.</p>`})():''}
- ${r.chm?r.chm.map(c=>`<h3>The American Contractor index &middot; Page ${esc(c[3]||'?')} &middot; ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><p class=chmnote>The Museum&rsquo;s index also lists a permit at this address. The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.${c[4]?` The index has the following: address: ${esc(c[4][0]||'(none)')}; owner: ${esc(c[4][1]||'(none)')}; architect: ${esc(c[4][2]||'(none)')}; date of issue: ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(c[3]||'?')}.`:c[0]||c[1]?` The index lists owner ${esc(c[0]||'(none)')} and architect ${esc(c[1]||'(none)')}.`:''}</p>`).join(''):''}`;
+ ${r.chm?r.chm.map(c=>`<h3>The American Contractor index &middot; Page ${esc(c[3]||'?')} &middot; ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'})}</h3><p class=chmnote>The Museum&rsquo;s index also lists a permit at this address. The index has no scanned image of it; to request an image, write <a href="mailto:research@chicagohistory.org">research@chicagohistory.org</a>.${c[4]?` The index has the following: address: ${esc(c[4][0]||'(none)')}; owner: ${esc(c[4][1]||'(none)')}; architect: ${esc(c[4][2]||'(none)')}; date of issue: ${new Date(c[2]+'T12:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}; page: ${esc(c[3]||'?')}.`:c[0]||c[1]?` The index lists owner ${esc(c[0]||'(none)')} and architect ${esc(c[1]||'(none)')}.`:''}</p>`).join(''):''}
+ <p class=fbp><a class=lk id=fbperm target=_blank rel=noopener href="${esc(fbURL(r))}" title="Opens a short Google form with this permit filled in. Every report is checked by a person before anything changes.">Report a problem with this permit</a></p>`;
  if($('scanbtn')){$('scanbtn').onclick=()=>openScan(r);entryCrops(r);$('crops').onclick=()=>openScan(r)}
  updTableBtn();clearTimeout(phT);phView(r,r.pin?'__loading':null);phT=setTimeout(()=>{if(CURR!==r)return;if(r.pin)phView(r,r.pin,'')},300);
  reserve(true);if(!DOCK)$('overview').hidden=true;$('detail').hidden=false;$('detail').scrollTop=0;{const ix0=cur.indexOf(r);if(ix0>=0&&Math.floor(ix0/PS)!==PAGE){PAGE=Math.floor(ix0/PS);table()}}markRow();
@@ -1929,10 +1941,10 @@ LEGACY?legacyBoot():boot();
  const qfg=$('qa').closest('.fg'),qw=$('qa').closest('.sgw');$('mpill').insertBefore(qw,$('mfb'));$('qa').placeholder='Search permits: address, street…';$('qa').enterKeyHint='search';
  $('mchips').appendChild($('chipbar'));if(qfg){qfg.hidden=true;if($('qloc'))$('mchips').appendChild($('qloc'))}document.body.appendChild($('geoq'));
  /* filter sheet */
- const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
+ const fl=$('filters'),sh=document.createElement('div');sh.id='fsh';sh.innerHTML='<b>Search &amp; filters</b><button type="button" class="lk" id="fabout">About</button><a class="lk" id="ffb" href="#" target="_blank" rel="noopener">Feedback</a><button type="button" id="fdone">Show results</button>';fl.insertBefore(sh,fl.firstChild);
  const fb=document.querySelector('.mapc .shade');if(fb){$('fsep').after(fb)}
  const fopen=on=>{root.classList.toggle('fopen',on);if(!on&&document.activeElement&&document.activeElement.blur)document.activeElement.blur()};
- $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});
+ $('mfb').addEventListener('click',()=>fopen(true));$('fdone').addEventListener('click',()=>{fopen(false);if(cur&&cur.length)setT('half')});$('fabout').addEventListener('click',()=>{fopen(false);$('aboutlink').click()});$('ffb').addEventListener('click',e=>{e.currentTarget.href=fbURL(null)});
  fl.addEventListener('click',e=>{if(e.target.closest('.qsug [data-i],#sg [data-i]'))setTimeout(()=>{fopen(false);setT('half')},200)});
  const badge=()=>{[...$('chips').children].forEach(c=>{c.hidden=/^In the map view/.test(c.textContent)});const n=[...$('chips').children].filter(c=>!c.hidden).length,b=$('mfn');b.hidden=!n;b.textContent=n};new MutationObserver(badge).observe($('chips'),{childList:true});badge();
  /* trays */
