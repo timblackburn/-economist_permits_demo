@@ -54,7 +54,15 @@ a.lk{color:var(--s1);cursor:pointer;text-decoration:underline dotted}a.lk:hover{
 #ph .pins.nbrow .btn .arw.r{right:7px}   /* the arrow keeps its place at the edge, centred top to bottom, whatever the text does */   /* the street walk: one line of equal buttons; long addresses wrap inside their button */
 #ph .samead{font-size:13px;color:var(--mut);margin:-2px 0 8px}
 #ph .samead a{margin-right:6px}
-#ph .phbox .pnote{display:block;padding:10px;font-size:13.5px;line-height:1.45}
+#ph .phbox:has(.pcard){height:auto;min-height:270px}
+#ph .phbox .pcard{align-self:stretch;width:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:16px 18px;font-size:13.5px;line-height:1.4;color:var(--fg)}
+#ph .pcard .pk0{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+#ph .pcard .pa{font-size:17px;font-weight:700;line-height:1.25}
+#ph .pcard .pk{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:2px 0}
+#ph .pcard .pk dt{color:var(--mut)}
+#ph .pcard .pk dd{margin:0}
+#ph .pcard .pn{font-size:12.5px;color:var(--mut);border-top:1px solid var(--line);padding-top:8px}
+#ph .pcard a.lk{font-weight:600;align-self:flex-start}
 #ph .pins.corner .same{flex:1 1 100%}#ph .phrow{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}#ph .phl{flex:1 1 240px;min-width:0}#ph .phmap{flex:1 1 150px;max-width:210px;min-width:150px;align-self:flex-start}#pmm{position:relative;width:100%;height:200px;border-radius:4px;background:var(--none);cursor:pointer;overflow:hidden}#ph .pins{font-size:13px;color:var(--mut);margin-bottom:6px}#ph .pins .btn{padding:2px 8px;font-size:13px}#ph .nbs .btn{padding:2px 8px;font-size:13px;margin:0 1px}#ph .pins{line-height:2}#ph img{max-width:100%;max-height:250px;width:auto;border-radius:4px;display:block}#ph small{color:var(--mut);font-size:12px;display:block;margin-top:3px}#ph .phcap{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ph .phcap b{color:var(--fg)}a.cam{text-decoration:none;cursor:pointer;opacity:.55;margin-left:6px}a.cam:hover{opacity:1}
 
 .mg{display:grid;grid-template-columns:minmax(320px,2fr) 3fr;gap:16px;align-items:start}.ml{position:sticky;top:64px;max-height:calc(100vh - 72px);overflow:auto;padding-right:4px}#mm{height:230px;border-radius:4px;margin:10px 0 4px;background:var(--none)}.ov{font-size:13px;margin:6px 0}@media(max-width:850px){.mg{grid-template-columns:1fr}.ml{position:static}}
@@ -1587,14 +1595,16 @@ function phView(r,pin,label,stop){
  const same=PS_.same.length?`<div class=samead>Other permits at this address: ${PS_.same.slice(0,12).map(x=>`<a class=lk data-open="${x.id}" title="${esc(x.d)} · ${esc((x.st?x.st+'-story ':'')+(x.bld||''))}">${esc(x.d.slice(0,4))}</a>`).join('')}${PS_.same.length>12?` and ${PS_.same.length-12} more`:''}</div>`:'';
  const nb=`<div class="pins nbrow">${side(sL,true)} <button class="btn${own?' on':''}" data-pin="${r.pin||''}" data-label="" title="${r.pin?"Back to the permit's own building":"The permit's own building: the County has no parcel record at this address, so there is no photo"}">This building</button> ${side(sR,false)}</div>`+same;
  const real=!stop&&pin&&pin!=='__loading';
- const imgBox=stop?`<div class=phbox><span class=pnote>Permit of ${esc(stop.d)}${stop.own?' · '+esc(stop.own):''}${stop.bld?' · '+esc((stop.st?stop.st+'-story ':'')+stop.bld):''}<br><span class=mut>No County parcel at this address today, so no photo. The ring on the map shows where it was placed.</span><br><a class=lk data-open="${stop.id}">Open this permit</a></span></div>`:`<div class="phbox${real?' cropped':''}">${real?phImg(pin,'Assessor photo'):`<span class=mut>${pin==='__loading'?'Loading photo…':'No photo for this address'}</span>`}</div>`,imgCap=stop?`<small class=phcap title="Another permit on this street, not part of this one"><b>${esc(stop.mod)}</b> &middot; neighbouring permit</small>`:real?(()=>{const own=pin==r.pin||ps.some(x=>x[1]==pin),isAlt=r.alt&&r.alt[1]==pin;
+ const imgBox=stop?(()=>{const x=stop,dt=new Date(x.d+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}),bl=((x.st?x.st+'-story ':'')+(x.bld||'')).trim(),
+  kv=[['Owner',x.own],['Cost',x.cost!=null?money(x.cost):''],['Size',x.sz?dims(x.sz)+' ft':''],['Architect',arch(x)]].filter(q=>q[1]);
+  return `<div class=phbox><div class=pcard><div class=pk0>Neighbouring permit</div><div class=pa>${esc(x.mod||x.site||'')}</div><div>${esc(dt)}${bl?' · '+esc(bl):''}</div>${kv.length?`<dl class=pk>${kv.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>`:''}<div class=pn>No County parcel at this address today, so there is no photo. The ring on the map shows where the permit was placed.</div><a class=lk data-open="${x.id}" href="#">Open this permit →</a></div></div>`})():`<div class="phbox${real?' cropped':''}">${real?phImg(pin,'Assessor photo'):`<span class=mut>${pin==='__loading'?'Loading photo…':'No photo for this address'}</span>`}</div>`,imgCap=stop?'<small class=phcap></small>':real?(()=>{const own=pin==r.pin||ps.some(x=>x[1]==pin),isAlt=r.alt&&r.alt[1]==pin;
   if(own&&!label)return `<small class=phcap title="The address this permit gives, as it is numbered today"><b>${esc((ps.find(x=>x[1]==pin)||[])[2]||r.mod||r.site||'')}</b></small>`;
   return `<small class=phcap title="${isAlt?'The corner house on the cross street: it may be this building under a later address. It is not the address the permit gives.':'A neighboring building, not part of the permit: shown to help you find the right one.'}"><b>${esc(label)}</b> &middot; ${isAlt?'corner house on the cross street':'neighboring building'}</small>`})():'<small class=phcap></small>';
  const alt=r.alt&&r.alt[1]?`<div class="pins corner"><span class=cl>Possible corner address</span> <button class="btn${r.alt[1]==pin?' on':''}" data-pin="${r.alt[1]}" data-label="${esc(r.alt[0])}" title="The nearest corner house on the cross street, ${r.alt[2]} m from where this address falls. Shows its photo — not part of the permit.">${esc(r.alt[0])}</button>${(()=>{const nb=r.nb||{},m=[...(nb.lo||[]),...(nb.hi||[])].find(x=>x&&x[1]==r.alt[1]);return m?`<span class=same>same lot as ${esc(m[2]||'')} (the neighbour shown above)</span>`:''})()}</div>`:'';
  $('ph').innerHTML='<h3>Cook County Assessor photo</h3>'+lots+nb+alt+'<div class=phrow><div class=phl>'+imgBox+'</div>'+(r.lat&&pin!=='__loading'?'<div class=phmap><div id=pmm></div></div>':'')+'</div>'+imgCap;
  if(r.lat&&pin!=='__loading')setTimeout(()=>phMini(r,pin,label,stop),0)}
 /* ---- a small square map beside the photo: the buildings around this one (County address points, one per parcel), the permit dots, a ring on the building whose photo is showing, its address underneath; click any building to see its photo ---- */
-let PMM=null;const NPC={};const PMZ=18.5;   // the small map's zoom (19 = a couple of lots each side; 18.5 shows a little more)
+let PMM=null,PMRO=null;const NPC={};const PMZ=18.5;   // the small map's zoom (19 = a couple of lots each side; 18.5 shows a little more)
 async function nearPts(r){if(NPC[r.id])return NPC[r.id];
  try{const d=.0006,q=new URLSearchParams({'$where':`lat>${r.lat-d} AND lat<${r.lat+d} AND long>${r.lon-d} AND long<${r.lon+d}`,'$limit':'250','$select':'add_number,lst_predir,st_name,lst_type,lat,long,pin'});
   const rows=await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q)).json(),by={};
@@ -1636,7 +1646,7 @@ const cl=clInfo(r,core);
  if(!sg){if(rule)sg=(pe*rule[0]+pn*rule[1])>=0?1:-1;else sg=1}
  const toward=[sg*pe,sg*pn];let phi=phiOf(toward[0],toward[1]);if(Math.min(off,90-off)<8)phi=Math.round(phi/90)*90%360;
  return out(phi,toward,dist)}
-async function phMini(r,pin,label,stop){if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;
+async function phMini(r,pin,label,stop){if(PMRO){PMRO.disconnect();PMRO=null}if(PMM){PMM.remove();PMM=null}const box=$('pmm');if(!box||!r.lat)return;      // the last map's resize watcher goes with it (it would draw that map's ring on this one)
  const pts=await nearPts(r);await slLoad();if(CURR!==r||$('pmm')!==box)return;
  const own0=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),pe0=(r.pins||[]).find(x=>x[1]==pin&&x[3]),m0=own0&&pe0?{lat:pe0[3],lng:pe0[4],label:pe0[2]||''}:null;
  /* a permit whose buildings stand in separate places (more than FARM m apart): the view is built around the cluster of the building shown (its own street, its own turn), not the permit's first point; the other clusters get a chip to jump to */
@@ -1673,8 +1683,8 @@ async function phMini(r,pin,label,stop){if(PMM){PMM.remove();PMM=null}const box=
   let best=null,bd=1e9,bp=null,bpd=1e9;ptsF.forEach(p=>{const d=PMM.distance(ll,[p.lat,p.lng]);if(d<bd){bd=d;best=p}});pdots.forEach(x=>{const d=PMM.distance(ll,[x.lat,x.lon]);if(d<bpd){bpd=d;bp=x}});
   if(bp&&bpd<=22&&bpd<bd){if(bp===r||bp.id===r.id)phView(r,r.pin||null,'');else phView(r,null,'',bp);return}     // a permit dot: that permit (this permit's own dot: back to this building)
   if(best&&bd<=22)phView(r,best.pin,best.label)};
- const fit=()=>{if(!PMM)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,PMZ,{animate:false});overlay()};
- fit();setTimeout(fit,80);try{const ro=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
+ const MAP=PMM,fit=()=>{if(!PMM||PMM!==MAP)return;const pb=document.querySelector('#ph .phbox'),h=pb?pb.offsetHeight:0;if(h>60)box.style.height=h+'px';place();PMM.invalidateSize({animate:false});PMM.setView(c,PMZ,{animate:false});overlay()};
+ fit();setTimeout(fit,80);try{const ro=PMRO=new ResizeObserver(fit);const pb=document.querySelector('#ph .phbox');pb&&ro.observe(pb);ro.observe(box)}catch(e){}}
 $('detail').addEventListener('click',e=>{const b=e.target.closest('#ph button[data-pin]');if(b&&CURR)phView(CURR,b.dataset.pin||null,b.dataset.label)});
 $('detail').addEventListener('click',e=>{if(!CURR)return;const b=e.target.closest('#ph button[data-pid]');if(b){const ps=permitStops(CURR),x=[...ps.lo,...ps.hi].map(q=>q.x).find(x=>String(x.id)===b.dataset.pid);if(x)phView(CURR,null,'',x);return}
  const a=e.target.closest('#ph a[data-open]');if(a){e.preventDefault();const x=D.find(x=>String(x.id)===a.dataset.open);if(x)show(x)}});   // '' (a permit with no County parcel) must be null, as when the panel opened, or the map loses its ring
