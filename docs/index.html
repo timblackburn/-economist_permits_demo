@@ -1571,7 +1571,18 @@ function drawMini(r){if(!r.lat||!$('mm'))return;if(MM){MM.remove();MM=null}
 const ppName=p=>String(p||'').replace('Real Estate and Building','Real Estate & Building');
 /* the street walk beside the photo: each arrow goes to the nearest stop on this side of the street, a County address (it has a photo) or another permit (often no County parcel today);
    permits come from those already loaded for the map, same street, same odd/even side, within NB_M of this permit's spot. Permits at this same address (other years) are listed under the row. */
-const NB_M=150,PSC={};
+const NB_M=150,PSC={},PLC={};
+const NBC=()=>css('--s1')||'#2c6fbb';     // the neighbour's colour: the blue of the street-walk buttons
+/* where a County parcel's address point is (for a neighbour shown in the photo panel): from the small map's points if loaded, else one small query to the County's address points */
+async function pinLL(pin){if(!pin)return null;if(pin in PLC)return PLC[pin];for(const k in NPC){const p=(NPC[k]||[]).find(x=>x.pin==pin);if(p)return PLC[pin]={lat:p.lat,lng:p.lng,label:p.label}}
+ try{const q=new URLSearchParams({pin:pin,'$select':'add_number,lst_predir,st_name,lst_type,lat,long','$limit':'1'}),x=(await (await fetch('https://datacatalog.cookcountyil.gov/resource/78yw-iddh.json?'+q)).json())[0];
+  return PLC[pin]=x&&x.lat?{lat:+x.lat,lng:+x.long,label:`${x.add_number} ${x.lst_predir||''} ${tc(x.st_name)} ${tc(x.lst_type)}`.replace(/\s+/g,' ').trim()}:null}catch(e){return null}}
+/* the main map: a blue ring on the neighbour shown in the photo panel and a dashed line to it from the permit (the permit keeps its red ring) */
+let NBRL=null,NBRT=0;
+async function nbrMain(r,stop,pin,isNb){const tok=++NBRT;if(!NBRL)NBRL=L.layerGroup().addTo(map);NBRL.clearLayers();if(!isNb||!r||!r.lat)return;
+ const ll=stop?{lat:stop.lat,lng:stop.lon}:await pinLL(pin);if(tok!==NBRT||CURR!==r||!ll)return;
+ L.polyline([[r.lat,r.lon],[ll.lat,ll.lng]],{color:NBC(),weight:2.5,dashArray:'6 6',interactive:false}).addTo(NBRL);
+ L.circleMarker([ll.lat,ll.lng],{radius:15,weight:3,color:NBC(),fill:false,interactive:false}).addTo(NBRL)}
 function numsOf(s){const m=(s||'').match(/^((?:\d+[\s,\-–&]*)+(?:(?:and|to)\s+[\d\-–]+\s*)*)/);if(!m)return null;let ns=[],prev=null;
  for(const t of m[1].match(/\d+/g)||[]){let v=+t;if(prev!==null&&t.length<String(prev).length)v=+(String(prev).slice(0,String(prev).length-t.length)+t);ns.push(v);prev=v}   // '1850-52' -> 1850, 1852
  const core=s.slice(m[0].length).trim().toLowerCase();return ns.length&&core?{lo:Math.min(...ns),hi:Math.max(...ns),core}:null}
@@ -1602,7 +1613,8 @@ function phView(r,pin,label,stop){
   return `<small class=phcap title="${isAlt?'The corner house on the cross street: it may be this building under a later address. It is not the address the permit gives.':'A neighboring building, not part of the permit: shown to help you find the right one.'}"><b>${esc(label)}</b> &middot; ${isAlt?'corner house on the cross street':'neighboring building'}</small>`})():'<small class=phcap></small>';
  const alt=r.alt&&r.alt[1]?`<div class="pins corner"><span class=cl>Possible corner address</span> <button class="btn${r.alt[1]==pin?' on':''}" data-pin="${r.alt[1]}" data-label="${esc(r.alt[0])}" title="The nearest corner house on the cross street, ${r.alt[2]} m from where this address falls. Shows its photo — not part of the permit.">${esc(r.alt[0])}</button>${(()=>{const nb=r.nb||{},m=[...(nb.lo||[]),...(nb.hi||[])].find(x=>x&&x[1]==r.alt[1]);return m?`<span class=same>same lot as ${esc(m[2]||'')} (the neighbour shown above)</span>`:''})()}</div>`:'';
  $('ph').innerHTML='<h3>Cook County Assessor photo</h3>'+lots+nb+alt+'<div class=phrow><div class=phl>'+imgBox+'</div>'+(r.lat&&pin!=='__loading'?'<div class=phmap><div id=pmm></div></div>':'')+'</div>'+imgCap;
- if(r.lat&&pin!=='__loading')setTimeout(()=>phMini(r,pin,label,stop),0)}
+ if(r.lat&&pin!=='__loading')setTimeout(()=>phMini(r,pin,label,stop),0);
+ nbrMain(r,stop,pin,!!stop||(!!pin&&pin!=='__loading'&&!(pin==r.pin||ps.some(x=>x[1]==pin))))}
 /* ---- a small square map beside the photo: the buildings around this one (County address points, one per parcel), the permit dots, a ring on the building whose photo is showing, its address underneath; click any building to see its photo ---- */
 let PMM=null,PMRO=null;const NPC={};const PMZ=18.5;   // the small map's zoom (19 = a couple of lots each side; 18.5 shows a little more)
 async function nearPts(r){if(NPC[r.id])return NPC[r.id];
@@ -1653,7 +1665,9 @@ async function phMini(r,pin,label,stop){if(PMRO){PMRO.disconnect();PMRO=null}if(
  const FARM=60,kxm=Math.cos(r.lat*Math.PI/180)*111320,kym=110574,dm=(a,b)=>Math.hypot((a.lon-b.lon)*kxm,(a.lat-b.lat)*kym);
  let rr=r,ptsF=pts;
  if(m0&&dm({lat:m0.lat,lon:m0.lng},r)>FARM){rr=Object.assign({},r,{lat:m0.lat,lon:m0.lng,mod:m0.label,site:m0.label,pin:pin,id:r.id+'@'+pin,cl:1});ptsF=await nearPts(rr);await slLoad();if(CURR!==r||$('pmm')!==box)return}
- const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),pe_=(r.pins||[]).find(x=>x[1]==pin&&x[3]),me=stop?{lat:stop.lat,lng:stop.lon,label:stop.mod||''}:pts.find(p=>p.pin==pin)||(own?{lat:pe_?pe_[3]:r.lat,lng:pe_?pe_[4]:r.lon,label:(pe_&&pe_[2])||r.mod||r.site||''}:null);
+ const own=pin==r.pin||(r.pins||[]).some(x=>x[1]==pin),pe_=(r.pins||[]).find(x=>x[1]==pin&&x[3]),nbSel=!!stop||(!!pin&&!own);let me=stop?{lat:stop.lat,lng:stop.lon,label:stop.mod||''}:pts.find(p=>p.pin==pin)||(own?{lat:pe_?pe_[3]:r.lat,lng:pe_?pe_[4]:r.lon,label:(pe_&&pe_[2])||r.mod||r.site||''}:null);
+ if(!me&&nbSel&&pin){me=await pinLL(pin);if(CURR!==r||$('pmm')!==box)return}      // a County neighbour beyond the points loaded around: its own address point
+ const home={lat:rr.lat,lng:rr.lon};
  const so=streetUp(rr,ptsF),phi=so.phi,rad=phi*Math.PI/180,cs=Math.cos(rad),sn=Math.sin(rad);
  box.innerHTML='<div id=pmi></div>';const inner=$('pmi');let W=box.offsetWidth||206,H=box.offsetHeight||200,S=Math.ceil(Math.hypot(W,H))+6;
  const place=()=>{W=box.offsetWidth||W;H=box.offsetHeight||H;S=Math.ceil(Math.hypot(W,H))+6;Object.assign(inner.style,{position:'absolute',width:S+'px',height:S+'px',left:(W-S)/2+'px',top:(H-S)/2+'px',transform:`rotate(${phi}deg)`,transformOrigin:'50% 50%'})};place();
@@ -1663,14 +1677,16 @@ async function phMini(r,pin,label,stop){if(PMRO){PMRO.disconnect();PMRO=null}if(
  ptsF.forEach(p=>L.circleMarker([p.lat,p.lng],{radius:3,weight:1,color:'#fff',fillColor:'#555',fillOpacity:.55,interactive:false}).addTo(PMM));
  const pdots=[];D.forEach(x=>{if(x.lat&&Math.abs(x.lat-rr.lat)<.0006&&Math.abs(x.lon-rr.lon)<.0008&&pdots.push(x))L.circleMarker([x.lat,x.lon],{radius:5,weight:1.5,color:css('--ring'),fillColor:dotColor(x),fillOpacity:.95,interactive:false}).addTo(PMM)});
  // from a point of the (rotated) inner map to the frame the viewer sees
- let ring=null;
+ let ring=null,ring2=null,nline=null;
  const toFrame=pt=>{const x=pt.x-S/2,y=pt.y-S/2;return {x:W/2+x*cs-y*sn,y:H/2+x*sn+y*cs}};
  const overlay=()=>{box.querySelectorAll('.pmov').forEach(e=>e.remove());
-  if(me){const f=toFrame(PMM.latLngToContainerPoint(L.latLng(me.lat,me.lng)));
-   if(ring){PMM.removeLayer(ring);ring=null}
-   if(f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H)ring=L.circleMarker([me.lat,me.lng],{radius:13,weight:3,color:css('--acc'),fill:false,interactive:false}).addTo(PMM);
-   else{const vx=f.x-W/2,vy=f.y-H/2,inset=16,t=Math.min((W/2-inset)/Math.max(1e-6,Math.abs(vx)),(H/2-inset)/Math.max(1e-6,Math.abs(vy))),ang=Math.atan2(vy,vx)*180/Math.PI,a=document.createElement('div');
-    a.className='pmov pmarrow';a.style.cssText=`left:${W/2+vx*t-13}px;top:${H/2+vy*t-13}px`;a.innerHTML=`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${css('--acc')}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;a.title=me.label||'';box.append(a)}}
+  [ring,ring2,nline].forEach(l=>l&&PMM.removeLayer(l));ring=ring2=nline=null;
+  const mark=(pt,col)=>{const f=toFrame(PMM.latLngToContainerPoint(L.latLng(pt.lat,pt.lng)));       // a ring when it is in the frame, else an arrow at the edge pointing to it
+   if(f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H)return L.circleMarker([pt.lat,pt.lng],{radius:13,weight:3,color:col,fill:false,interactive:false}).addTo(PMM);
+   const vx=f.x-W/2,vy=f.y-H/2,inset=16,t=Math.min((W/2-inset)/Math.max(1e-6,Math.abs(vx)),(H/2-inset)/Math.max(1e-6,Math.abs(vy))),ang=Math.atan2(vy,vx)*180/Math.PI,a=document.createElement('div');
+   a.className='pmov pmarrow';a.style.cssText=`left:${W/2+vx*t-13}px;top:${H/2+vy*t-13}px`;a.innerHTML=`<svg viewBox="0 0 24 24" width="26" height="26" style="transform:rotate(${ang}deg)"><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 12h14M11 5l7 7-7 7" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;a.title=pt.label||'';box.append(a);return null};
+  if(me&&nbSel){nline=L.polyline([[home.lat,home.lng],[me.lat,me.lng]],{color:NBC(),weight:2.5,dashArray:'6 6',interactive:false}).addTo(PMM);ring=mark(home,css('--acc'));ring2=mark(me,NBC())}   // a neighbour: the permit keeps its red ring, the neighbour gets a blue one and a dashed line
+  else if(me)ring=mark(me,css('--acc'))
   const k=document.createElement('div');k.className='pmov pmcomp';k.title='North';   // just an arrow: it points north on this turned map
   k.innerHTML=`<svg viewBox="0 0 34 34" width="30" height="30"><g transform="rotate(${phi} 17 17)"><path d="M17 5L24 28L17 22.5L10 28Z" fill="#c0392b" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke"/></g><text x="${17+13.5*Math.sin(rad)}" y="${17-13.5*Math.cos(rad)+3.2}" font-size="10" font-weight="700" text-anchor="middle" fill="#222" stroke="#fff" stroke-width="2.4" paint-order="stroke" font-family="system-ui,sans-serif">N</text></svg>`;box.append(k)};
  overlay();
@@ -1770,7 +1786,7 @@ function mPlace(opening,el){el=el||m;const d=$('detail'),H=document.documentElem
 new MutationObserver(()=>{if(m.style.display!='block'&&$('lbox').hidden&&MSCROLL!=null){const y=MSCROLL;MSCROLL=null;scrollTo(0,y)}}).observe(m,{attributes:true,attributeFilter:['style']});
 new MutationObserver(()=>{if($('lbox').hidden&&m.style.display!='block'&&MSCROLL!=null){const y=MSCROLL;MSCROLL=null;scrollTo(0,y)}}).observe($('lbox'),{attributes:true,attributeFilter:['hidden']});
 addEventListener('resize',()=>{if(m.style.display=='block')mPlace();if(!$('lbox').hidden)mPlace(false,$('lbox'))});
-function closeDetail(){CURR=null;markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
+function closeDetail(){CURR=null;nbrMain(null);markRow();dock(false);reserve(false);$('detail').hidden=true;$('overview').hidden=false;m.style.display='none';drawPts();toHash()}
 const placeNote=r=>{const m=String(r.gm||'').replace('renamed:',''),nb=r.nb||{},near=[...(nb.lo||[]).slice(0,1),...(nb.hi||[]).slice(0,1)].map(x=>x[2]),nm=near.map(x=>'<b>'+esc(x)+'</b>').join(' and ');
  /* one short line on the page; the working (renumbering, renamed streets, how the pin was set) is in the hover */
  const where=({interpolated:near.length>1?`Pin placed between ${nm}`:'Pin placed between the nearest County addresses',nearest:near.length?`Pin at the nearest County address, ${nm}`:'Pin at the nearest County address',
